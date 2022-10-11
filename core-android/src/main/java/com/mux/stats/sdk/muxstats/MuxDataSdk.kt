@@ -56,6 +56,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
   // MuxCore Java
   @Suppress("MemberVisibilityCanBePrivate")
   protected val muxStats: MuxStats
+
   @Suppress("MemberVisibilityCanBePrivate")
   protected val eventBus = EventBus()
   lateinit var playerId: String
@@ -68,7 +69,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    * Update all Customer Data (custom player, video, and view data) with the data found here
    * Older values will not be cleared
    */
-  fun updateCustomerData(customerData: CustomerData) {
+  open fun updateCustomerData(customerData: CustomerData) {
     muxStats.customerData = customerData
   }
 
@@ -76,26 +77,26 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    * Gets the [CustomerData] object containing the player, video, and view data you want to attach
    * to the current view
    */
-  fun getCustomerData(): CustomerData = muxStats.customerData
+  open fun getCustomerData(): CustomerData = muxStats.customerData
 
   /**
    * If true, this object will automatically track fatal playback errors, eventually showing the
    * errors on the dashboard. If false, only errors reported via [error] will show up on the
    * dashboard
    */
-  fun setAutomaticErrorTracking(enabled: Boolean) = muxStats.setAutomaticErrorTracking(enabled)
+  open fun setAutomaticErrorTracking(enabled: Boolean) = muxStats.setAutomaticErrorTracking(enabled)
 
   /**
    * Report a fatal error to the dashboard for this view. This is normally tracked automatically,
    * but if you are reporting errors yourself, you can do so with this method
    */
-  fun error(exception: MuxErrorException) = muxStats.error(exception)
+  open fun error(exception: MuxErrorException) = muxStats.error(exception)
 
   /**
    * Change the player [View] this object observes.
    * @see [getExoPlayerView]
    */
-  fun setPlayerView(view: View?) {
+  open fun setPlayerView(view: View?) {
     TODO("Add PlayerAdapter")
 //    playerAdapter.playerView = view
   }
@@ -104,14 +105,14 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    * Manually set the size of the player view. This overrides the normal auto-detection. The
    * dimensions should be in physical pixels
    */
-  fun setPlayerSize(widthPx: Int, heightPx: Int) =
+  open fun setPlayerSize(widthPx: Int, heightPx: Int) =
     muxStats.setPlayerSize(pxToDp(widthPx), pxToDp(heightPx))
 
   /**
    * Manually set the size of the screen. This overrides the normal auto-detection. The dimensions
    * should be in physical pixels
    */
-  fun setScreenSize(widthPx: Int, heightPx: Int) =
+  open fun setScreenSize(widthPx: Int, heightPx: Int) =
     muxStats.setScreenSize(pxToDp(widthPx), pxToDp(heightPx))
 
   /**
@@ -119,7 +120,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    * represent the new video being consumed
    */
   @Suppress("KDocUnresolvedReference")
-  fun videoChange(videoData: CustomerVideoData) {
+  open fun videoChange(videoData: CustomerVideoData) {
     TODO("add MuxStateCollector (without bandwidth/Live stuff)")
     //collector.videoChange(videoData)
   }
@@ -128,7 +129,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    * Call when new content is being served over the same URL, such as during a live stream. This
    * method will start a new view to represent the new content being consumed
    */
-  fun programChange(videoData: CustomerVideoData) {
+  open fun programChange(videoData: CustomerVideoData) {
     TODO("add MuxStateCollector without bw/live")
     //collector.programChange(videoData)}
   }
@@ -136,33 +137,34 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
   /**
    * Call when the device changes physical orientation, such as moving from portrait to landscape
    */
-  fun orientationChange(orientation: MuxSDKViewOrientation) =
+  open fun orientationChange(orientation: MuxSDKViewOrientation) =
     muxStats.orientationChange(orientation)
 
   /**
    * Call when the presentation of the video changes, ie Fullscreen vs Normal, etc
    */
-  fun presentationChange(presentation: MuxSDKViewPresentation) =
+  open fun presentationChange(presentation: MuxSDKViewPresentation) =
     muxStats.presentationChange(presentation)
 
   /**
    * Dispatch a raw event to the View. Please use this method with caution, as unexpected events can
    * lead to broken views
    */
-  fun dispatch(event: IEvent?) = eventBus.dispatch(event)
+  open fun dispatch(event: IEvent?) = eventBus.dispatch(event)
 
   /**
    * Enables ADB logging for this SDK
    * @param enable If true, enables logging. If false, disables logging
    * @param verbose If true, enables verbose logging. If false, disables it
    */
-  fun enableMuxCoreDebug(enable: Boolean, verbose: Boolean) =
+  open fun enableMuxCoreDebug(enable: Boolean, verbose: Boolean) =
     muxStats.allowLogcatOutput(enable, verbose)
 
   /**
    * Tears down this object. After this, the object will no longer be usable
    */
-  fun release() {
+  open fun release() {
+    // NOTE: If you override this, you must call super()
     TODO("Add PlayerAdapter")
     //playerAdapter.unbindEverything()
     muxStats.release()
@@ -174,7 +176,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    * @param px physical pixels to be converted.
    * @return number of density pixels calculated.
    */
-  private fun pxToDp(px: Int): Int {
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected fun pxToDp(px: Int): Int {
     return ceil((px / displayDensity).toDouble()).toInt()
   }
 
