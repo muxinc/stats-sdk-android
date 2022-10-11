@@ -18,6 +18,7 @@ import java.util.*
  * are used by [MuxStats] to interface with the device.
  */
 // TODO: consider making this a protected static class inside MuxSdk when it's made (to hide the symbol)
+@Suppress("unused")
 class MuxAndroidDevice(
   ctx: Context,
   private val playerVersion: String,
@@ -31,9 +32,16 @@ class MuxAndroidDevice(
   private var appName = ""
   private var appVersion = ""
 
+  @Suppress("MemberVisibilityCanBePrivate")
   var overwrittenDeviceName: String? = null
+
+  @Suppress("MemberVisibilityCanBePrivate")
   var overwrittenOsFamilyName: String? = null
+
+  @Suppress("MemberVisibilityCanBePrivate")
   var overwrittenOsVersion: String? = null
+
+  @Suppress("MemberVisibilityCanBePrivate")
   var overwrittenManufacturer: String? = null
 
   override fun getHardwareArchitecture(): String {
@@ -100,15 +108,30 @@ class MuxAndroidDevice(
       connectionTypeApi23()
     } else {
       // on API 21 and 22 deprecated APIs will be called, but there's no good synchronous way to get
-      //  active network info until API 23
+      //  active network info until API 23. Making the async ones synchronous w/coroutines would
+      //  introduce a hang risk (from if the callback didn't fire)
       connectionTypeApi16()
     }
 
   @TargetApi(Build.VERSION_CODES.M)
   private fun connectionTypeApi23(): String? {
     contextRef?.let { context ->
+      val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+      val nc: NetworkCapabilities? =
+        connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
-      return "REMOVE THIS LINE"
+      return if (nc == null) {
+        MuxLogger.w(TAG, "Could not get network info")
+        null
+      } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+        CONNECTION_TYPE_WIRED
+      } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+        CONNECTION_TYPE_WIFI
+      } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+        CONNECTION_TYPE_CELLULAR
+      } else {
+        CONNECTION_TYPE_OTHER
+      }
     } ?: return null
   }
 
@@ -119,35 +142,18 @@ class MuxAndroidDevice(
       val connectivityMgr = context
         .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
       val activeNetwork: NetworkInfo? = connectivityMgr.activeNetworkInfo
-      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val nc = connectivityMgr
-          .getNetworkCapabilities(connectivityMgr.activeNetwork)
-        if (nc == null) {
-          MuxLogger.d(
-            TAG,
-            "ERROR: Failed to obtain NetworkCapabilities manager !!!"
-          )
-          return null
-        }
-        if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-          CONNECTION_TYPE_WIRED
-        } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-          CONNECTION_TYPE_WIFI
-        } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-          CONNECTION_TYPE_CELLULAR
-        } else {
-          CONNECTION_TYPE_OTHER
-        }
+
+      return if (activeNetwork == null) {
+        MuxLogger.w(TAG, "Couldn't obtain network info")
+        null
+      } else if (activeNetwork.type == ConnectivityManager.TYPE_ETHERNET) {
+        CONNECTION_TYPE_WIRED
+      } else if (activeNetwork.type == ConnectivityManager.TYPE_WIFI) {
+        CONNECTION_TYPE_WIFI
+      } else if (activeNetwork.type == ConnectivityManager.TYPE_MOBILE) {
+        CONNECTION_TYPE_CELLULAR
       } else {
-        if (activeNetwork!!.type == ConnectivityManager.TYPE_ETHERNET) {
-          CONNECTION_TYPE_WIRED
-        } else if (activeNetwork.type == ConnectivityManager.TYPE_WIFI) {
-          CONNECTION_TYPE_WIFI
-        } else if (activeNetwork.type == ConnectivityManager.TYPE_MOBILE) {
-          CONNECTION_TYPE_CELLULAR
-        } else {
-          CONNECTION_TYPE_OTHER
-        }
+        CONNECTION_TYPE_OTHER
       }
     } ?: return null
   }
@@ -197,7 +203,6 @@ class MuxAndroidDevice(
     const val CONNECTION_TYPE_OTHER = "other"
 
     private const val TAG = "MuxDevice"
-    private const val EXO_SOFTWARE = "ExoPlayer"
     private const val MUX_DEVICE_ID = "MUX_DEVICE_ID"
 
     /**
