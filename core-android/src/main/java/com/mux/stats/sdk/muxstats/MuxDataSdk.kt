@@ -10,24 +10,211 @@ import android.net.NetworkInfo
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
+import android.view.View
+import com.mux.stats.sdk.core.Core
+import com.mux.stats.sdk.core.CustomOptions
+import com.mux.stats.sdk.core.MuxSDKViewOrientation
+import com.mux.stats.sdk.core.events.EventBus
+import com.mux.stats.sdk.core.events.IEvent
+import com.mux.stats.sdk.core.model.CustomerData
+import com.mux.stats.sdk.core.model.CustomerPlayerData
+import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
+import com.mux.stats.sdk.muxstats.MuxDataSdk.MuxAndroidDevice
+import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
 import java.util.*
+import kotlin.math.ceil
 
 /**
- * Base class for Mux Data SDKs for Android. This class provides some structure to hold a
+ * Base class for Mux Data SDK facades for Android. This class provides some structure to hold a
  * [MuxStateCollector], [PlayerAdapter], etc, allowing the SDKs themselves to mostly be player
  * interaction instead of this boilerplate
  *
  * This class also defines a minimal set of functionality for a Mux Data SDK, requiring Data SDKs
  * implementing this class to define functionality such as presentation/orientation tracking,
  * accepting CustomerVideoData/CustomerPlayerData/etc, video/program change, and so on
+ *
+ * This class also has two protected static classes, [MuxAndroidDevice] and [AndroidNetwork]. These
+ * classes provide all platform and network interaction required for most SDKs. They are both open,
+ * and so can be extended if additional functionality is required
  */
-abstract class MuxDataSdk {
+@Suppress("unused")
+abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
+  context: Context,
+  envKey: String,
+  player: Player,
+  playerView: PlayerView? = null,
+  playerListener: IPlayerListener,
+  customerData: CustomerData,
+  customOptions: CustomOptions? = null,
+  logLevel: LogcatLevel = LogcatLevel.NONE,
+  device: IDevice,
+  network: INetworkRequest /* TODO: Implement NetworkRequest as a protected static class here */
+) {
+
+  // MuxCore Java
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val muxStats: MuxStats
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val eventBus = EventBus()
+  lateinit var playerId: String
+
+  private val displayDensity: Float
+
+  //TODO: Move MuxUiDelegate, PlayerAdapter, etc to this project
 
   /**
-   * Basic device details such as OS version, vendor name and etc. Instances of this class
-   * are used by [MuxStats] to interface with the device.
+   * Update all Customer Data (custom player, video, and view data) with the data found here
+   * Older values will not be cleared
+   */
+  fun updateCustomerData(customerData: CustomerData) {
+    muxStats.customerData = customerData
+  }
+
+  /**
+   * Gets the [CustomerData] object containing the player, video, and view data you want to attach
+   * to the current view
+   */
+  fun getCustomerData(): CustomerData = muxStats.customerData
+
+  /**
+   * If true, this object will automatically track fatal playback errors, eventually showing the
+   * errors on the dashboard. If false, only errors reported via [error] will show up on the
+   * dashboard
+   */
+  fun setAutomaticErrorTracking(enabled: Boolean) = muxStats.setAutomaticErrorTracking(enabled)
+
+  /**
+   * Report a fatal error to the dashboard for this view. This is normally tracked automatically,
+   * but if you are reporting errors yourself, you can do so with this method
+   */
+  fun error(exception: MuxErrorException) = muxStats.error(exception)
+
+  /**
+   * Change the player [View] this object observes.
+   * @see [getExoPlayerView]
+   */
+  fun setPlayerView(view: View?) {
+    TODO("Add PlayerAdapter")
+//    playerAdapter.playerView = view
+  }
+
+  /**
+   * Manually set the size of the player view. This overrides the normal auto-detection. The
+   * dimensions should be in physical pixels
+   */
+  fun setPlayerSize(widthPx: Int, heightPx: Int) =
+    muxStats.setPlayerSize(pxToDp(widthPx), pxToDp(heightPx))
+
+  /**
+   * Manually set the size of the screen. This overrides the normal auto-detection. The dimensions
+   * should be in physical pixels
+   */
+  fun setScreenSize(widthPx: Int, heightPx: Int) =
+    muxStats.setScreenSize(pxToDp(widthPx), pxToDp(heightPx))
+
+  /**
+   * Call when a new [MediaItem] is being played in a player. This will start a new View to
+   * represent the new video being consumed
+   */
+  @Suppress("KDocUnresolvedReference")
+  fun videoChange(videoData: CustomerVideoData) {
+    TODO("add MuxStateCollector (without bandwidth/Live stuff)")
+    //collector.videoChange(videoData)
+  }
+
+  /**
+   * Call when new content is being served over the same URL, such as during a live stream. This
+   * method will start a new view to represent the new content being consumed
+   */
+  fun programChange(videoData: CustomerVideoData) {
+    TODO("add MuxStateCollector without bw/live")
+    //collector.programChange(videoData)}
+  }
+
+  /**
+   * Call when the device changes physical orientation, such as moving from portrait to landscape
+   */
+  fun orientationChange(orientation: MuxSDKViewOrientation) =
+    muxStats.orientationChange(orientation)
+
+  /**
+   * Call when the presentation of the video changes, ie Fullscreen vs Normal, etc
+   */
+  fun presentationChange(presentation: MuxSDKViewPresentation) =
+    muxStats.presentationChange(presentation)
+
+  /**
+   * Dispatch a raw event to the View. Please use this method with caution, as unexpected events can
+   * lead to broken views
+   */
+  fun dispatch(event: IEvent?) = eventBus.dispatch(event)
+
+  /**
+   * Enables ADB logging for this SDK
+   * @param enable If true, enables logging. If false, disables logging
+   * @param verbose If true, enables verbose logging. If false, disables it
+   */
+  fun enableMuxCoreDebug(enable: Boolean, verbose: Boolean) =
+    muxStats.allowLogcatOutput(enable, verbose)
+
+  /**
+   * Tears down this object. After this, the object will no longer be usable
+   */
+  fun release() {
+    TODO("Add PlayerAdapter")
+    //playerAdapter.unbindEverything()
+    muxStats.release()
+  }
+
+  /**
+   * Convert physical pixels to device density independent pixels.
+   *
+   * @param px physical pixels to be converted.
+   * @return number of density pixels calculated.
+   */
+  private fun pxToDp(px: Int): Int {
+    return ceil((px / displayDensity).toDouble()).toInt()
+  }
+
+  init {
+    customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
+    customerData.customerPlayerData.environmentKey = envKey
+
+    // Just don't hold the context ref
+    displayDensity = context.resources.displayMetrics.density
+
+    // These must be statically set before creating our MuxStats
+    //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
+    MuxStats.setHostDevice(device)
+    MuxStats.setHostNetworkApi(network)
+    if (!::playerId.isInitialized) {
+      // playerId is for tracking static instances of CorePlayer in core
+      playerId = context.javaClass.canonicalName!! + (playerView?.id ?: "audio")
+    }
+    muxStats = MuxStats(playerListener, playerId, customerData, customOptions ?: CustomOptions())
+      .also { eventBus.addListener(it) }
+    Core.allowLogcatOutputForPlayer(
+      playerId,
+      logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
+      logLevel == LogcatLevel.VERBOSE
+    )
+  }
+
+  /**
+   * Values for the verbosity of [MuxLogger]'s output
+   */
+  protected enum class LogcatLevel { NONE, DEBUG, VERBOSE }
+
+  // ----------------------------------------------------------------------------------------------
+  // Android platform interaction below.
+  // These are static classes in order to keep them out of customers' classpath
+  // ----------------------------------------------------------------------------------------------
+
+  /**
+   * Android implementation of [IDevice]. Interacts with the Android platform for device state info,
+   * such as network availability, device metadata, etc
    */
   protected open class MuxAndroidDevice(
     ctx: Context,
@@ -45,10 +232,13 @@ abstract class MuxDataSdk {
     // TODO: A new API is coming for these, using CustomerViewerData.
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenDeviceName: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenOsFamilyName: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenOsVersion: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenManufacturer: String? = null
 
@@ -118,12 +308,12 @@ abstract class MuxDataSdk {
         } else {
           CONNECTION_TYPE_OTHER
         }
-      } ?: return null
+      } ?: return null // contextRef?.let {...
     }
 
     @Suppress("DEPRECATION") // Uses deprecated APIs for backward compat
     private fun connectionTypeApi16(): String? {
-      // use let so we get both a null-check and a hard ref
+      // use let{} so we get both a null-check and a hard ref for the check
       contextRef?.let { context ->
         val connectivityMgr = context
           .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -141,7 +331,7 @@ abstract class MuxDataSdk {
         } else {
           CONNECTION_TYPE_OTHER
         }
-      } ?: return null
+      } ?: return null // contextRef?.let {...
     }
 
     override fun getElapsedRealtime(): Long {
@@ -207,7 +397,6 @@ abstract class MuxDataSdk {
       } catch (e: PackageManager.NameNotFoundException) {
         MuxLogger.d(TAG, "could not get package info")
       }
-    }
-  }
-
-}
+    } // init
+  } // protected open class ... : IDevice
+} // abstract class MuxDataSdk
