@@ -17,8 +17,8 @@ import java.util.*
  * Basic device details such as OS version, vendor name and etc. Instances of this class
  * are used by [MuxStats] to interface with the device.
  */
-// This class will be visible to java callers (using it = blocking lint error) but that's ok
-internal class MuxAndroidDevice(
+// TODO: consider making this a protected static class inside MuxSdk when it's made (to hide the symbol)
+class MuxAndroidDevice(
   ctx: Context,
   private val playerVersion: String,
   private val muxPluginName: String,
