@@ -1,5 +1,6 @@
 package com.mux.stats.sdk.muxstats
 
+import android.annotation.TargetApi
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -10,19 +11,19 @@ import android.os.SystemClock
 import android.util.Log
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.internal.weak
-import java.lang.ref.WeakReference
 import java.util.*
 
 /**
  * Basic device details such as OS version, vendor name and etc. Instances of this class
  * are used by [MuxStats] to interface with the device.
  */
-// This class will be visible to java callers (using it = blocking lint error) but that's ok by me
+// This class will be visible to java callers (using it = blocking lint error) but that's ok
 internal class MuxAndroidDevice(
   ctx: Context,
   private val playerVersion: String,
   private val muxPluginName: String,
-  private val muxPluginVersion: String
+  private val muxPluginVersion: String,
+  private val playerSoftware: String
 ) : IDevice {
 
   private var contextRef by weak(ctx)
@@ -86,7 +87,7 @@ internal class MuxAndroidDevice(
   }
 
   override fun getPlayerSoftware(): String {
-    return EXO_SOFTWARE
+    return playerSoftware
   }
 
   /**
@@ -94,7 +95,25 @@ internal class MuxAndroidDevice(
    *
    * @return the connection type name.
    */
-  override fun getNetworkConnectionType(): String? {
+  override fun getNetworkConnectionType(): String? =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      connectionTypeApi23()
+    } else {
+      // on API 21 and 22 deprecated APIs will be called, but there's no good synchronous way to get
+      //  active network info until API 23
+      connectionTypeApi16()
+    }
+
+  @TargetApi(Build.VERSION_CODES.M)
+  private fun connectionTypeApi23(): String? {
+    contextRef?.let { context ->
+
+      return "REMOVE THIS LINE"
+    } ?: return null
+  }
+
+  @Suppress("DEPRECATION") // Uses deprecated APIs for backward compat
+  private fun connectionTypeApi16(): String? {
     // use let so we get both a null-check and a hard ref
     contextRef?.let { context ->
       val connectivityMgr = context
@@ -158,7 +177,8 @@ internal class MuxAndroidDevice(
     Log.v(tag, msg)
   }
 
-  @Synchronized private fun getOrCreateDeviceId(context: Context): String  {
+  @Synchronized
+  private fun getOrCreateDeviceId(context: Context): String {
     val sharedPreferences = context.getSharedPreferences(MUX_DEVICE_ID, Context.MODE_PRIVATE)
     var deviceId = sharedPreferences.getString(MUX_DEVICE_ID, null)
     if (deviceId == null) {
