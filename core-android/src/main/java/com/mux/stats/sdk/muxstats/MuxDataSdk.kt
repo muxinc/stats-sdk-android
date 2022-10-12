@@ -28,43 +28,42 @@ import kotlin.math.ceil
 
 /**
  * Base class for Mux Data SDK facades for Android. This class provides some structure to hold a
- * [MuxStateCollector], [PlayerAdapter], etc, allowing the SDKs themselves to mostly be player
+ * [MuxStateCollector], [MuxPlayerAdapter], etc, allowing the SDKs themselves to mostly be player
  * interaction instead of this boilerplate
  *
  * This class also defines a minimal set of functionality for a Mux Data SDK, requiring Data SDKs
  * implementing this class to define functionality such as presentation/orientation tracking,
  * accepting CustomerVideoData/CustomerPlayerData/etc, video/program change, and so on
  *
- * This class also has two protected static classes, [MuxAndroidDevice] and [AndroidNetwork]. These
+ * This class also has two protected static classes, [MuxAndroidDevice] and [MuxNetwork]. These
  * classes provide all platform and network interaction required for most SDKs. They are both open,
  * and so can be extended if additional functionality is required
  */
 @Suppress("unused")
-abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
+abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected constructor(
   context: Context,
   envKey: String,
-  player: Player,
-  playerView: PlayerView? = null,
-  playerListener: IPlayerListener,
   customerData: CustomerData,
   customOptions: CustomOptions? = null,
-  logLevel: LogcatLevel = LogcatLevel.NONE,
+  @Suppress("MemberVisibilityCanBePrivate") val playerAdapter: MuxPlayerAdapter<*, *, *>,
+  playerListener: IPlayerListener,
   device: IDevice,
-  network: INetworkRequest /* TODO: Implement NetworkRequest as a protected static class here */
+  network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */
+  logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
 
   // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
   protected val muxStats: MuxStats
+
   @Suppress("MemberVisibilityCanBePrivate")
   protected val eventBus = EventBus()
   lateinit var playerId: String
 
   // PlayerAdapter stuff
+  //TODO: Move MuxUiDelegate, PlayerAdapter, etc to this project
 
   private val displayDensity: Float
-
-  //TODO: Move MuxUiDelegate, PlayerAdapter, etc to this project
 
   /**
    * Update all Customer Data (custom player, video, and view data) with the data found here
@@ -165,8 +164,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
    */
   open fun release() {
     // NOTE: If you override this, you must call super()
-    TODO("Add PlayerAdapter")
-    //playerAdapter.unbindEverything()
+    playerAdapter.unbindEverything()
     muxStats.release()
   }
 
@@ -194,7 +192,12 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
     MuxStats.setHostNetworkApi(network)
     if (!::playerId.isInitialized) {
       // playerId is for tracking static instances of CorePlayer in core
-      playerId = context.javaClass.canonicalName!! + (playerView?.id ?: "audio")
+      val viewId = playerAdapter.uiDelegate.getViewId()
+      if (viewId != View.NO_ID) {
+        context.javaClass.canonicalName!! + playerAdapter.uiDelegate.getViewId()
+      } else {
+        playerId = context.javaClass.canonicalName!! + "audio"
+      }
     }
     muxStats = MuxStats(playerListener, playerId, customerData, customOptions ?: CustomOptions())
       .also { eventBus.addListener(it) }
