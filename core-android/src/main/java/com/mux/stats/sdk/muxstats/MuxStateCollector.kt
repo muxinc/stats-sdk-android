@@ -493,7 +493,7 @@ open class MuxStateCollector(
    *
    *  @param Player The type of the Player object. Should be something that returns playback pos
    */
-  open class PositionWatcher<Player>(
+  class PositionWatcher<Player>(
     @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
     @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
     player: Player, // reminder not to use val, a weak reference is kept instead
@@ -502,8 +502,7 @@ open class MuxStateCollector(
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val player by weak(player)
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    protected fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it) }
+    private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it) }
 
     fun stop(message: String) {
       timerScope.cancel(message)
