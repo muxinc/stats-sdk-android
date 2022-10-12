@@ -25,6 +25,7 @@ object UiDelegateMocks {
   /**
    * Mocks the path we call to get the size of the screen
    */
+  @Suppress("DEPRECATION") // Backward-compatible APIs are mocked intentionally
   fun mockActivity() = mockk<Activity> {
     every { windowManager } returns mockk {
       every { defaultDisplay } returns mockk {
