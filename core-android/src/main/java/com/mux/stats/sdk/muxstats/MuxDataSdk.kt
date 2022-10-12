@@ -53,13 +53,14 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
   network: INetworkRequest /* TODO: Implement NetworkRequest as a protected static class here */
 ) {
 
-  // MuxCore Java
+  // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
   protected val muxStats: MuxStats
-
   @Suppress("MemberVisibilityCanBePrivate")
   protected val eventBus = EventBus()
   lateinit var playerId: String
+
+  // PlayerAdapter stuff
 
   private val displayDensity: Float
 
