@@ -94,7 +94,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> protected constructor(
 
   /**
    * Change the player [View] this object observes.
-   * @see [getExoPlayerView]
    */
   open fun setPlayerView(view: View?) {
     TODO("Add PlayerAdapter")
