@@ -1,5 +1,6 @@
 package com.mux.stats.sdk.muxstats
 
+import android.view.View
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter.PlayerBinding
 import com.mux.stats.sdk.muxstats.internal.observableWeak
 import com.mux.stats.sdk.muxstats.internal.weak
@@ -7,6 +8,8 @@ import com.mux.stats.sdk.muxstats.internal.weak
 /**
  * Adapts a player framework to a [MuxStateCollector], passing events between them using
  * [PlayerBinding] implementations provided by the player SDK
+ *
+ * TODO: [PlayerView] will need to be further generified to support Compose, probably
  *
  * @param player the Player object that should be tracked, such as MediaPlayer or ExoPlayer
  * @param collector The [MuxStateCollector] used to track state & dispatch events
@@ -21,7 +24,7 @@ import com.mux.stats.sdk.muxstats.internal.weak
  * @param ExtraPlayer The type of the extra player, such as ExoPlayer in the Media3,Kaltura,THEO,
  *                    etc SDKs
  */
-class MuxPlayerAdapter<PlayerView, MainPlayer, ExtraPlayer>(
+class MuxPlayerAdapter<PlayerView : View, MainPlayer, ExtraPlayer>(
   player: MainPlayer,
   @Suppress("MemberVisibilityCanBePrivate") val collector: MuxStateCollector,
   @Suppress("MemberVisibilityCanBePrivate") val uiDelegate: MuxUiDelegate<PlayerView>,

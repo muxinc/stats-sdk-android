@@ -45,7 +45,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   envKey: String,
   customerData: CustomerData,
   customOptions: CustomOptions? = null,
-  @Suppress("MemberVisibilityCanBePrivate") val playerAdapter: MuxPlayerAdapter<*, *, *>,
+  @Suppress("MemberVisibilityCanBePrivate")
+  val playerAdapter: MuxPlayerAdapter<PlayerView, ExtraPlayer, Player>,
   playerListener: IPlayerListener,
   device: IDevice,
   network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */
@@ -59,9 +60,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   @Suppress("MemberVisibilityCanBePrivate")
   protected val eventBus = EventBus()
   lateinit var playerId: String
-
-  // PlayerAdapter stuff
-  //TODO: Move MuxUiDelegate, PlayerAdapter, etc to this project
 
   private val displayDensity: Float
 
@@ -95,9 +93,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   /**
    * Change the player [View] this object observes.
    */
-  open fun setPlayerView(view: View?) {
-    TODO("Add PlayerAdapter")
-//    playerAdapter.playerView = view
+  open fun setPlayerView(view: PlayerView?) {
+    playerAdapter.playerView = view
   }
 
   /**
