@@ -19,7 +19,7 @@ import com.mux.stats.sdk.muxstats.internal.weak
  *                     different Player object, such as bandwidth metrics in Media3 or JWPlayer
  *
  * @param PlayerView The View used to show Player content and (possibly) player chrome.
-*                   When in doubt, player
+ *                   When in doubt (or for player SDKs with multiple player views), use View
  * @param MainPlayer The type of the main Player, such as ExoPlayer or MediaPlayer
  * @param ExtraPlayer The type of the extra player, such as ExoPlayer in the Media3,Kaltura,THEO,
  *                    etc SDKs
@@ -90,9 +90,11 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer, ExtraPlayer>(
     }
   }
 
-  /*
-  * A Binding between some Player object and a MuxDataCollector
-  */
+  /**
+   * A Binding between some Player object and a MuxDataCollector
+   *
+   * @param Player A type of Player, such as ExoPlayer or MediaPlayer
+   */
   interface PlayerBinding<Player> {
 
     /**
@@ -109,8 +111,8 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer, ExtraPlayer>(
 
   /**
    * Container for bindings that gather metrics that may not be available from all players, such as
-   * session data, or bandwidth metrics. These may come from a different source object (ie an
-   * internal ExoPlayer) than the main player.
+   * session data, or bandwidth metrics. These may come from a different source object than the main
+   * player (ie Kaltura or Bitmovin's internal ExoPlayer, the player backing Media3, etc)
    */
   class ExtraPlayerBindings<ExtraPlayer>(
     player: ExtraPlayer,

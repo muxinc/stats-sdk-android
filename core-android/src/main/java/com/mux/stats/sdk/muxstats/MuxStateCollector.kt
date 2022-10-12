@@ -274,7 +274,6 @@ open class MuxStateCollector(
         _playerState = MuxPlayerState.SEEKED
       }
 
-
       if (seekingEventsSent == 0) {
         seekingInProgress = false
       }
