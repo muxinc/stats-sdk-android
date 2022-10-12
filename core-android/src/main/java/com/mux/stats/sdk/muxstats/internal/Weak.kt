@@ -15,6 +15,7 @@ internal fun <T> weak(t: T): ReadWriteProperty<Any, T?> = Weak(t)
  * Property Delegate that makes the object referenced by the property weakly-reachable
  * Not thread-safe
  */
+@Suppress("unused")
 @JvmSynthetic // synthetic methods are hidden from java, and java has no property delegates
 internal fun <T> weak(): ReadWriteProperty<Any, T?> = Weak(null)
 
@@ -28,6 +29,7 @@ internal fun <T> observableWeak(t: T?, block: (T?) -> Unit): ReadWriteProperty<A
 /**
  * Weakly-reachable property delegate that is observable
  */
+@Suppress("unused")
 @JvmSynthetic
 internal fun <T> observableWeak(block: (T?) -> Unit): ReadWriteProperty<Any, T?> =
   Weak<T>(null).onSet { block(it) }

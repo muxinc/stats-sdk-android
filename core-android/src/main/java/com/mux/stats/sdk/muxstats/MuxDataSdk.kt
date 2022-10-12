@@ -46,7 +46,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   customerData: CustomerData,
   customOptions: CustomOptions? = null,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, ExtraPlayer, Player>,
+  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>,
   playerListener: IPlayerListener,
   device: IDevice,
   network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */
@@ -54,12 +54,14 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
 ) {
 
   // MuxCore Java Stuff
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected val muxStats: MuxStats
+  @Suppress("MemberVisibilityCanBePrivate") protected val muxStats: MuxStats
+  @Suppress("MemberVisibilityCanBePrivate") protected val eventBus = EventBus()
+  @Suppress("MemberVisibilityCanBePrivate") protected lateinit var playerId: String
 
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected val eventBus = EventBus()
-  lateinit var playerId: String
+  private val uiDelegate by playerAdapter::uiDelegate
+  private val basicPlayer by playerAdapter::basicPlayer
+  private val extraPlayer by playerAdapter::extraPlayer
+  private val collector by playerAdapter::collector
 
   private val displayDensity: Float
 
@@ -94,7 +96,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * Change the player [View] this object observes.
    */
   open fun setPlayerView(view: PlayerView?) {
-    playerAdapter.playerView = view
+    uiDelegate.view = view
   }
 
   /**
@@ -112,13 +114,11 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     muxStats.setScreenSize(pxToDp(widthPx), pxToDp(heightPx))
 
   /**
-   * Call when a new [MediaItem] is being played in a player. This will start a new View to
-   * represent the new video being consumed
+   * Call when a new media item (video or audio) is being played in a player. This will start a new
+   * View to represent the new video being consumed
    */
-  @Suppress("KDocUnresolvedReference")
   open fun videoChange(videoData: CustomerVideoData) {
-    TODO("add MuxStateCollector (without bandwidth/Live stuff)")
-    //collector.videoChange(videoData)
+   collector.videoChange(videoData)
   }
 
   /**
@@ -126,8 +126,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * method will start a new view to represent the new content being consumed
    */
   open fun programChange(videoData: CustomerVideoData) {
-    TODO("add MuxStateCollector without bw/live")
-    //collector.programChange(videoData)}
+    collector.programChange(videoData)
   }
 
   /**

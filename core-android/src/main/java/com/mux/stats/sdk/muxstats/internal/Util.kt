@@ -12,4 +12,3 @@ internal fun <T> T.noneOf(vararg these: T) = !these.contains(this)
  */
 @Suppress("unused") // T is used for its class
 internal inline fun <reified T> T.logTag() = T::class.java.simpleName
-
