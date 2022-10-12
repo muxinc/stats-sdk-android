@@ -81,7 +81,12 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
       @Suppress("DEPRECATION") // bounds - insets method is used on API 30+
       activity.windowManager?.defaultDisplay?.getSize(size)
       size
-    }.also { size -> MuxLogger.d(javaClass.simpleName, "displayStuffLegacy: One Size: $size") }
+    }.also { size ->
+      MuxLogger.d(
+        javaClass.simpleName,
+        "displayStuffLegacy: Legacy Screen Size Size: $size"
+      )
+    }
   }
 
   override fun getViewId(): Int {
