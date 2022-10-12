@@ -10,6 +10,7 @@ import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.internal.logTag
 import com.mux.stats.sdk.muxstats.internal.noneOf
 import com.mux.stats.sdk.muxstats.internal.oneOf
+import com.mux.stats.sdk.muxstats.internal.weak
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.properties.Delegates
@@ -30,11 +31,16 @@ open class MuxStateCollector(
 ) {
 
   companion object {
+    @Suppress("unused")
     const val TIME_UNKNOWN = -1L
-    const val ERROR_UNKNOWN = -1;
+    @Suppress("unused")
+    const val ERROR_UNKNOWN = -1
+    @Suppress("unused")
     const val ERROR_DRM = -2
+    @Suppress("unused")
     const val ERROR_IO = -3
 
+    // For firstFrameRenderedAtMilliseconds, indicates that the first video frame hasn't rendered
     private const val FIRST_FRAME_NOT_RENDERED: Long = -1
 
     // Wait this long after the first frame was rendered before logic considers it rendered
@@ -48,20 +54,24 @@ open class MuxStateCollector(
    * {@link ExoPlayer} a few milliseconds after the {@link PlayingEvent} which is not what is
    * expected.
    * */
+  @Suppress("unused")
   var timeToWaitAfterFirstFrameReceived: Long = 50
 
   /**
    * The current state of the player, as represented by Mux Data
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   val muxPlayerState by ::_playerState
   private var _playerState = MuxPlayerState.INIT
 
   /** Event counter. This is useful to know when the view have started.  */
+  @Suppress("unused")
   var detectMimeType = true
 
   /**
    * Detected MIME type of the playing media, if applicable
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   var mimeType: String? = null
 
   /**
@@ -69,11 +79,13 @@ open class MuxStateCollector(
    * This is used to decide how to handle position discontinuities for audio-only streams
    * The default value is true, which might be fine to keep, depending on your player
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   var mediaHasVideoTrack: Boolean? = true
 
   /**
    * Total duration of the media being played, in milliseconds
    */
+  @Suppress("unused")
   var sourceDurationMs: Long = TIME_UNKNOWN
 
   /**
@@ -84,21 +96,25 @@ open class MuxStateCollector(
   /**
    * The media bitrate advertised by the current media item
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   var sourceAdvertisedBitrate: Int = 0
 
   /**
    * The frame rate advertised by the current media item
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   var sourceAdvertisedFrameRate: Float = 0F
 
   /**
    * Width of the current media item in pixels. 0 for non-video media
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   var sourceWidth: Int = 0
 
   /**
    * Width of the current media item in pixels. 0 for non-video media
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   var sourceHeight: Int = 0
 
   /**
@@ -107,7 +123,8 @@ open class MuxStateCollector(
    * calling [PositionWatcher.stop], and will automatically stop if it can no longer
    * access play time info
    */
-  var positionWatcher: PositionWatcher?
+  @Suppress("MemberVisibilityCanBePrivate")
+  var positionWatcher: PositionWatcher<*>?
           by Delegates.observable(null) @Synchronized { _, old, _ ->
             old?.apply { stop("watcher replaced") }
           }
@@ -130,25 +147,14 @@ open class MuxStateCollector(
    *  List of string patterns that will be used to determine if certain HTTP header will be
    *  reported to the backend.
    *  */
+  @Suppress("MemberVisibilityCanBePrivate")
   var allowedHeaders = ArrayList<String>()
-
-  /**
-   * Allow HTTP headers with a given name to be passed to the backend. By default we ignore all HTTP
-   * headers that are not in the [BandwidthMetricDispatcher.allowedHeaders] list.
-   * This is used in automated tests and is not intended to be used from the application layer.
-   *
-   * @param headerName name of the header to send to the backend.
-   */
-  fun allowHeaderToBeSentToBackend(headerName: String?) {
-    if (headerName != null) {
-      allowedHeaders.add(headerName)
-    }
-  }
 
   /**
    * Call when the player starts buffering. Buffering events after the player began playing are
    * reported as rebuffering events
    */
+  @Suppress("unused")
   fun buffering() {
     // Only process buffering if we are not already buffering or seeking
     if (_playerState.noneOf(
@@ -171,6 +177,7 @@ open class MuxStateCollector(
    * Call when the player prepares to play. That is, during the initialization and buffering, while
    * the caller intends for the video to play
    */
+  @Suppress("unused")
   fun play() {
     if (playEventsSent <= 0
       || (!seekingInProgress
@@ -188,6 +195,7 @@ open class MuxStateCollector(
    * or seeked from there
    * If rebuffering was in progress,
    */
+  @Suppress("unused")
   fun playing() {
     // Negative Logic Version
     if (seekingInProgress) {
@@ -215,6 +223,7 @@ open class MuxStateCollector(
    *  which is already reported. Instead, we will move to the SEEKED state
    * Otherwise, we move to the PAUSED state and send a PauseEvent
    */
+  @Suppress("unused")
   fun pause() {
     // Process unless we're already paused
     if (_playerState == MuxPlayerState.SEEKED && pauseEventsSent > 0) {
@@ -256,7 +265,7 @@ open class MuxStateCollector(
           playing()
         } else {
           // No playback yet.
-          MuxLogger.d("MuxStats", "Seeked before playback started");
+          MuxLogger.d("MuxStats", "Seeked before playback started")
         }
       } else {
         // If not inferring player state, just dispatch the event
@@ -277,6 +286,7 @@ open class MuxStateCollector(
    * If the player was playing, a PauseEvent will be dispatched.
    * In all cases, the state will move to SEEKING, and frame rendering data will be reset
    */
+  @Suppress("unused")
   fun seeking() {
     // TODO: We are getting a seeking() before the start of the view for some reason.
     //  This (I think?) causes state handling for another event to call seeked()
@@ -285,7 +295,7 @@ open class MuxStateCollector(
     if (playEventsSent == 0) {
       // Ignore this, we have received a seek event before we have received playerready event,
       // so this event should be ignored.
-      return;
+      return
     }
     if (muxPlayerState == MuxPlayerState.PLAYING) {
       dispatch(PauseEvent(null))
@@ -301,12 +311,14 @@ open class MuxStateCollector(
    * Call when the end of playback was reached.
    * A PauseEvent and EndedEvent will both be sent, and the state will be set to ENDED
    */
+  @Suppress("unused")
   fun ended() {
     dispatch(PauseEvent(null))
     dispatch(EndedEvent(null))
     _playerState = MuxPlayerState.ENDED
   }
 
+  @Suppress("unused")
   fun isPaused(): Boolean {
     return _playerState == MuxPlayerState.PAUSED
             || _playerState == MuxPlayerState.ENDED
@@ -314,11 +326,13 @@ open class MuxStateCollector(
             || _playerState == MuxPlayerState.INIT
   }
 
+  @Suppress("unused")
   fun onFirstFrameRendered() {
     firstFrameRenderedAtMillis = System.currentTimeMillis()
     firstFrameReceived = true
   }
 
+  @Suppress("unused")
   fun internalError(error: Exception) {
     if (error is MuxErrorException) {
       dispatch(InternalErrorEvent(error.code, error.message))
@@ -338,6 +352,7 @@ open class MuxStateCollector(
    *
    * This method will start a new Video View on Mux Data's backend
    */
+  @Suppress("unused")
   fun programChange(customerVideoData: CustomerVideoData) {
     reset()
     muxStats().programChange(customerVideoData)
@@ -348,12 +363,14 @@ open class MuxStateCollector(
    *
    * This method will start a new Video View on Mux Data's backend
    */
+  @Suppress("unused")
   fun videoChange(customerVideoData: CustomerVideoData) {
     _playerState = MuxPlayerState.INIT
     reset()
     muxStats().videoChange(customerVideoData)
   }
 
+  @Suppress("unused")
   fun renditionChange(
     advertisedBitrate: Int,
     advertisedFrameRate: Float,
@@ -371,6 +388,7 @@ open class MuxStateCollector(
   /**
    * Call when an Ad begins playing
    */
+  @Suppress("unused")
   fun playingAds() {
     _playerState = MuxPlayerState.PLAYING_ADS
   }
@@ -378,10 +396,12 @@ open class MuxStateCollector(
   /**
    * Call when all ads are finished being played
    */
+  @Suppress("unused")
   fun finishedPlayingAds() {
     _playerState = MuxPlayerState.FINISHED_PLAYING_ADS
   }
 
+  @Suppress("unused")
   fun onMainPlaylistTags(tags: List<SessionTag>) {
     // dispatch new session data on change only
     if (sessionTags != tags) {
@@ -393,6 +413,7 @@ open class MuxStateCollector(
   /**
    * Kills this object. After being killed, this object will no longer report metrics to Mux Data
    */
+  @Suppress("unused")
   fun release() {
     positionWatcher?.stop("tracker released")
     dead = true
@@ -402,6 +423,7 @@ open class MuxStateCollector(
    * Returns true if a frame was rendered by the player, or if frame rendering is not being tracked
    * @see #trackFirstFrameRendered
    */
+  @Suppress("unused")
   private fun firstFrameRendered(): Boolean = !trackFirstFrameRendered
           || (firstFrameReceived && (System.currentTimeMillis() - firstFrameRenderedAtMillis > FIRST_FRAME_WAIT_MILLIS))
 
@@ -457,24 +479,37 @@ open class MuxStateCollector(
    *
    * This object should be stopped when no longer needed. To handle cases where users forget to
    * release our SDK, implementations should not hold strong references to big objects like context
-   * or a player. If [getTimeMillis] returns null, this object will automatically stop
+   * or a player. If [checkPositionMillis] returns null, this object will automatically stop
    *
    * Stops if:
    *  the caller calls [stop]
    *  the superclass starts returning null from [getTimeMillis]
+   *
+   *  @param updateIntervalMillis The time interval, in milliseconds, between position updates
+   *  @param stateCollector The [MuxStateCollector] that should track the playback position
+   *  @param player The [Player] object that returns playback position info
+   *  @param checkPositionMillis A block that is run every [updateIntervalMillis] that returns the
+   *                             [player]'s current playback position, or [TIME_UNKNOWN]
+   *
+   *  @param Player The type of the Player object. Should be something that returns playback pos
    */
-  abstract class PositionWatcher(
-    val updateIntervalMillis: Long,
-    val stateCollector: MuxStateCollector
+  open class PositionWatcher<Player>(
+    @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
+    @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
+    player: Player, // reminder not to use val, a weak reference is kept instead
+    val checkPositionMillis: (Player) -> Long
   ) {
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val player by weak(player)
 
-    protected abstract fun getTimeMillis(): Long?
+    @Suppress("MemberVisibilityCanBePrivate")
+    protected fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it) }
 
     fun stop(message: String) {
       timerScope.cancel(message)
     }
 
+    @Suppress("unused")
     fun start() {
       timerScope.launch {
         while (true) {

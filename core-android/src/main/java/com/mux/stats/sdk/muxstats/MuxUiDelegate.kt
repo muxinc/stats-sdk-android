@@ -9,7 +9,6 @@ import android.view.WindowInsets
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.internal.weak
 
-
 /**
  * Allows implementers to supply data about the view and screen being used for playback
  */
@@ -24,7 +23,7 @@ abstract class MuxUiDelegate<PlayerView>(view: PlayerView?) {
   abstract fun getPlayerViewSize(): Point
 
   /**
-   * Gets the sie of the entire screen in px, not including nav/statusbar/window insets
+   * Gets the sie of the entire screen in px, not including nav/status bar/window insets
    * If the View is null, returns a size of 0
    */
   abstract fun getScreenSize(): Point
@@ -93,13 +92,15 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
 /**
  * Create a MuxUiDelegate based on a View
  */
+@Suppress("unused")
 @JvmSynthetic
-internal fun <V : View> V?.muxUiDelegate(activity: Activity)
+fun <V : View> V?.muxUiDelegate(activity: Activity)
         : MuxUiDelegate<View> = AndroidUiDelegate(activity, this)
 
 /**
  * Create a MuxUiDelegate for a view-less playback experience. Returns 0 for all sizes, as we are
  * not able to get a Display from a non-activity context
  */
+@Suppress("unused")
 @JvmSynthetic
-internal fun noUiDelegate(): MuxUiDelegate<View> = AndroidUiDelegate(null, null)
+fun noUiDelegate(): MuxUiDelegate<View> = AndroidUiDelegate(null, null)
