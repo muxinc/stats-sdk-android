@@ -50,7 +50,7 @@ fun mockView() = mockk<View> {
 }
 
 /**
- * Mocks the path we call to get the size of the screen
+ * Mocks the path we call to get the size of the screen, and get connection info
  */
 @Suppress("DEPRECATION") // Backward-compatible APIs are mocked intentionally
 fun mockActivity() = mockk<Activity> {
