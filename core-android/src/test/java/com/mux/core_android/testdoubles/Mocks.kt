@@ -1,12 +1,17 @@
 package com.mux.core_android.testdoubles
 
 import android.app.Activity
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.graphics.Point
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.view.View
 import com.mux.stats.sdk.muxstats.*
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 
 const val MOCK_SCREEN_WIDTH = 2400
 const val MOCK_SCREEN_HEIGHT = 1080
@@ -53,7 +58,11 @@ fun mockView() = mockk<View> {
  * Mocks the path we call to get the size of the screen, and get connection info
  */
 @Suppress("DEPRECATION") // Backward-compatible APIs are mocked intentionally
-fun mockActivity() = mockk<Activity> {
+fun mockActivity(
+  prefs: SharedPreferences = mockSharedPrefs(),
+  pm: PackageManager = mockPackageManager(),
+  connMgr: ConnectivityManager = mockConnectivityManager23(NetworkCapabilities.TRANSPORT_CELLULAR)
+) = mockk<Activity> {
   every { windowManager } returns mockk {
     every { defaultDisplay } returns mockk {
       every { getSize(Point()) } answers {
@@ -63,6 +72,50 @@ fun mockActivity() = mockk<Activity> {
         }
       }
     }
+  }
+  every { getSharedPreferences(any(), any()) } returns prefs
+  every { packageManager } returns pm
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    every { getSystemService(ConnectivityManager::class.java) } returns connMgr
+  }
+  every { getSystemService(Context.CONNECTIVITY_SERVICE) } returns connMgr
+  every { packageName } returns "com.mux.core_android.unittests"
+}
+
+fun mockPackageManager() = mockk<PackageManager> {
+  val fakePkgInfo = PackageInfo()
+  fakePkgInfo.packageName = "com.mux.core_android.unittests"
+  fakePkgInfo.versionName = "1.0.0"
+  every { getPackageInfo(any<String>(), any()) } returns fakePkgInfo
+  // TODO: VersionedPackage is new, but nothing is using it yet
+  //every { getPackageInfo(any<VersionedPackage>(), any()) } returns fakePkgInfo
+}
+
+/**
+ * Mocks a SharedPreferences. Not all types of pref value are supported (as of oct 13 2022)
+ */
+fun mockSharedPrefs() = mockk<SharedPreferences> {
+  val prefStrings = HashMap<String, String>()
+  every { edit() } returns mockk {
+    val thiz = this
+
+    // putString
+    val keySlot = slot<String>()
+    val valSlot = slot<String>()
+    every { putString(capture(keySlot), capture(valSlot)) } answers {
+      prefStrings[keySlot.captured] = valSlot.captured
+      thiz
+    }
+
+    every { commit() } returns true
+    every { apply() } just runs
+  }
+
+  // getString
+  val keySlot = slot<String>()
+  val valSlot = ArrayList<String?>()
+  every { getString(capture(keySlot), captureNullable(valSlot)) } answers {
+    (prefStrings[keySlot.captured] ?: valSlot[0])
   }
 }
 

@@ -54,16 +54,22 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
 ) {
 
   // MuxCore Java Stuff
-  @Suppress("MemberVisibilityCanBePrivate") protected val muxStats: MuxStats
-  @Suppress("MemberVisibilityCanBePrivate") protected val eventBus = EventBus()
-  @Suppress("MemberVisibilityCanBePrivate") protected lateinit var playerId: String
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val muxStats: MuxStats
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val eventBus = EventBus()
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected lateinit var playerId: String
 
-  private val uiDelegate by playerAdapter::uiDelegate
-  private val basicPlayer by playerAdapter::basicPlayer
-  private val extraPlayer by playerAdapter::extraPlayer
-  private val collector by playerAdapter::collector
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val uiDelegate by playerAdapter::uiDelegate
+  protected val basicPlayer by playerAdapter::basicPlayer
+  protected val extraPlayer by playerAdapter::extraPlayer
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val collector by playerAdapter::collector
 
-  private val displayDensity: Float
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val displayDensity: Float
 
   /**
    * Update all Customer Data (custom player, video, and view data) with the data found here
@@ -118,7 +124,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * View to represent the new video being consumed
    */
   open fun videoChange(videoData: CustomerVideoData) {
-   collector.videoChange(videoData)
+    collector.videoChange(videoData)
   }
 
   /**
@@ -232,10 +238,14 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     private var appVersion = ""
 
     // TODO: A new API is coming for these, using CustomerViewerData.
-    @Suppress("MemberVisibilityCanBePrivate") var overwrittenDeviceName: String? = null
-    @Suppress("MemberVisibilityCanBePrivate") var overwrittenOsFamilyName: String? = null
-    @Suppress("MemberVisibilityCanBePrivate") var overwrittenOsVersion: String? = null
-    @Suppress("MemberVisibilityCanBePrivate") var overwrittenManufacturer: String? = null
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenDeviceName: String? = null
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenOsFamilyName: String? = null
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenOsVersion: String? = null
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenManufacturer: String? = null
 
     override fun getHardwareArchitecture(): String? = Build.HARDWARE
     override fun getOSFamily() = "Android"

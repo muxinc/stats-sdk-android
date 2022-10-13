@@ -1,22 +1,19 @@
 package com.mux.core_android
 
 import android.annotation.TargetApi
-import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import com.mux.core_android.testdoubles.mockActivity
 import com.mux.core_android.testdoubles.mockConnectivityManager16
 import com.mux.core_android.testdoubles.mockConnectivityManager23
-import com.mux.stats.sdk.muxstats.IDevice
 import com.mux.stats.sdk.muxstats.MuxDataSdk
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
-class AndroidDeviceTests {
+class AndroidDeviceTests : AbsRobolectricTest() {
 
   @Test
   fun testConnectionTypeIsCellular() {
@@ -24,36 +21,55 @@ class AndroidDeviceTests {
       // Should be on Cellular
       testConnectionType23(
         "api 23: cellular network detected",
-        ConnectivityManager.TYPE_MOBILE,
+        NetworkCapabilities.TRANSPORT_CELLULAR,
         MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
         true
       )
       // Should not be on these
       testConnectionType23(
         "api 23: cellular network detected",
-        ConnectivityManager.TYPE_MOBILE,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
+        NetworkCapabilities.TRANSPORT_CELLULAR,
+        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIFI,
         false
       )
       testConnectionType23(
         "api 23: cellular network detected",
-        ConnectivityManager.TYPE_MOBILE,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
+        NetworkCapabilities.TRANSPORT_CELLULAR,
+        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIRED,
         false
       )
       testConnectionType23(
         "api 23: cellular network detected",
-        ConnectivityManager.TYPE_MOBILE,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
+        NetworkCapabilities.TRANSPORT_CELLULAR,
+        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
         false
       )
     } else {
       // Should be on Cellular
       testConnectionType16(
         "api 16: cellular network detected",
-        NetworkCapabilities.TRANSPORT_CELLULAR,
+        ConnectivityManager.TYPE_MOBILE,
         MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
         true
+      )
+      // Should not be on these
+      testConnectionType16(
+        "api 16: cellular network detected",
+        ConnectivityManager.TYPE_MOBILE,
+        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIFI,
+        false
+      )
+      testConnectionType16(
+        "api 16: cellular network detected",
+        ConnectivityManager.TYPE_MOBILE,
+        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIRED,
+        false
+      )
+      testConnectionType16(
+        "api 16: cellular network detected",
+        ConnectivityManager.TYPE_MOBILE,
+        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
+        false
       )
     }
   }
@@ -61,15 +77,11 @@ class AndroidDeviceTests {
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
   private fun testConnectionType16(
     assertMsg: String,
-    typeFromConnMgr:Int,
+    typeFromConnMgr: Int,
     expectedType: String,
     onThisNetwork: Boolean,
   ) {
-    val ctx = mockk<Activity> {
-      every { getSystemService(ConnectivityManager::class.java) } returns mockConnectivityManager16(
-        typeFromConnMgr
-      )
-    }
+    val ctx = mockActivity(connMgr = mockConnectivityManager16(typeFromConnMgr))
     if (onThisNetwork) {
       assertEquals(assertMsg, expectedType, device(ctx).networkConnectionType)
     } else {
@@ -80,15 +92,11 @@ class AndroidDeviceTests {
   @TargetApi(Build.VERSION_CODES.M)
   private fun testConnectionType23(
     assertMsg: String,
-    typeFromConnMgr:Int,
+    typeFromConnMgr: Int,
     expectedType: String,
     onThisNetwork: Boolean,
   ) {
-    val ctx = mockk<Activity> {
-      every { getSystemService(ConnectivityManager::class.java) } returns mockConnectivityManager23(
-        typeFromConnMgr
-      )
-    }
+    val ctx = mockActivity(connMgr = mockConnectivityManager23(typeFromConnMgr))
     if (onThisNetwork) {
       assertEquals(assertMsg, expectedType, device(ctx).networkConnectionType)
     } else {
