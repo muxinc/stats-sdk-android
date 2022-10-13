@@ -3,7 +3,6 @@ package com.mux.core_android.testdoubles
 import android.app.Activity
 import android.graphics.Point
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.view.View
 import com.mux.stats.sdk.muxstats.*
 import io.mockk.every
@@ -70,16 +69,24 @@ object UiDelegateMocks {
   }
 
   /**
-   * Mocks a [ConnectivityManager] with methods for getting the active network type
-   *
-   * @param onNetworkType Pair of network types, one from [NetwokInfo] and one from [NetworkCapabilities]
+   * Mocks a [ConnectivityManager] with methods for getting the active network type using modern SDK
+   * APIs
    */
-  fun mockConnectivityManager(onNetworkType: Pair<String, Int>) = mockk<ConnectivityManager> {
+  fun mockConnectivityManager23(transportType: Int) = mockk<ConnectivityManager> {
     every { activeNetwork } returns mockk {}
     every { getNetworkCapabilities(any()) } returns mockk {
-      every { hasTransport(any()) } answers { firstArg<Int>() == onNetworkType.second }
+      every { hasTransport(any()) } answers { firstArg<Int>() == transportType }
     }
+  }
 
-    // TODO: Mock the legacy path
+  /**
+   * Mocks [ConnectivityManager] with methods for getting the active network type using the older
+   * [NetworkInfo]-based APIs
+   */
+  @Suppress("DEPRECATION") // some legacy methods are used for backward compat
+  fun mockConnectivityManager16(netType: Int) = mockk<ConnectivityManager> {
+    every { activeNetworkInfo } returns mockk {
+      every { type } answers { netType }
+    }
   }
 }
