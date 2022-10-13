@@ -14,6 +14,7 @@ import com.mux.stats.sdk.muxstats.INetworkRequest
 import com.mux.stats.sdk.muxstats.IPlayerListener
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter
 import org.junit.Before
+import org.junit.Test
 
 class MuxAndroidDeviceTests {
   private lateinit var fakeSdk: FakeMuxDataSdk<*, *, *>
@@ -21,6 +22,11 @@ class MuxAndroidDeviceTests {
   @Before
   fun setUp() {
     fakeSdk = FakeMuxSdkExt<Any, Any>()
+  }
+
+  @Test
+  fun testConnectionTypeIsCellular() {
+
   }
 }
 

@@ -277,7 +277,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
         return if (nc == null) {
-          MuxLogger.w(TAG, "Could not get network info")
+          MuxLogger.w(TAG, "Could not get network capabilities")
           null
         } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
           CONNECTION_TYPE_WIRED

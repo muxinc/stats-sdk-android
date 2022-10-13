@@ -2,6 +2,8 @@ package com.mux.core_android.testdoubles
 
 import android.app.Activity
 import android.graphics.Point
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.view.View
 import com.mux.stats.sdk.muxstats.*
 import io.mockk.every
@@ -65,5 +67,19 @@ object UiDelegateMocks {
         }
       }
     }
+  }
+
+  /**
+   * Mocks a [ConnectivityManager] with methods for getting the active network type
+   *
+   * @param onNetworkType Pair of network types, one from [NetwokInfo] and one from [NetworkCapabilities]
+   */
+  fun mockConnectivityManager(onNetworkType: Pair<String, Int>) = mockk<ConnectivityManager> {
+    every { activeNetwork } returns mockk {}
+    every { getNetworkCapabilities(any()) } returns mockk {
+      every { hasTransport(any()) } answers { firstArg<Int>() == onNetworkType.second }
+    }
+
+    // TODO: Mock the legacy path
   }
 }
