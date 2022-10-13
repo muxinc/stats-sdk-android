@@ -2,9 +2,6 @@ package com.mux.core_android.testdoubles
 
 import android.content.Context
 import android.view.View
-import com.mux.core_android.testdoubles.UiDelegateMocks.mockDevice
-import com.mux.core_android.testdoubles.UiDelegateMocks.mockNetworkRequest
-import com.mux.core_android.testdoubles.UiDelegateMocks.mockPlayerListener
 import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.model.CustomerData
 import com.mux.stats.sdk.muxstats.*
@@ -15,16 +12,16 @@ import com.mux.stats.sdk.muxstats.*
  * doesn't require any special mocked behavior from them
  */
 open class FakeMuxDataSdk<Player, ExtraPlayer, V : View>(
-  context: Context = UiDelegateMocks.mockActivity(),
+  context: Context = mockActivity(),
   envKey: String = "fake-env-key",
   customerData: CustomerData = CustomerData(),
   customOptions: CustomOptions? = null,
-  playerAdapter: MuxPlayerAdapter<V, Player, ExtraPlayer>,
+  playerAdapter: MuxPlayerAdapter<View, Player, ExtraPlayer> = mockPlayerAdapter(),
   playerListener: IPlayerListener = mockPlayerListener(),
   device: IDevice = FakeMuxDevice(),
   network: INetworkRequest = FakeNetwork(),
   verboseLogging: Boolean = false
-) : MuxDataSdk<Player, ExtraPlayer, V>(
+) : MuxDataSdk<Player, ExtraPlayer, View>(
   context,
   envKey,
   customerData,
@@ -33,5 +30,5 @@ open class FakeMuxDataSdk<Player, ExtraPlayer, V : View>(
   playerListener,
   device,
   network,
-  if(verboseLogging) LogcatLevel.VERBOSE else LogcatLevel.DEBUG
+  if (verboseLogging) LogcatLevel.VERBOSE else LogcatLevel.DEBUG
 )

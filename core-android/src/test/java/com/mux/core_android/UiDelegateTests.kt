@@ -2,12 +2,12 @@ package com.mux.core_android
 
 import android.app.Activity
 import android.view.View
-import com.mux.core_android.testdoubles.UiDelegateMocks.MOCK_PLAYER_HEIGHT
-import com.mux.core_android.testdoubles.UiDelegateMocks.MOCK_PLAYER_WIDTH
-import com.mux.core_android.testdoubles.UiDelegateMocks.MOCK_SCREEN_HEIGHT
-import com.mux.core_android.testdoubles.UiDelegateMocks.MOCK_SCREEN_WIDTH
-import com.mux.core_android.testdoubles.UiDelegateMocks.mockActivity
-import com.mux.core_android.testdoubles.UiDelegateMocks.mockView
+import com.mux.core_android.testdoubles.MOCK_PLAYER_HEIGHT
+import com.mux.core_android.testdoubles.MOCK_PLAYER_WIDTH
+import com.mux.core_android.testdoubles.MOCK_SCREEN_HEIGHT
+import com.mux.core_android.testdoubles.MOCK_SCREEN_WIDTH
+import com.mux.core_android.testdoubles.mockActivity
+import com.mux.core_android.testdoubles.mockView
 import com.mux.stats.sdk.muxstats.muxUiDelegate
 import com.mux.stats.sdk.muxstats.noUiDelegate
 import io.mockk.every

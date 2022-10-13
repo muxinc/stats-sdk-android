@@ -20,7 +20,7 @@ import com.mux.stats.sdk.core.model.CustomerData
 import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.MuxDataSdk.MuxAndroidDevice
+import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
 import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
 import java.util.*
@@ -35,7 +35,7 @@ import kotlin.math.ceil
  * implementing this class to define functionality such as presentation/orientation tracking,
  * accepting CustomerVideoData/CustomerPlayerData/etc, video/program change, and so on
  *
- * This class also has two protected static classes, [MuxAndroidDevice] and [MuxNetwork]. These
+ * This class also has two protected static classes, [AndroidDevice] and [MuxNetwork]. These
  * classes provide all platform and network interaction required for most SDKs. They are both open,
  * and so can be extended if additional functionality is required
  */
@@ -218,7 +218,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * Android implementation of [IDevice]. Interacts with the Android platform for device state info,
    * such as network availability, device metadata, etc
    */
-  protected open class MuxAndroidDevice(
+  open class AndroidDevice(
     ctx: Context,
     private val playerVersion: String,
     private val muxPluginName: String,
@@ -365,7 +365,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       /**
        * Gets the singleton instance
        */
-      val muxStatsInstance = MuxStats.getHostDevice() as? MuxAndroidDevice
+      val muxStatsInstance = MuxStats.getHostDevice() as? AndroidDevice
     }
 
     init {
