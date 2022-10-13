@@ -336,6 +336,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
             ConnectivityManager.TYPE_MOBILE_DUN,
             ConnectivityManager.TYPE_MOBILE_HIPRI,
             ConnectivityManager.TYPE_MOBILE_SUPL,
+            ConnectivityManager.TYPE_WIMAX,
             ConnectivityManager.TYPE_MOBILE_MMS -> {
               CONNECTION_TYPE_CELLULAR
             }
