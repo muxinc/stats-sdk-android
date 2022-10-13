@@ -61,7 +61,7 @@ fun mockView() = mockk<View> {
 fun mockActivity(
   prefs: SharedPreferences = mockSharedPrefs(),
   pm: PackageManager = mockPackageManager(),
-  connMgr: ConnectivityManager = mockConnectivityManager23(NetworkCapabilities.TRANSPORT_CELLULAR)
+  connMgr: ConnectivityManager = mockConnectivityManager16(NetworkCapabilities.TRANSPORT_CELLULAR)
 ) = mockk<Activity> {
   every { windowManager } returns mockk {
     every { defaultDisplay } returns mockk {

@@ -8,12 +8,30 @@ import android.os.Build
 import com.mux.core_android.testdoubles.mockActivity
 import com.mux.core_android.testdoubles.mockConnectivityManager16
 import com.mux.core_android.testdoubles.mockConnectivityManager23
+import com.mux.core_android.testdoubles.mockSharedPrefs
 import com.mux.stats.sdk.muxstats.MuxDataSdk
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
+import com.mux.stats.sdk.muxstats.internal.allEqual
+import org.junit.Assert.*
 import org.junit.Test
 
 class AndroidDeviceTests : AbsRobolectricTest() {
+
+  @Test
+  fun testDeviceId() {
+    val sharedPrefs = mockSharedPrefs()
+    val devicesId = listOf(
+      device(mockActivity(prefs = sharedPrefs)),
+      device(mockActivity(prefs = sharedPrefs)),
+      device(mockActivity(prefs = sharedPrefs)),
+      device(mockActivity(prefs = sharedPrefs)),
+      device(mockActivity(prefs = sharedPrefs)),
+    ).map { it.deviceId }
+
+    assertTrue(
+      "Devices should have a consistent ID",
+      allEqual(devicesId)
+    )
+  }
 
   @Test
   fun testConnectivityCases() {
@@ -58,9 +76,9 @@ class AndroidDeviceTests : AbsRobolectricTest() {
         ConnectivityManager.TYPE_VPN,
       ),
       connMgrReturns23 = listOf(
-        8 /*not in api23, NetworkCapabilities.TRANSPORT_USB,*/,
-        6 /*not in api23, NetworkCapabilities.TRANSPORT_LOWPAN*/,
-        5 /*not in api23, NetworkCapabilities.TRANSPORT_WIFI_AWARE*/,
+        8, /*not in api23, NetworkCapabilities.TRANSPORT_USB,*/
+        6, /*not in api23, NetworkCapabilities.TRANSPORT_LOWPAN*/
+        5, /*not in api23, NetworkCapabilities.TRANSPORT_WIFI_AWARE*/
         NetworkCapabilities.TRANSPORT_VPN,
       ),
       correctNetwork = MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
