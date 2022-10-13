@@ -46,7 +46,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   customerData: CustomerData,
   customOptions: CustomOptions? = null,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>,
+  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>, // TODO: Build this by parts (Defaults for each other than customer data/ctx
   playerListener: IPlayerListener,
   device: IDevice,
   network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */

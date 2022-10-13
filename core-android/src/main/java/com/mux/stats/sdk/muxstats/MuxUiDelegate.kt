@@ -99,7 +99,7 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
  */
 @Suppress("unused")
 @JvmSynthetic
-fun <V : View> V?.muxUiDelegate(activity: Activity)
+internal fun <V : View> V?.muxUiDelegate(activity: Activity)
         : MuxUiDelegate<View> = AndroidUiDelegate(activity, this)
 
 /**
@@ -108,4 +108,4 @@ fun <V : View> V?.muxUiDelegate(activity: Activity)
  */
 @Suppress("unused")
 @JvmSynthetic
-fun noUiDelegate(): MuxUiDelegate<View> = AndroidUiDelegate(null, null)
+internal fun noUiDelegate(): MuxUiDelegate<View> = AndroidUiDelegate(null, null)
