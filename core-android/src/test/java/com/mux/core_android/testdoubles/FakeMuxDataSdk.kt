@@ -22,7 +22,7 @@ open class FakeMuxDataSdk<Player, ExtraPlayer, V : View>(
   playerAdapter: MuxPlayerAdapter<V, Player, ExtraPlayer>,
   playerListener: IPlayerListener = mockPlayerListener(),
   device: IDevice = FakeMuxDevice(),
-  network: INetworkRequest = mockNetworkRequest(),
+  network: INetworkRequest = FakeNetwork(),
   verboseLogging: Boolean = false
 ) : MuxDataSdk<Player, ExtraPlayer, V>(
   context,

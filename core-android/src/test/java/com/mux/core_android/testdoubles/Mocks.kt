@@ -3,9 +3,7 @@ package com.mux.core_android.testdoubles
 import android.app.Activity
 import android.graphics.Point
 import android.view.View
-import com.mux.stats.sdk.muxstats.IDevice
-import com.mux.stats.sdk.muxstats.INetworkRequest
-import com.mux.stats.sdk.muxstats.IPlayerListener
+import com.mux.stats.sdk.muxstats.*
 import io.mockk.every
 import io.mockk.mockk
 
@@ -30,9 +28,18 @@ object UiDelegateMocks {
   fun mockDevice() = mockk<IDevice> {}
 
   /**
-   *
+   * Mocks an [INetworkRequest] with no mocked methods
    */
   fun mockNetworkRequest() = mockk<INetworkRequest> {}
+
+  /**
+   * Mocks a [MuxPlayerAdapter] with (almost) no mocked methods
+   */
+  fun <Player, ExtraPlayer> mockPlayerAdapter(): MuxPlayerAdapter<View, Player, ExtraPlayer> =
+    mockk {
+      every { uiDelegate } returns mockView().muxUiDelegate(mockActivity())
+    }
+
 
   /**
    * Mocks a View of constant size
@@ -40,6 +47,7 @@ object UiDelegateMocks {
   fun mockView() = mockk<View> {
     every { width } returns MOCK_PLAYER_WIDTH
     every { height } returns MOCK_PLAYER_HEIGHT
+    every { id } returns 1
   }
 
   /**

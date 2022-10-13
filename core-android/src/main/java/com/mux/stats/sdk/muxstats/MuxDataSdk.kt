@@ -211,7 +211,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
 
   // ----------------------------------------------------------------------------------------------
   // Android platform interaction below.
-  // These are static classes in order to keep them out of customers' classpath
+  // These are nested classes in order to keep them out of customers' classpath
   // ----------------------------------------------------------------------------------------------
 
   /**
