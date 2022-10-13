@@ -56,8 +56,10 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
   protected val muxStats: MuxStats
+
   @Suppress("MemberVisibilityCanBePrivate")
   protected val eventBus = EventBus()
+
   @Suppress("MemberVisibilityCanBePrivate")
   protected lateinit var playerId: String
 
@@ -65,6 +67,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   protected val uiDelegate by playerAdapter::uiDelegate
   protected val basicPlayer by playerAdapter::basicPlayer
   protected val extraPlayer by playerAdapter::extraPlayer
+
   @Suppress("MemberVisibilityCanBePrivate")
   protected val collector by playerAdapter::collector
 
@@ -240,10 +243,13 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     // TODO: A new API is coming for these, using CustomerViewerData.
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenDeviceName: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenOsFamilyName: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenOsVersion: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     var overwrittenManufacturer: String? = null
 
@@ -286,19 +292,25 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
         val nc: NetworkCapabilities? =
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
-        return if (nc == null) {
-          MuxLogger.w(TAG, "Could not get network capabilities")
-          null
-        } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-          CONNECTION_TYPE_WIRED
-        } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-          CONNECTION_TYPE_WIFI
-        } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-          CONNECTION_TYPE_CELLULAR
-        } else {
-          CONNECTION_TYPE_OTHER
+        return when {
+          nc == null -> {
+            MuxLogger.w(TAG, "Could not get network capabilities")
+            null
+          }
+          nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+            CONNECTION_TYPE_WIRED
+          }
+          nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+            CONNECTION_TYPE_WIFI
+          }
+          nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+            CONNECTION_TYPE_CELLULAR
+          }
+          else -> {
+            CONNECTION_TYPE_OTHER
+          }
         }
-      } ?: return null // contextRef?.let {...
+      } ?: return null
     }
 
     @Suppress("DEPRECATION") // Uses deprecated APIs for backward compat
@@ -312,14 +324,25 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
         return if (activeNetwork == null) {
           MuxLogger.w(TAG, "Couldn't obtain network info")
           null
-        } else if (activeNetwork.type == ConnectivityManager.TYPE_ETHERNET) {
-          CONNECTION_TYPE_WIRED
-        } else if (activeNetwork.type == ConnectivityManager.TYPE_WIFI) {
-          CONNECTION_TYPE_WIFI
-        } else if (activeNetwork.type == ConnectivityManager.TYPE_MOBILE) {
-          CONNECTION_TYPE_CELLULAR
         } else {
-          CONNECTION_TYPE_OTHER
+          when (activeNetwork.type) {
+            ConnectivityManager.TYPE_ETHERNET -> {
+              CONNECTION_TYPE_WIRED
+            }
+            ConnectivityManager.TYPE_WIFI -> {
+              CONNECTION_TYPE_WIFI
+            }
+            ConnectivityManager.TYPE_MOBILE,
+            ConnectivityManager.TYPE_MOBILE_DUN,
+            ConnectivityManager.TYPE_MOBILE_HIPRI,
+            ConnectivityManager.TYPE_MOBILE_SUPL,
+            ConnectivityManager.TYPE_MOBILE_MMS -> {
+              CONNECTION_TYPE_CELLULAR
+            }
+            else -> {
+              CONNECTION_TYPE_OTHER
+            }
+          }
         }
       } ?: return null // contextRef?.let {...
     }
