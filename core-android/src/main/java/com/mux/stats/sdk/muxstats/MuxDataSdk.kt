@@ -232,48 +232,26 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     private var appVersion = ""
 
     // TODO: A new API is coming for these, using CustomerViewerData.
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenDeviceName: String? = null
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenOsFamilyName: String? = null
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenOsVersion: String? = null
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenManufacturer: String? = null
+    @Suppress("MemberVisibilityCanBePrivate") var overwrittenDeviceName: String? = null
+    @Suppress("MemberVisibilityCanBePrivate") var overwrittenOsFamilyName: String? = null
+    @Suppress("MemberVisibilityCanBePrivate") var overwrittenOsVersion: String? = null
+    @Suppress("MemberVisibilityCanBePrivate") var overwrittenManufacturer: String? = null
 
     override fun getHardwareArchitecture(): String? = Build.HARDWARE
-
     override fun getOSFamily() = "Android"
-
     override fun getMuxOSFamily(): String? = overwrittenOsFamilyName
-
     override fun getOSVersion() = Build.VERSION.RELEASE + " (" + Build.VERSION.SDK_INT + ")"
-
     override fun getMuxOSVersion(): String? = overwrittenOsVersion
-
     override fun getManufacturer(): String? = Build.MANUFACTURER
-
     override fun getMuxManufacturer(): String? = overwrittenManufacturer
-
     override fun getModelName(): String? = Build.MODEL
-
     override fun getMuxModelName(): String? = overwrittenDeviceName
-
     override fun getPlayerVersion() = playerVersion
-
     override fun getDeviceId() = deviceId
-
     override fun getAppName() = appName
-
     override fun getAppVersion() = appVersion
-
     override fun getPluginName() = muxPluginName
-
     override fun getPluginVersion() = muxPluginVersion
-
     override fun getPlayerSoftware() = playerSoftware
 
     /**
@@ -287,7 +265,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       } else {
         // on API 21 and 22 deprecated APIs will be called, but there's no good synchronous way to get
         //  active network info until API 23. Making the async ones synchronous w/coroutines would
-        //  introduce a hang risk (from if the callback didn't fire)
+        //  be cool but might introduce a hang risk if the callback didn't fire
         connectionTypeApi16()
       }
 
