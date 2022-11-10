@@ -80,7 +80,7 @@ class MuxNetwork(
   }
 
   /**
-   * Shuts down this HttpClient immediately, canceling any running requests.
+   * Shuts down this [MuxNetwork] immediately, canceling any running requests.
    * This is not needed for normal operation, but is available if required
    */
   fun shutdown() {
