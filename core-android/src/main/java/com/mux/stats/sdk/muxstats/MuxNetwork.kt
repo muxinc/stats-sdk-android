@@ -34,6 +34,8 @@ class MuxNetwork(
   private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
+  private val httpClient = HttpClient(device)
+
   constructor(device: IDevice) : this(device, CoroutineScope(Dispatchers.Default))
 
   override fun get(url: URL?) {
@@ -66,7 +68,7 @@ class MuxNetwork(
     val device: IDevice,
     val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
   ) {
-
+    
     /**
      * Sends the given HTTP requests, suspending for I/O and/or exponential backoff
      * @param request the [Request] to send
@@ -77,18 +79,16 @@ class MuxNetwork(
 
       var retries = 0
       var exception: Exception? = null
-      var online: Boolean = device.isOnline()
       do {
+        maybeBackoff(request, retries)
+
         try {
-          maybeBackoff(request, retries)
           if (device.isOnline()) {
             val response = doOneCall(request)
             MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
-
             return CallResult(response = response)
           } else {
             MuxLogger.d(LOG_TAG, "Device offline. Backing off")
-            online = false
           }
         } catch (e: Exception) {
           MuxLogger.exception(e, LOG_TAG, "doCall: I/O error for $request")
@@ -96,7 +96,7 @@ class MuxNetwork(
         }
       } while (++retries <= MAX_REQUEST_RETRIES)
 
-      return CallResult(exception = exception, offlineForCall = !online)
+      return CallResult(exception = exception)
     }
 
     private suspend fun maybeBackoff(request: Request, retries: Int) {
@@ -161,10 +161,11 @@ class MuxNetwork(
     data class CallResult(
       val response: Response? = null,
       val exception: Exception? = null,
-      val offlineForCall: Boolean = false,
+      val offlineForCall: Boolean = response == null && exception == null,
       val retries: Int = 0
     ) {
-      val successful get() = exception == null || (response?.successful ?: false)
+      val successful
+        get() = exception == null && (response?.successful ?: false) && (!offlineForCall)
     }
   }
 
