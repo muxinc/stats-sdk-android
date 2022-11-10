@@ -21,6 +21,7 @@ import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
+import com.mux.stats.sdk.muxstats.internal.MuxNetwork
 import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
 import java.util.*
@@ -46,10 +47,10 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   customerData: CustomerData,
   customOptions: CustomOptions? = null,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>, // TODO: Build this by parts (Defaults for each other than customer data/ctx
+  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>,
   playerListener: IPlayerListener,
   device: IDevice,
-  network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */
+  network: INetworkRequest = MuxNetwork(),
   logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
 
