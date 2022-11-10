@@ -1,8 +1,11 @@
 package com.mux.stats.sdk.muxstats.internal
 
-import android.content.Context
+import android.net.Uri
 import com.mux.stats.sdk.core.util.MuxLogger
+import com.mux.stats.sdk.muxstats.IDevice
 import com.mux.stats.sdk.muxstats.INetworkRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -14,7 +17,22 @@ import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-class MuxNetwork : INetworkRequest {
+private const val LOG_TAG = "MuxNetwork"
+private val DEFAULT_CHARSET = Charsets.UTF_8
+
+/**
+ * Android implementation of [INetworkRequest] backed by a coroutine dispatcher
+ *
+ * @param device an [IDevice] for the host device
+ * @param coroutineScope Optional [CoroutineScope] in which requests can run.
+ * The default is [Dispatchers.Default]
+ */
+class MuxNetwork(
+  private val device: IDevice,
+  private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+) : INetworkRequest {
+
+  constructor(device: IDevice) : this(device, CoroutineScope(Dispatchers.Default))
 
   override fun get(url: URL?) {
     TODO("Not yet implemented")
@@ -34,23 +52,69 @@ class MuxNetwork : INetworkRequest {
     TODO("Not yet implemented")
   }
 
+  // -- HTTP Client below here. It's a nested class to keep it out of java callers' namespace
+
   /**
    * Small HTTP client with SSL, gzip, per-request exponential backoff, and support for GET and POST
    */
-  internal class HttpClient(context: Context) {
-
-    private val appContext = context.applicationContext
-
+  internal class HttpClient(
+    val device: IDevice
+  ) {
   }
 
-  abstract class Request(
+  internal class GET(
+    url: URL,
+    headers: Map<String, String> = mapOf(),
+  ) : Request("GET", url, headers, null)
+
+  internal class POST(
+    url: URL,
+    headers: Map<String, String> = mapOf(),
+    body: ByteArray?
+  ) : Request(
+    method = "POST",
+    url = url,
+    headers = headers,
+    body = body,
+  ) {
+    constructor(
+      url: URL,
+      headers: Map<String, String> = mapOf()
+    ) : this(url = url, headers = headers, body = null)
+
+    constructor(
+      url: URL,
+      headers: Map<String, String> = mapOf(),
+      body: String
+    ) : this(url = url, headers = headers, body = body.asRequestBody())
+
+    constructor(
+      url: URL,
+      headers: Map<String, String> = mapOf(),
+      params: Map<String, String> = mapOf()
+    ) : this(url = url, headers = headers, body = params.asPostBody())
+
+    constructor(
+      url: URL,
+      headers: Map<String, String> = mapOf(),
+      body: JSONObject
+    ) : this(url = url, headers = headers, body = body.asRequestBody())
+  }
+
+  /**
+   * Represents an HTTP request. Use subclasses like [GET] or [POST]
+   */
+  internal abstract class Request(
     val method: String,
     val url: URL,
     val headers: Map<String, String>,
     val body: ByteArray?,
   )
 
-  class Response(
+  /**
+   * A response from an HTTP request
+   */
+  internal class Response(
     val originalRequest: Request,
     val status: StatusLine,
     val headers: Map<String, String>,
@@ -92,14 +156,27 @@ class MuxNetwork : INetworkRequest {
       }
 
       return String(expandedBody, charset)
-    } //private fun decodeBody
+    } // private fun decodeBody
   } // class Response
 
-  private companion object {
-    const val LOG_TAG = "MuxNetwork"
-    val DEFAULT_CHARSET = Charsets.UTF_8
-  }
 } // class MuxNetwork
+
+/**
+ * Enqueues and sends requests
+ */
+private class RequestWorker(coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)) {
+
+}
+
+/**
+ * Convert from android [Uri] to [URL]
+ */
+internal fun Uri.toURL() = URL(toString())
+
+/**
+ * Convert from [URL] to android [Uri]
+ */
+internal fun URL.toUri() = Uri.parse(toString())
 
 /**
  * Encodes a String as a request body with UTF-8 encoding
