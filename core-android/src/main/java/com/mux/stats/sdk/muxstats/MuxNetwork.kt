@@ -4,6 +4,7 @@ import android.net.Uri
 import com.mux.stats.sdk.core.util.MuxLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -17,6 +18,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlin.math.pow
 
 private const val LOG_TAG = "MuxNetwork"
 
@@ -64,15 +66,56 @@ class MuxNetwork(
     val device: IDevice,
     val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
   ) {
-    @Throws(IOException::class)
+
+    /**
+     * Sends the given HTTP requests, suspending for I/O and/or exponential backoff
+     * @param request the [Request] to send
+     * @return the result of the HTTP call. If there were retries,
+     */
+    suspend fun doCall(request: Request): CallResult {
+      MuxLogger.d(LOG_TAG, "doCall: Enqueue $request")
+
+      var retries = 0
+      var exception: Exception? = null
+      var online: Boolean = device.isOnline()
+      do {
+        try {
+          maybeBackoff(request, retries)
+          if (device.isOnline()) {
+            val response = doOneCall(request)
+            MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
+
+            return CallResult(response = response)
+          } else {
+            MuxLogger.d(LOG_TAG, "Device offline. Backing off")
+            online = false
+          }
+        } catch (e: Exception) {
+          MuxLogger.exception(e, LOG_TAG, "doCall: I/O error for $request")
+          exception = e
+        }
+      } while (++retries <= MAX_REQUEST_RETRIES)
+
+      return CallResult(exception = exception, offlineForCall = !online)
+    }
+
+    private suspend fun maybeBackoff(request: Request, retries: Int) {
+      if (retries > 0) {
+        // Random backoff within an increasing time period
+        val factor = (2.0.pow((retries - 1).toDouble())) * Math.random()
+        val backoffDelay = ((1 + factor) * RETRY_DELAY_BASE_MS).toLong()
+
+        MuxLogger.d(LOG_TAG, "Retrying in ${backoffDelay}ms: $request")
+        delay(backoffDelay)
+      }
+    }
+
+    @Throws(Exception::class)
     private suspend fun doOneCall(request: Request): Response {
-      // TODO: Do the call, suspending for backoff, suspending also to do IO on the IO Dispatcher
-      //  This method rethrows exceptions, and doesn't handle retries
-      //  This method *does* encode and stuff
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
 
       val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
-      val data = if (request.body != null && gzip) {
+      val bodyData = if (request.body != null && gzip) {
         @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
         request.body.gzip()
       } else {
@@ -93,7 +136,7 @@ class MuxNetwork(
           }
         }
         // Add Body
-        request.body?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
+        bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
 
         // Connect!
         try {
@@ -118,9 +161,10 @@ class MuxNetwork(
     data class CallResult(
       val response: Response? = null,
       val exception: Exception? = null,
+      val offlineForCall: Boolean = false,
       val retries: Int = 0
     ) {
-      val successful = exception == null || (response?.successful ?: false)
+      val successful get() = exception == null || (response?.successful ?: false)
     }
   }
 
@@ -252,9 +296,13 @@ class MuxNetwork(
       TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS)
     private val READ_TIMEOUT_MS =
       TimeUnit.MILLISECONDS.convert(20, TimeUnit.SECONDS)
-    private val MAX_REQUEST_RETRIES = 4
+    private const val MAX_REQUEST_RETRIES = 4
+    private val RETRY_DELAY_BASE_MS =
+      TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS)
   }
 } // class MuxNetwork
+
+internal fun IDevice.isOnline() = networkConnectionType != null
 
 /**
  * Convert from android [Uri] to [URL]
