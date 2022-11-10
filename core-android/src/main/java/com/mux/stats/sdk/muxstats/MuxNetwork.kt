@@ -71,7 +71,7 @@ class MuxNetwork(
       //  This method *does* encode and stuff
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
 
-      val gzip = request.headers["Content-Encoding"] == "gzip"
+      val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
       val data = if (request.body != null && gzip) {
         @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
         request.body.gzip()
@@ -80,21 +80,35 @@ class MuxNetwork(
       }
 
       // Run the actual request on the IO dispatcher
+      @Suppress("BlockingMethodInNonBlockingContext") // on the IO dispatcher here
       return withContext(Dispatchers.IO) {
-        @Suppress("BlockingMethodInNonBlockingContext") // On the IO dispatcher as desired
         val hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
           // Basic options/config
           readTimeout = READ_TIMEOUT_MS.toInt()
           connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
           requestMethod = request.method
+          //Headers
+          request.headers.onEach { header ->
+            header.value.onEach { setRequestProperty(header.key, it) }
+          }
         }
+        // Add Body
+        request.body?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
 
-        Response(
-          originalRequest = request,
-          status = Response.StatusLine(0, ""), //TODO
-          headers = mapOf(), //TODO
-          body = null, // TODO
-        )
+        // Connect!
+        try {
+          hurlConn.connect()
+          val responseBytes = hurlConn.inputStream.use { it.readBytes() }
+
+          Response(
+            originalRequest = request,
+            status = Response.StatusLine(hurlConn.responseCode, hurlConn.responseMessage),
+            headers = hurlConn.headerFields,
+            body = responseBytes,
+          )
+        } finally {
+          hurlConn.disconnect()
+        } // try
       } // withContext(Dispatchers.IO)
     }
 
@@ -112,12 +126,12 @@ class MuxNetwork(
 
   internal class GET(
     url: URL,
-    headers: Map<String, String> = mapOf(),
+    headers: Map<String, List<String>> = mapOf(),
   ) : Request("GET", url, headers, null)
 
   internal class POST(
     url: URL,
-    headers: Map<String, String> = mapOf(),
+    headers: Map<String, List<String>> = mapOf(),
     contentType: String? = null,
     body: ByteArray? = null
   ) : Request(
@@ -128,19 +142,19 @@ class MuxNetwork(
   ) {
     constructor(
       url: URL,
-      headers: Map<String, String> = mapOf()
+      headers: Map<String, List<String>> = mapOf()
     ) : this(url = url, headers = headers, body = null)
 
     constructor(
       url: URL,
-      headers: Map<String, String> = mapOf(),
-      contentType: String?,
+      headers: Map<String, List<String>> = mapOf(),
+      contentType: String? = "application/json", //default is based on existing usage
       body: String,
     ) : this(url = url, headers = headers, body = body.asRequestBody(), contentType = contentType)
 
     constructor(
       url: URL,
-      headers: Map<String, String> = mapOf(),
+      headers: Map<String, List<String>> = mapOf(),
       params: Map<String, String> = mapOf()
     ) : this(
       url = url,
@@ -151,7 +165,7 @@ class MuxNetwork(
 
     constructor(
       url: URL,
-      headers: Map<String, String> = mapOf(),
+      headers: Map<String, List<String>> = mapOf(),
       body: JSONObject
     ) : this(
       url = url,
@@ -167,7 +181,7 @@ class MuxNetwork(
   internal abstract class Request(
     val method: String,
     val url: URL,
-    val headers: Map<String, String>,
+    val headers: Map<String, List<String>>,
     val body: ByteArray?,
   ) {
     override fun hashCode(): Int = toString().hashCode()
@@ -183,7 +197,7 @@ class MuxNetwork(
   internal class Response(
     val originalRequest: Request,
     val status: StatusLine,
-    val headers: Map<String, String>,
+    val headers: Map<String, List<String>>,
     val body: ByteArray?,
   ) {
     data class StatusLine(val code: Int, val message: String)
@@ -197,7 +211,7 @@ class MuxNetwork(
      * Parses the response body as a String, returning null if there was no response body
      */
     fun bodyAsString(): String? {
-      return body?.let { return decodeBody(headers["Content-Encoding"], it) }
+      return body?.let { return decodeBody(headers["Content-Encoding"]?.last(), it) }
     }
 
     /**
@@ -241,13 +255,6 @@ class MuxNetwork(
     private val MAX_REQUEST_RETRIES = 4
   }
 } // class MuxNetwork
-
-/**
- * Enqueues and sends requests
- */
-private class RequestWorker(coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)) {
-
-}
 
 /**
  * Convert from android [Uri] to [URL]
