@@ -1,11 +1,9 @@
 package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
+import android.os.Looper
 import com.mux.stats.sdk.core.util.MuxLogger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -16,6 +14,7 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.math.pow
@@ -34,16 +33,24 @@ class MuxNetwork(
   private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
-  private val httpClient = HttpClient(device)
+  private val httpClient = HttpClient(device, coroutineScope)
 
   constructor(device: IDevice) : this(device, CoroutineScope(Dispatchers.Default))
 
   override fun get(url: URL?) {
-    TODO("Not yet implemented")
+    if (url != null) {
+      coroutineScope.launch { httpClient.doCall(GET(url = url)) }
+    }
   }
 
   override fun post(url: URL?, body: JSONObject?, requestHeaders: Hashtable<String, String>?) {
-    TODO("Not yet implemented")
+    if (url != null) {
+      // By the standard, you can have multiple headers with the same key
+      val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
+      coroutineScope.launch {
+        httpClient.doCall(POST(url = url, json = body, headers = headers))
+      }
+    }
   }
 
   override fun postWithCompletion(
@@ -53,7 +60,39 @@ class MuxNetwork(
     requestHeaders: Hashtable<String, String>?,
     completion: INetworkRequest.IMuxNetworkRequestsCompletion?
   ) {
-    TODO("Not yet implemented")
+    if (envKey != null) {
+      val url = Uri.Builder()
+        .scheme("https")
+        .authority(authorityForEnvKey(envKey, domain))
+        .path("android")
+        .build().toURL()
+      // By the standard, you can have multiple headers with the same key
+      val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
+
+      coroutineScope.launch {
+        val result = httpClient.doCall(POST(url = url, headers = headers, bodyStr = body))
+        // Dispatch the result back on the main thread
+        coroutineScope.launch(Dispatchers.Main) {
+          completion?.onComplete(result.successful)
+        }
+      }
+    }
+  }
+
+  /**
+   * Shuts down this HttpClient immediately, canceling any running requests.
+   * This is not needed for normal operation, but is available if required
+   */
+  fun shutdown() {
+    coroutineScope.cancel("shutdown requested")
+  }
+
+  private fun authorityForEnvKey(envKey: String, domain: String?): String {
+    return if (Pattern.matches("^[a-z0-9]+$", envKey)) {
+      envKey + domain;
+    } else {
+      "img$domain"
+    }
   }
 
   // -- HTTP Client below here. It's a nested class to keep it out of java callers' namespace
@@ -65,10 +104,10 @@ class MuxNetwork(
    * @param coroutineScope the coroutine scope for logic (IO is done on the IO dispatcher)
    */
   internal class HttpClient(
-    val device: IDevice,
-    val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val device: IDevice,
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
   ) {
-    
+
     /**
      * Sends the given HTTP requests, suspending for I/O and/or exponential backoff
      * @param request the [Request] to send
@@ -76,9 +115,10 @@ class MuxNetwork(
      */
     suspend fun doCall(request: Request): CallResult {
       MuxLogger.d(LOG_TAG, "doCall: Enqueue $request")
+      throwOnMain()
 
       var retries = 0
-      var exception: Exception? = null
+      var badResult: CallResult
       do {
         maybeBackoff(request, retries)
 
@@ -86,17 +126,19 @@ class MuxNetwork(
           if (device.isOnline()) {
             val response = doOneCall(request)
             MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
+            // Yay we made it!
             return CallResult(response = response)
           } else {
             MuxLogger.d(LOG_TAG, "Device offline. Backing off")
+            badResult = CallResult(offlineForCall = true, retries = retries)
           }
         } catch (e: Exception) {
           MuxLogger.exception(e, LOG_TAG, "doCall: I/O error for $request")
-          exception = e
+          badResult = CallResult(exception = e, retries = retries)
         }
       } while (++retries <= MAX_REQUEST_RETRIES)
 
-      return CallResult(exception = exception)
+      return badResult
     }
 
     private suspend fun maybeBackoff(request: Request, retries: Int) {
@@ -134,6 +176,7 @@ class MuxNetwork(
           request.headers.onEach { header ->
             header.value.onEach { setRequestProperty(header.key, it) }
           }
+          setRequestProperty("Content-Type", request.contentType)
         }
         // Add Body
         bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
@@ -155,13 +198,19 @@ class MuxNetwork(
       } // withContext(Dispatchers.IO)
     }
 
+    private fun throwOnMain() {
+      if (Looper.myLooper() == Looper.getMainLooper()) {
+        throw IllegalStateException("HTTP requests cannot be enqueued on the main thread")
+      }
+    }
+
     /**
      * Represents the result of an HTTP call. This
      */
     data class CallResult(
       val response: Response? = null,
       val exception: Exception? = null,
-      val offlineForCall: Boolean = response == null && exception == null,
+      val offlineForCall: Boolean = false,
       val retries: Int = 0
     ) {
       val successful
@@ -172,7 +221,7 @@ class MuxNetwork(
   internal class GET(
     url: URL,
     headers: Map<String, List<String>> = mapOf(),
-  ) : Request("GET", url, headers, null)
+  ) : Request("GET", url, headers, null, null)
 
   internal class POST(
     url: URL,
@@ -181,41 +230,43 @@ class MuxNetwork(
     body: ByteArray? = null
   ) : Request(
     method = "POST",
+    contentType = contentType,
     url = url,
     headers = headers,
     body = body,
   ) {
-    constructor(
-      url: URL,
-      headers: Map<String, List<String>> = mapOf()
-    ) : this(url = url, headers = headers, body = null)
 
     constructor(
       url: URL,
       headers: Map<String, List<String>> = mapOf(),
       contentType: String? = "application/json", //default is based on existing usage
-      body: String,
-    ) : this(url = url, headers = headers, body = body.asRequestBody(), contentType = contentType)
+      bodyStr: String?,
+    ) : this(
+      url = url,
+      headers = headers,
+      body = bodyStr?.asRequestBody(),
+      contentType = contentType
+    )
 
     constructor(
       url: URL,
       headers: Map<String, List<String>> = mapOf(),
-      params: Map<String, String> = mapOf()
+      params: Map<String, String>? = mapOf()
     ) : this(
       url = url,
       headers = headers,
-      body = params.asPostBody(),
+      body = params?.asPostBody(),
       contentType = "application/x-www-form-urlencoded"
     )
 
     constructor(
       url: URL,
       headers: Map<String, List<String>> = mapOf(),
-      body: JSONObject
+      json: JSONObject?
     ) : this(
       url = url,
       headers = headers,
-      body = body.asRequestBody(),
+      body = json?.asRequestBody(),
       contentType = "application/json"
     )
   }
@@ -227,6 +278,7 @@ class MuxNetwork(
     val method: String,
     val url: URL,
     val headers: Map<String, List<String>>,
+    val contentType: String? = null,
     val body: ByteArray?,
   ) {
     override fun hashCode(): Int = toString().hashCode()
@@ -260,7 +312,7 @@ class MuxNetwork(
     }
 
     /**
-     * Parse the response body as a [JSONObject]
+     * Parse the response body as a [JSONObject]. Doesn't care if the response has a json MIME type
      */
     @Throws(JSONException::class)
     fun bodyAsJSONObject(): JSONObject? {
