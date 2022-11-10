@@ -47,7 +47,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   envKey: String,
   customerData: CustomerData,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>,
+  val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>,
   device: IDevice,
   network: INetworkRequest = MuxNetwork(),
   logLevel: LogcatLevel = LogcatLevel.NONE,
