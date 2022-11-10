@@ -12,7 +12,6 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import com.mux.stats.sdk.core.Core
-import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
@@ -44,21 +43,19 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   context: Context,
   envKey: String,
   customerData: CustomerData,
-  customOptions: CustomOptions? = null,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>, // TODO: Build this by parts (Defaults for each other than customer data/ctx
-  playerListener: IPlayerListener,
+  val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>,
   device: IDevice,
-  network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */
+  network: INetworkRequest = MuxNetwork(device),
   logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
 
   // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val muxStats: MuxStats
+  protected val muxStats: MuxStats by playerAdapter::muxStats
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val eventBus = EventBus()
+  protected val eventBus: EventBus by playerAdapter::eventBus
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected lateinit var playerId: String
@@ -187,8 +184,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   init {
     customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
     customerData.customerPlayerData.environmentKey = envKey
-
-    // Just don't hold the context ref
+    muxStats.customerData = customerData
+    eventBus.addListener(muxStats)
     displayDensity = context.resources.displayMetrics.density
 
     // These must be statically set before creating our MuxStats
@@ -204,8 +201,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
         playerId = context.javaClass.canonicalName!! + "audio"
       }
     }
-    muxStats = MuxStats(playerListener, playerId, customerData, customOptions ?: CustomOptions())
-      .also { eventBus.addListener(it) }
     Core.allowLogcatOutputForPlayer(
       playerId,
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
@@ -399,7 +394,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       /**
        * Gets the singleton instance
        */
-      val muxStatsInstance = MuxStats.getHostDevice() as? AndroidDevice
+      val muxStatsInstance get() = MuxStats.getHostDevice() as? AndroidDevice
     }
 
     init {
