@@ -4,19 +4,21 @@ import android.net.Uri
 import com.mux.stats.sdk.core.util.MuxLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 private const val LOG_TAG = "MuxNetwork"
-private val DEFAULT_CHARSET = Charsets.UTF_8
 
 /**
  * Android implementation of [INetworkRequest] backed by a coroutine dispatcher
@@ -53,11 +55,59 @@ class MuxNetwork(
   // -- HTTP Client below here. It's a nested class to keep it out of java callers' namespace
 
   /**
-   * Small HTTP client with SSL, gzip, per-request exponential backoff, and GET and POST
+   * Small HTTP client with gzip, per-request exponential backoff, and GET and POST
+   *
+   * @param device provides access to the device
+   * @param coroutineScope the coroutine scope for logic (IO is done on the IO dispatcher)
    */
   internal class HttpClient(
-    val device: IDevice
+    val device: IDevice,
+    val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
   ) {
+    @Throws(IOException::class)
+    private suspend fun doOneCall(request: Request): Response {
+      // TODO: Do the call, suspending for backoff, suspending also to do IO on the IO Dispatcher
+      //  This method rethrows exceptions, and doesn't handle retries
+      //  This method *does* encode and stuff
+      MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
+
+      val gzip = request.headers["Content-Encoding"] == "gzip"
+      val data = if (request.body != null && gzip) {
+        @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
+        request.body.gzip()
+      } else {
+        request.body
+      }
+
+      // Run the actual request on the IO dispatcher
+      return withContext(Dispatchers.IO) {
+        @Suppress("BlockingMethodInNonBlockingContext") // On the IO dispatcher as desired
+        val hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
+          // Basic options/config
+          readTimeout = READ_TIMEOUT_MS.toInt()
+          connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
+          requestMethod = request.method
+        }
+
+        Response(
+          originalRequest = request,
+          status = Response.StatusLine(0, ""), //TODO
+          headers = mapOf(), //TODO
+          body = null, // TODO
+        )
+      } // withContext(Dispatchers.IO)
+    }
+
+    /**
+     * Represents the result of an HTTP call. This
+     */
+    data class CallResult(
+      val response: Response? = null,
+      val exception: Exception? = null,
+      val retries: Int = 0
+    ) {
+      val successful = exception == null || (response?.successful ?: false)
+    }
   }
 
   internal class GET(
@@ -68,7 +118,8 @@ class MuxNetwork(
   internal class POST(
     url: URL,
     headers: Map<String, String> = mapOf(),
-    body: ByteArray?
+    contentType: String? = null,
+    body: ByteArray? = null
   ) : Request(
     method = "POST",
     url = url,
@@ -83,20 +134,31 @@ class MuxNetwork(
     constructor(
       url: URL,
       headers: Map<String, String> = mapOf(),
-      body: String
-    ) : this(url = url, headers = headers, body = body.asRequestBody())
+      contentType: String?,
+      body: String,
+    ) : this(url = url, headers = headers, body = body.asRequestBody(), contentType = contentType)
 
     constructor(
       url: URL,
       headers: Map<String, String> = mapOf(),
       params: Map<String, String> = mapOf()
-    ) : this(url = url, headers = headers, body = params.asPostBody())
+    ) : this(
+      url = url,
+      headers = headers,
+      body = params.asPostBody(),
+      contentType = "application/x-www-form-urlencoded"
+    )
 
     constructor(
       url: URL,
       headers: Map<String, String> = mapOf(),
       body: JSONObject
-    ) : this(url = url, headers = headers, body = body.asRequestBody())
+    ) : this(
+      url = url,
+      headers = headers,
+      body = body.asRequestBody(),
+      contentType = "application/json"
+    )
   }
 
   /**
@@ -107,7 +169,13 @@ class MuxNetwork(
     val url: URL,
     val headers: Map<String, String>,
     val body: ByteArray?,
-  )
+  ) {
+    override fun hashCode(): Int = toString().hashCode()
+    override fun equals(other: Any?) = other is Request && hashCode() == other.hashCode()
+    override fun toString(): String {
+      return "Request(method='$method', url=$url, headers=$headers, body=${body?.contentToString()})"
+    }
+  }
 
   /**
    * A response from an HTTP request
@@ -155,8 +223,23 @@ class MuxNetwork(
 
       return String(expandedBody, charset)
     } // private fun decodeBody
+
+    override fun hashCode(): Int = toString().hashCode()
+    override fun equals(other: Any?) = other is Response && hashCode() == other.hashCode()
+    override fun toString(): String {
+      return "Response(originalRequest=$originalRequest, status=$status, headers=$headers, " +
+              "body=${body?.contentToString()}, successful=$successful)"
+    }
   } // class Response
 
+  companion object {
+    private val DEFAULT_CHARSET = Charsets.UTF_8
+    private val CONNECTION_TIMEOUT_MS =
+      TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS)
+    private val READ_TIMEOUT_MS =
+      TimeUnit.MILLISECONDS.convert(20, TimeUnit.SECONDS)
+    private val MAX_REQUEST_RETRIES = 4
+  }
 } // class MuxNetwork
 
 /**
