@@ -157,8 +157,9 @@ class MuxNetwork(
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
 
       val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
+
+      @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
       val bodyData = if (request.body != null && gzip) {
-        @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
         request.body.gzip()
       } else {
         request.body
