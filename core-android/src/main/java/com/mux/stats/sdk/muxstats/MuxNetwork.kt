@@ -1,9 +1,7 @@
-package com.mux.stats.sdk.muxstats.internal
+package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.IDevice
-import com.mux.stats.sdk.muxstats.INetworkRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONException
@@ -55,7 +53,7 @@ class MuxNetwork(
   // -- HTTP Client below here. It's a nested class to keep it out of java callers' namespace
 
   /**
-   * Small HTTP client with SSL, gzip, per-request exponential backoff, and support for GET and POST
+   * Small HTTP client with SSL, gzip, per-request exponential backoff, and GET and POST
    */
   internal class HttpClient(
     val device: IDevice
