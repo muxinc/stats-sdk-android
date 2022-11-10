@@ -127,7 +127,7 @@ class MuxNetwork(
             val response = doOneCall(request)
             MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
             // Yay we made it!
-            return CallResult(response = response)
+            return CallResult(response = response, retries = retries)
           } else {
             MuxLogger.d(LOG_TAG, "Device offline. Backing off")
             badResult = CallResult(offlineForCall = true, retries = retries)
