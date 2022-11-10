@@ -1,5 +1,6 @@
 package com.mux.stats.sdk.muxstats
 
+import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.events.InternalErrorEvent
@@ -24,9 +25,8 @@ import kotlin.properties.Delegates
  * [MuxPlayerAdapter.PlayerBinding] when the player state changes
  */
 open class MuxStateCollector(
-  // TODO em: if MuxStateCollector is in MuxStats, don't need this janky block
-  val muxStats: () -> MuxStats,
-  private val dispatcher: IEventDispatcher,
+  val muxStats: MuxStats,
+  val dispatcher: EventBus,
   private val trackFirstFrameRendered: Boolean = true,
 ) {
 
@@ -354,7 +354,7 @@ open class MuxStateCollector(
   @Suppress("unused")
   fun programChange(customerVideoData: CustomerVideoData) {
     reset()
-    muxStats().programChange(customerVideoData)
+    muxStats.programChange(customerVideoData)
   }
 
   /**
@@ -366,7 +366,7 @@ open class MuxStateCollector(
   fun videoChange(customerVideoData: CustomerVideoData) {
     _playerState = MuxPlayerState.INIT
     reset()
-    muxStats().videoChange(customerVideoData)
+    muxStats.videoChange(customerVideoData)
   }
 
   @Suppress("unused")
@@ -405,7 +405,7 @@ open class MuxStateCollector(
     // dispatch new session data on change only
     if (sessionTags != tags) {
       sessionTags = tags
-      muxStats().setSessionData(tags)
+      muxStats.setSessionData(tags)
     }
   }
 

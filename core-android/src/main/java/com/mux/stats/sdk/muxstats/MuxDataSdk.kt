@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.metrics.Event
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
@@ -45,10 +46,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   context: Context,
   envKey: String,
   customerData: CustomerData,
-  customOptions: CustomOptions? = null,
   @Suppress("MemberVisibilityCanBePrivate")
   val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>,
-  playerListener: IPlayerListener,
   device: IDevice,
   network: INetworkRequest = MuxNetwork(),
   logLevel: LogcatLevel = LogcatLevel.NONE,
@@ -56,10 +55,10 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
 
   // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val muxStats: MuxStats
+  protected val muxStats: MuxStats by playerAdapter::muxStats
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val eventBus = EventBus()
+  protected val eventBus: EventBus by playerAdapter::eventBus
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected lateinit var playerId: String
@@ -188,8 +187,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   init {
     customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
     customerData.customerPlayerData.environmentKey = envKey
-
-    // Just don't hold the context ref
+    muxStats.customerData = customerData
+    eventBus.addListener(muxStats)
     displayDensity = context.resources.displayMetrics.density
 
     // These must be statically set before creating our MuxStats
@@ -205,8 +204,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
         playerId = context.javaClass.canonicalName!! + "audio"
       }
     }
-    muxStats = MuxStats(playerListener, playerId, customerData, customOptions ?: CustomOptions())
-      .also { eventBus.addListener(it) }
     Core.allowLogcatOutputForPlayer(
       playerId,
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),

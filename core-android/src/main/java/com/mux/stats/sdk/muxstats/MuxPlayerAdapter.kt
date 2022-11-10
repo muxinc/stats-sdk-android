@@ -55,6 +55,16 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer, ExtraPlayer>(
   @Suppress("unused")
   var playerView by uiDelegate::view
 
+  /**
+   * The [MuxStats] used to report data and manage beacon dispatching
+   */
+  val muxStats by collector::muxStats
+
+  /**
+   * The [EventBus] the [MuxStateCollector] will use when dispatching events
+   */
+  val eventBus by collector::dispatcher
+
   init {
     basicMetrics.bindPlayer(player, collector)
     extraMetrics?.bindings?.onEach { it.bindPlayer(extraMetrics.player!!, collector) }
