@@ -171,7 +171,7 @@ fun mockHttpUrlConnection(
   input: InputStream = ByteArrayInputStream("hello world".encodeToByteArray()),
   output: OutputStream = mockOutputStream()
 ): HttpURLConnection =
-  mockk(relaxed = true) {
+  mockk {
     every { responseCode } returns code
     every { responseMessage } returns message
     every { headerFields } returns responseHeaders
