@@ -291,7 +291,8 @@ class MuxNetwork(
       other?.let { it::class == this::class && hashCode() == it.hashCode() } ?: false
 
     override fun toString(): String {
-      return "Request(method='$method', url=$url, headers=$headers, body=${body?.contentToString()})"
+      return "Request(method='$method', url=$url, headers=$headers, contentType=$contentType, " +
+              "body=${body?.contentToString()})"
     }
   }
 
