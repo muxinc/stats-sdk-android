@@ -305,7 +305,7 @@ class MuxNetwork(
     val headers: Map<String, List<String>>,
     val body: ByteArray?,
   ) {
-    data class StatusLine(val code: Int, val message: String)
+    data class StatusLine(val code: Int, val message: String?)
 
     /**
      * True if the status code of this response is 20x (OK, ACCEPTED, etc)
