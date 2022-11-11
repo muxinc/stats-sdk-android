@@ -394,7 +394,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       /**
        * Gets the singleton instance
        */
-      val muxStatsInstance = MuxStats.getHostDevice() as? AndroidDevice
+      val muxStatsInstance get() = MuxStats.getHostDevice() as? AndroidDevice
     }
 
     init {
