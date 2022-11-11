@@ -3,6 +3,7 @@ package com.mux.stats.sdk.muxstats
 import android.net.Uri
 import android.os.Looper
 import com.mux.stats.sdk.core.util.MuxLogger
+import com.mux.stats.sdk.muxstats.internal.beaconAuthority
 import kotlinx.coroutines.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -63,7 +64,7 @@ class MuxNetwork(
     if (envKey != null) {
       val url = Uri.Builder()
         .scheme("https")
-        .authority(authorityForEnvKey(envKey, domain))
+        .authority(beaconAuthority(envKey = envKey, domain = domain ?: ""))
         .path("android")
         .build().toURL()
       // By the standard, you can have multiple headers with the same key
@@ -85,14 +86,6 @@ class MuxNetwork(
    */
   fun shutdown() {
     coroutineScope.cancel("shutdown requested")
-  }
-
-  private fun authorityForEnvKey(envKey: String, domain: String?): String {
-    return if (Pattern.matches("^[a-z0-9]+$", envKey)) {
-      envKey + domain;
-    } else {
-      "img$domain"
-    }
   }
 
   // -- HTTP Client below here. It's a nested class to keep it out of java callers' namespace
