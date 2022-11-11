@@ -103,7 +103,7 @@ class MuxNetwork(
    * @param device provides access to the device
    * @param coroutineScope the coroutine scope for logic (IO is done on the IO dispatcher)
    */
-  internal class HttpClient(
+  class HttpClient(
     private val device: IDevice,
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
   ) {
@@ -126,7 +126,7 @@ class MuxNetwork(
           if (device.isOnline()) {
             val response = doOneCall(request)
             MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
-            if(response.status.code !in 500..599) {
+            if (response.status.code !in 500..599) {
               // Yay we made it!
               return CallResult(response = response, retries = retries)
             } else {
@@ -223,12 +223,12 @@ class MuxNetwork(
     }
   }
 
-  internal class GET(
+  class GET(
     url: URL,
     headers: Map<String, List<String>> = mapOf(),
   ) : Request("GET", url, headers, null, null)
 
-  internal class POST(
+  class POST(
     url: URL,
     headers: Map<String, List<String>> = mapOf(),
     contentType: String? = null,
@@ -279,7 +279,7 @@ class MuxNetwork(
   /**
    * Represents an HTTP request. Use subclasses like [GET] or [POST]
    */
-  internal abstract class Request(
+  abstract class Request(
     val method: String,
     val url: URL,
     val headers: Map<String, List<String>>,
@@ -296,7 +296,7 @@ class MuxNetwork(
   /**
    * A response from an HTTP request
    */
-  internal class Response(
+  class Response(
     val originalRequest: Request,
     val status: StatusLine,
     val headers: Map<String, List<String>>,
@@ -401,8 +401,8 @@ internal fun ByteArray.gzip(): ByteArray {
       stream.write(this)
       stream.flush()
     }
-    byteStream
-  }.toByteArray()
+    byteStream.toByteArray()
+  }
 
   return zippedBytes
 }
