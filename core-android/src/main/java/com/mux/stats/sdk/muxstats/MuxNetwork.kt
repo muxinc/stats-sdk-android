@@ -123,7 +123,7 @@ class MuxNetwork(
               // Yay we made it!
               return CallResult(response = response, retries = retries)
             } else {
-              MuxLogger.d(LOG_TAG, "Server crashed. Backing off")
+              MuxLogger.d(LOG_TAG, "Server needs a break. Backing off")
               badResult = CallResult(response = response, retries = retries)
             }
           } else {
