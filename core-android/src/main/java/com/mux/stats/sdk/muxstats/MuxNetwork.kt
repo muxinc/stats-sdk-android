@@ -1,7 +1,6 @@
 package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
-import android.os.Looper
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.internal.beaconAuthority
 import kotlinx.coroutines.*
@@ -15,7 +14,6 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.math.pow
@@ -97,6 +95,7 @@ class MuxNetwork(
    */
   class HttpClient(
     private val device: IDevice,
+    private val backoffBaseTimeMs: Long = RETRY_DELAY_BASE_MS
   ) {
 
     /**
@@ -140,7 +139,7 @@ class MuxNetwork(
       if (retries > 0) {
         // Random backoff within an increasing time period
         val factor = (2.0.pow((retries - 1).toDouble())) * Math.random()
-        val backoffDelay = ((1 + factor) * RETRY_DELAY_BASE_MS).toLong()
+        val backoffDelay = ((1 + factor) * backoffBaseTimeMs).toLong()
 
         MuxLogger.d(LOG_TAG, "Retrying in ${backoffDelay}ms: $request")
         delay(backoffDelay)

@@ -24,7 +24,8 @@ class HttpClientTests : AbsRobolectricTest() {
     httpClient = MuxNetwork.HttpClient(
       device = mockk {
         every { networkConnectionType } returns "cellular"
-      }
+      },
+      backoffBaseTimeMs = 10
     )
   }
 
