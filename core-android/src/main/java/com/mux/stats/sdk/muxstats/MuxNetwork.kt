@@ -186,7 +186,7 @@ class MuxNetwork(
         // Connect!
         try {
           hurlConn.connect()
-          val responseBytes = hurlConn.inputStream.use { it.readBytes() }
+          val responseBytes = hurlConn.inputStream?.use { it.readBytes() }
 
           Response(
             originalRequest = request,
