@@ -144,7 +144,7 @@ class MuxNetwork(
       } while (++retries <= MAX_REQUEST_RETRIES)
 
       return badResult
-    }
+    } // doCall
 
     private suspend fun maybeBackoff(request: Request, retries: Int) {
       if (retries > 0) {
@@ -199,9 +199,9 @@ class MuxNetwork(
           )
         } finally {
           hurlConn.disconnect()
-        } // try
+        } // try {} finally {}
       } // withContext(Dispatchers.IO)
-    }
+    } // doOneCall
 
     private fun throwOnMain() {
       if (Looper.myLooper() == Looper.getMainLooper()) {
