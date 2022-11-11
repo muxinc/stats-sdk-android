@@ -47,10 +47,14 @@ class HttpClientTests : AbsRobolectricTest() {
       if (recovers) {
         if (failsOnConnect) {
           every { connect() } throws IOException("connect threw") andThenJust runs
+          every { inputStream } returns ByteArrayInputStream(ByteArray(0))
+        } else {
+          every { connect() } just runs
+          every { inputStream } throws IOException("stream threw") andThen ByteArrayInputStream(
+            ByteArray(0)
+          )
         }
-        every { inputStream } throws IOException("stream threw") andThen ByteArrayInputStream(
-          ByteArray(0)
-        )
+        every { responseCode } returns HttpURLConnection.HTTP_OK
       } else {
         if (failsOnConnect) {
           every { connect() } throws IOException("connect threw")
