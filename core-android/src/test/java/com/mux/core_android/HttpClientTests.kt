@@ -3,6 +3,7 @@ package com.mux.core_android
 import com.mux.core_android.testdoubles.mockURL
 import com.mux.stats.sdk.muxstats.MuxNetwork
 import io.mockk.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
@@ -11,7 +12,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 
-class HttpClientTests {
+class HttpClientTests : AbsRobolectricTest() {
   private lateinit var httpClient: MuxNetwork.HttpClient
 
   companion object {
@@ -20,9 +21,11 @@ class HttpClientTests {
 
   @Before
   fun setUp() {
-    httpClient = MuxNetwork.HttpClient(mockk {
-      every { networkConnectionType } returns "cellular"
-    })
+    httpClient = MuxNetwork.HttpClient(
+      device = mockk {
+        every { networkConnectionType } returns "cellular"
+      }
+    )
   }
 
   // --------------------------------------------------
@@ -59,7 +62,7 @@ class HttpClientTests {
     }
 
     val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
-    val result = runBlocking { httpClient.doCall(request) }
+    val result = runInBg { httpClient.doCall(request) }
 
     if (recovers) {
       assertTrue("Final Result is successful", result.successful)
@@ -122,7 +125,7 @@ class HttpClientTests {
     }
 
     val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
-    val result = runBlocking { httpClient.doCall(request) }
+    val result = runInBg { httpClient.doCall(request) }
 
     if (recovers) {
       assertTrue("Final Result is successful", result.successful)
@@ -153,6 +156,9 @@ class HttpClientTests {
     }
   }
 
+  private fun <R> runInBg(block: suspend () -> R): R {
+    return runBlocking(Dispatchers.Unconfined) { block() }
+  }
 
   // TODO: Test Cases
   //  HTTP 500 (retries fail + retries succeed)

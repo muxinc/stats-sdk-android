@@ -150,7 +150,7 @@ fun mockConnectivityManager16(netType: Int) = mockk<ConnectivityManager> {
  * Mocks [URL], returning the given string as toString and a mocked [HttpURLConnection]
  */
 fun mockURL(url: String, conn: HttpURLConnection = mockHttpUrlConnection()): URL = mockk {
-  every { toString() } returns url
+  //every { toString() } returns url
   every { openConnection() } returns conn
 }
 

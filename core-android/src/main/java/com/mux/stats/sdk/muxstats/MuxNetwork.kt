@@ -34,7 +34,7 @@ class MuxNetwork(
   private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
-  private val httpClient = HttpClient(device, coroutineScope)
+  private val httpClient = HttpClient(device)
 
   constructor(device: IDevice) : this(device, CoroutineScope(Dispatchers.Default))
 
@@ -94,11 +94,9 @@ class MuxNetwork(
    * Small HTTP client with gzip, per-request exponential backoff, and GET and POST
    *
    * @param device provides access to the device
-   * @param coroutineScope the coroutine scope for logic (IO is done on the IO dispatcher)
    */
   class HttpClient(
     private val device: IDevice,
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
   ) {
 
     /**
@@ -108,7 +106,6 @@ class MuxNetwork(
      */
     suspend fun doCall(request: Request): CallResult {
       MuxLogger.d(LOG_TAG, "doCall: Enqueue $request")
-      throwOnMain()
 
       var retries = 0
       var badResult: CallResult
@@ -199,12 +196,6 @@ class MuxNetwork(
         } // try {} finally {}
       } // withContext(Dispatchers.IO)
     } // doOneCall
-
-    private fun throwOnMain() {
-      if (Looper.myLooper() == Looper.getMainLooper()) {
-        throw IllegalStateException("HTTP requests cannot be enqueued on the main thread")
-      }
-    }
 
     /**
      * Represents the result of an HTTP call. This

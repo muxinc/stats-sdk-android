@@ -15,20 +15,16 @@ open class FakeMuxDataSdk<Player, ExtraPlayer, V : View>(
   context: Context = mockActivity(),
   envKey: String = "fake-env-key",
   customerData: CustomerData = CustomerData(),
-  customOptions: CustomOptions? = null,
   playerAdapter: MuxPlayerAdapter<View, Player, ExtraPlayer> = mockPlayerAdapter(),
-  playerListener: IPlayerListener = mockPlayerListener(),
   device: IDevice = FakeMuxDevice(),
   network: INetworkRequest = FakeNetwork(),
   verboseLogging: Boolean = false
 ) : MuxDataSdk<Player, ExtraPlayer, View>(
-  context,
-  envKey,
-  customerData,
-  customOptions,
-  playerAdapter,
-  playerListener,
-  device,
-  network,
+  context = context,
+  envKey = envKey,
+  customerData = customerData,
+  playerAdapter = playerAdapter,
+  device = device,
+  network = network,
   if (verboseLogging) LogcatLevel.VERBOSE else LogcatLevel.DEBUG
 )
