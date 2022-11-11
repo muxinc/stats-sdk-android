@@ -287,7 +287,9 @@ class MuxNetwork(
     val body: ByteArray?,
   ) {
     override fun hashCode(): Int = toString().hashCode()
-    override fun equals(other: Any?) = other is Request && hashCode() == other.hashCode()
+    override fun equals(other: Any?) =
+      other?.let { it::class == this::class && hashCode() == it.hashCode() } ?: false
+
     override fun toString(): String {
       return "Request(method='$method', url=$url, headers=$headers, body=${body?.contentToString()})"
     }
