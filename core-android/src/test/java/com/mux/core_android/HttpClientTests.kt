@@ -11,6 +11,7 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
+import javax.net.ssl.HttpsURLConnection
 
 class HttpClientTests : AbsRobolectricTest() {
   private lateinit var httpClient: MuxNetwork.HttpClient
@@ -28,6 +29,30 @@ class HttpClientTests : AbsRobolectricTest() {
       backoffBaseTimeMs = 10
     )
   }
+
+  @Test
+  fun testSuccessfulRequest() {
+    val hurlConn = mockk<HttpURLConnection>(relaxed = true) {
+      every { inputStream } returns ByteArrayInputStream(ByteArray(0))
+      every { headerFields } returns mapOf()
+      every { responseCode } returns HttpURLConnection.HTTP_OK
+      every { responseMessage } returns "OK"
+    }
+
+    val request = MuxNetwork.GET(mockURL("https://docs.mux.com", hurlConn))
+    val result = runBlocking { httpClient.doCall(request) }
+
+    assertTrue("Result is successful", result.successful)
+    assertEquals(
+      "Result success code is 200",
+      HttpsURLConnection.HTTP_OK,
+      result.response?.status?.code
+    )
+    assertNull("No Exception recorded", result.exception)
+    assertFalse("Reported online", result.offlineForCall)
+    assertEquals("No retries", 0, result.retries)
+  }
+
 
   // --------------------------------------------------
 
@@ -166,8 +191,6 @@ class HttpClientTests : AbsRobolectricTest() {
   }
 
   // TODO: Test Cases
-  //  HTTP 500 (retries fail + retries succeed)
-  //  Exception (retries fail + retries succeed)
   //  200 OK
   //  Offline (retries fail + retries succeed)
 }
