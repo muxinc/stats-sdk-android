@@ -181,7 +181,11 @@ class MuxNetwork(
           request.headers.onEach { header ->
             header.value.onEach { setRequestProperty(header.key, it) }
           }
-          setRequestProperty("Content-Type", request.contentType)
+          request.contentType?.let { contentType ->
+            if (contentType.isNotEmpty()) {
+              setRequestProperty("Content-Type", contentType)
+            }
+          }
         }
         // Add Body
         bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
