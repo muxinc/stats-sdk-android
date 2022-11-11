@@ -126,8 +126,13 @@ class MuxNetwork(
           if (device.isOnline()) {
             val response = doOneCall(request)
             MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
-            // Yay we made it!
-            return CallResult(response = response, retries = retries)
+            if(response.status.code !in 500..599) {
+              // Yay we made it!
+              return CallResult(response = response, retries = retries)
+            } else {
+              MuxLogger.d(LOG_TAG, "Server crashed. Backing off")
+              badResult = CallResult(response = response, retries = retries)
+            }
           } else {
             MuxLogger.d(LOG_TAG, "Device offline. Backing off")
             badResult = CallResult(offlineForCall = true, retries = retries)
@@ -155,7 +160,6 @@ class MuxNetwork(
     @Throws(Exception::class)
     private suspend fun doOneCall(request: Request): Response {
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
-
       val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
 
       @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
