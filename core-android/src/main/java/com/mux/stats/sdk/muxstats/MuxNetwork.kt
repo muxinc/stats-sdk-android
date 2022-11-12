@@ -29,10 +29,12 @@ private const val LOG_TAG = "MuxNetwork"
  */
 class MuxNetwork(
   private val device: IDevice,
-  private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+  coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
+
   private val httpClient = HttpClient(device)
+  private val coroutineScope by lazy { CoroutineScope(coroutineScope.coroutineContext) }
 
   constructor(device: IDevice) : this(device, CoroutineScope(Dispatchers.Default))
 
