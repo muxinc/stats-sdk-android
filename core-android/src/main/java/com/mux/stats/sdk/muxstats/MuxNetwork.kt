@@ -27,15 +27,13 @@ private const val LOG_TAG = "MuxNetwork"
  * @param coroutineScope Optional [CoroutineScope] in which requests can run.
  * The default is [Dispatchers.Default]
  */
-class MuxNetwork(
+class MuxNetwork @JvmOverloads constructor(
   private val device: IDevice,
   coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
   private val httpClient = HttpClient(device)
   private val coroutineScope = CoroutineScope(coroutineScope.coroutineContext)
-
-  constructor(device: IDevice) : this(device, CoroutineScope(Dispatchers.Default))
 
   override fun get(url: URL?) {
     if (url != null) {
