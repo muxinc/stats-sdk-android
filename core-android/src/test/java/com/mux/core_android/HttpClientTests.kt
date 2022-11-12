@@ -2,6 +2,7 @@ package com.mux.core_android
 
 import com.mux.core_android.testdoubles.mockURL
 import com.mux.stats.sdk.muxstats.MuxNetwork
+import com.mux.stats.sdk.muxstats.gzip
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -11,6 +12,7 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
+import java.util.*
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientTests : AbsRobolectricTest() {
@@ -28,6 +30,19 @@ class HttpClientTests : AbsRobolectricTest() {
       },
       backoffBaseTimeMs = 10
     )
+  }
+
+  @Test
+  fun testGzip() {
+    // apparently gzip inflates really small sets of data, so make a big set
+    val inputBytes = "Hello I am a string that is probably compressible".let { str ->
+      val sb = StringBuilder()
+      repeat(10 * 1024) { sb.append(str) }
+      sb.toString().toByteArray()
+    }
+    val outputBytes = inputBytes.gzip()
+    val outputStr = String(outputBytes)
+    assertTrue("gzipped data is smaller", inputBytes.size > outputBytes.size)
   }
 
   @Test
@@ -52,7 +67,6 @@ class HttpClientTests : AbsRobolectricTest() {
     assertFalse("Reported online", result.offlineForCall)
     assertEquals("No retries", 0, result.retries)
   }
-
 
   // --------------------------------------------------
 
