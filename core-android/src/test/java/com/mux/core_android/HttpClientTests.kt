@@ -83,22 +83,36 @@ class HttpClientTests : AbsRobolectricTest() {
 
   // --------------------------------------------------
 
+  @Test
+  fun testOfflineRecovers() = testOffline(true)
+
+  @Test
+  fun testOfflineDoesntRecover() = testOffline(false)
+
   private fun testOffline(recovers: Boolean) {
     val hurlConn = mockk<HttpURLConnection>(relaxed = true) {
       if (recovers) {
         every { connect() } just runs
-        every { inputStream } throws UnknownHostException("stream threw") andThen ByteArrayInputStream(
-          ByteArray(0)
-        )
+        every { inputStream } returns ByteArrayInputStream(ByteArray(0))
         every { responseCode } returns HttpURLConnection.HTTP_OK
       } else {
         every { connect() } just runs
         every { inputStream } throws UnknownHostException("stream threw")
       }
     }
+    val offlineClient = MuxNetwork.HttpClient(
+      device = mockk(relaxed = true) {
+        if (recovers) {
+          every { networkConnectionType } returns null andThen "cellular"
+        } else {
+          every { networkConnectionType } returns null
+        }
+      },
+      backoffBaseTimeMs = 5
+    )
 
     val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
-    val result = runInBg { httpClient.doCall(request) }
+    val result = runInBg { offlineClient.doCall(request) }
 
     if (recovers) {
       assertTrue("Final Result is successful", result.successful)
