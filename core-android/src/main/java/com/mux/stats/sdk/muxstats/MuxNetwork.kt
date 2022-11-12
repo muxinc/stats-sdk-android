@@ -32,7 +32,6 @@ class MuxNetwork(
   coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
-
   private val httpClient = HttpClient(device)
   private val coroutineScope by lazy { CoroutineScope(coroutineScope.coroutineContext) }
 
