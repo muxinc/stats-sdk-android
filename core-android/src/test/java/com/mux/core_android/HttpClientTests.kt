@@ -13,6 +13,7 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.UnknownHostException
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientTests : AbsRobolectricTest() {
@@ -78,6 +79,53 @@ class HttpClientTests : AbsRobolectricTest() {
     assertNull("No Exception recorded", result.exception)
     assertFalse("Reported online", result.offlineForCall)
     assertEquals("No retries", 0, result.retries)
+  }
+
+  // --------------------------------------------------
+
+  private fun testOffline(recovers: Boolean) {
+    val hurlConn = mockk<HttpURLConnection>(relaxed = true) {
+      if (recovers) {
+        every { connect() } just runs
+        every { inputStream } throws UnknownHostException("stream threw") andThen ByteArrayInputStream(
+          ByteArray(0)
+        )
+        every { responseCode } returns HttpURLConnection.HTTP_OK
+      } else {
+        every { connect() } just runs
+        every { inputStream } throws UnknownHostException("stream threw")
+      }
+    }
+
+    val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
+    val result = runInBg { httpClient.doCall(request) }
+
+    if (recovers) {
+      assertTrue("Final Result is successful", result.successful)
+      assertEquals(
+        "Final Result code is OK",
+        HttpURLConnection.HTTP_OK,
+        result.response?.status?.code
+      )
+      assertTrue(
+        "1 Retries should be made",
+        result.retries == 1
+      )
+      assertNull("No exception should be reported", result.exception)
+      assertFalse("Device should have been online for request", result.offlineForCall)
+    } else {
+      assertFalse("Final Result is not successful", result.successful)
+      assertTrue(
+        "Final Result was offline",
+        result.offlineForCall
+      )
+      assertTrue(
+        "4 Retries should be made",
+        result.retries == 4
+      )
+      assertNull("No HTTP response should be recorded", result.response)
+      assertNull("No Exception recorded for request", result.exception)
+    }
   }
 
   // --------------------------------------------------
@@ -215,8 +263,4 @@ class HttpClientTests : AbsRobolectricTest() {
   private fun <R> runInBg(block: suspend () -> R): R {
     return runBlocking(Dispatchers.Unconfined) { block() }
   }
-
-  // TODO: Test Cases
-  //  200 OK
-  //  Offline (retries fail + retries succeed)
 }
