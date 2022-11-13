@@ -68,7 +68,7 @@ class HttpClientTests : AbsRobolectricTest() {
     }
 
     val request = MuxNetwork.GET(mockURL("https://docs.mux.com", hurlConn))
-    val result = runBlocking { httpClient.doCall(request) }
+    val result = runBlocking { httpClient.call(request) }
 
     assertTrue("Result is successful", result.successful)
     assertEquals(
@@ -112,7 +112,7 @@ class HttpClientTests : AbsRobolectricTest() {
     )
 
     val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
-    val result = runInBg { offlineClient.doCall(request) }
+    val result = runInBg { offlineClient.call(request) }
 
     if (recovers) {
       assertTrue("Final Result is successful", result.successful)
@@ -180,7 +180,7 @@ class HttpClientTests : AbsRobolectricTest() {
     }
 
     val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
-    val result = runInBg { httpClient.doCall(request) }
+    val result = runInBg { httpClient.call(request) }
 
     if (recovers) {
       assertTrue("Final Result is successful", result.successful)
@@ -243,7 +243,7 @@ class HttpClientTests : AbsRobolectricTest() {
     }
 
     val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
-    val result = runInBg { httpClient.doCall(request) }
+    val result = runInBg { httpClient.call(request) }
 
     if (recovers) {
       assertTrue("Final Result is successful", result.successful)

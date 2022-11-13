@@ -37,7 +37,7 @@ class MuxNetwork @JvmOverloads constructor(
 
   override fun get(url: URL?) {
     if (url != null) {
-      coroutineScope.launch { httpClient.doCall(GET(url = url)) }
+      coroutineScope.launch { httpClient.call(GET(url = url)) }
     }
   }
 
@@ -46,7 +46,7 @@ class MuxNetwork @JvmOverloads constructor(
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
       coroutineScope.launch {
-        httpClient.doCall(POST(url = url, json = body, headers = headers))
+        httpClient.call(POST(url = url, json = body, headers = headers))
       }
     }
   }
@@ -68,7 +68,7 @@ class MuxNetwork @JvmOverloads constructor(
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
 
       coroutineScope.launch {
-        val result = httpClient.doCall(POST(url = url, headers = headers, bodyStr = body))
+        val result = httpClient.call(POST(url = url, headers = headers, bodyStr = body))
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
           completion?.onComplete(result.successful)
@@ -102,37 +102,43 @@ class MuxNetwork @JvmOverloads constructor(
      * @param request the [Request] to send
      * @return the result of the HTTP call. If there were retries,
      */
-    suspend fun doCall(request: Request): CallResult {
+    suspend fun call(request: Request): CallResult {
       MuxLogger.d(LOG_TAG, "doCall: Enqueue $request")
+      return callWithBackoff(request).also {
+        MuxLogger.d(LOG_TAG, "doCall: Final Result for ${request.url}:\n$it")
+      }
+    } // doCall
 
-      var retries = 0
-      var badResult: CallResult
-      do {
-        maybeBackoff(request, retries)
+    private suspend fun callWithBackoff(request: Request, retries: Int = 0): CallResult {
+      suspend fun maybeRetry(request: Request, result: CallResult): CallResult {
+        val moreRetries = result.retries < MAX_REQUEST_RETRIES
+        return if (moreRetries) {
+          callWithBackoff(request, result.retries + 1)
+        } else {
+          result
+        }
+      }
+      maybeBackoff(request, retries)
 
+      return if (!device.isOnline()) {
+        maybeRetry(request, CallResult(offlineForCall = true, retries = retries))
+      } else {
         try {
-          if (device.isOnline()) {
-            val response = doOneCall(request)
-            MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
-            if (response.status.code !in 500..599) {
-              // Yay we made it!
-              return CallResult(response = response, retries = retries)
-            } else {
-              MuxLogger.d(LOG_TAG, "Server needs a break. Backing off")
-              badResult = CallResult(response = response, retries = retries)
-            }
+          val response = callOnce(request)
+          MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
+          if (response.status.code in 500..599) {
+            MuxLogger.d(LOG_TAG, "Server needs a break. Backing off")
+            maybeRetry(request, CallResult(response = response, retries = retries))
           } else {
-            MuxLogger.d(LOG_TAG, "Device offline. Backing off")
-            badResult = CallResult(offlineForCall = true, retries = retries)
+            // Done! The request may have been rejected, but not for a retry-able reason
+            CallResult(response = response, retries = retries)
           }
         } catch (e: Exception) {
           MuxLogger.exception(e, LOG_TAG, "doCall: I/O error for $request")
-          badResult = CallResult(exception = e, retries = retries)
+          maybeRetry(request, CallResult(exception = e, retries = retries))
         }
-      } while (++retries <= MAX_REQUEST_RETRIES)
-
-      return badResult
-    } // doCall
+      }
+    }
 
     private suspend fun maybeBackoff(request: Request, retries: Int) {
       if (retries > 0) {
@@ -146,7 +152,7 @@ class MuxNetwork @JvmOverloads constructor(
     }
 
     @Throws(Exception::class)
-    private suspend fun doOneCall(request: Request): Response {
+    private suspend fun callOnce(request: Request): Response {
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
       val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
 
