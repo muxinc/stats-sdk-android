@@ -157,9 +157,10 @@ fun mockURL(url: String, conn: HttpURLConnection = mockHttpUrlConnection()): URL
 /**
  * Mocks [OutputStream], capturing written data
  */
-fun mockOutputStream(byteArraySlot: CapturingSlot<ByteArray> = slot()): OutputStream = mockk {
-  every { write(capture(byteArraySlot)) } just runs
-}
+fun mockOutputStream(byteArraySlot: CapturingSlot<ByteArray> = slot()): OutputStream =
+  mockk(relaxed = true) {
+    every { write(capture(byteArraySlot)) } just runs
+  }
 
 /**
  * Mocks [HttpURLConnection], providing basic response data and input/output streams
@@ -171,7 +172,7 @@ fun mockHttpUrlConnection(
   input: InputStream = ByteArrayInputStream("hello world".encodeToByteArray()),
   output: OutputStream = mockOutputStream()
 ): HttpURLConnection =
-  mockk {
+  mockk(relaxed = true) {
     every { responseCode } returns code
     every { responseMessage } returns message
     every { headerFields } returns responseHeaders

@@ -1,6 +1,9 @@
 package com.mux.core_android
 
+import com.mux.core_android.testdoubles.mockHttpUrlConnection
+import com.mux.core_android.testdoubles.mockOutputStream
 import com.mux.core_android.testdoubles.mockURL
+import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxNetwork
 import com.mux.stats.sdk.muxstats.gzip
 import com.mux.stats.sdk.muxstats.unGzip
@@ -31,6 +34,9 @@ class HttpClientTests : AbsRobolectricTest() {
       },
       backoffBaseTimeMs = 10
     )
+
+    MuxLogger.setAllowLogcat(true)
+    MuxLogger.enable("all", null)
   }
 
   @Test
@@ -55,7 +61,31 @@ class HttpClientTests : AbsRobolectricTest() {
     }
     val outputBytes = inputBytes.gzip().unGzip()
     assertTrue("Unzipped data is the same", inputBytes.contentEquals(outputBytes))
+  }
 
+  @Test
+  fun testClientGzips() {
+    val originalData = "Hello I am a string that is probably compressible".let { str ->
+      val sb = StringBuilder()
+      repeat(10 * 1024) { sb.append(str) }
+      sb.toString().toByteArray()
+    }
+    val gzippedData = originalData.gzip()
+
+    val requestBodySlot = slot<ByteArray>()
+    val request = MuxNetwork.POST(
+      url = mockURL(TEST_URL, mockHttpUrlConnection(output = mockOutputStream(requestBodySlot))),
+      headers = mapOf(Pair("Content-Encoding", listOf("gzip"))),
+      body = originalData
+    )
+    val result = runInBg { httpClient.call(request) }
+    assertNull("no exception thrown by encoding/zip", result.exception)
+    assertTrue("data was written to the outputStream", requestBodySlot.isCaptured)
+    assertContentEquals(
+      "HttpClient should obey Content-Encoding = gzip",
+      gzippedData,
+      requestBodySlot.captured
+    )
   }
 
   @Test

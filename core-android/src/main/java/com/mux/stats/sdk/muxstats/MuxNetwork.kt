@@ -281,7 +281,7 @@ class MuxNetwork @JvmOverloads constructor(
 
     override fun toString(): String {
       return "Request(method='$method', url=$url, headers=$headers, contentType=$contentType, " +
-              "body=${body?.contentToString()})"
+              "body=${body?.contentToString()?.take(80)})"
     }
   }
 
@@ -336,7 +336,7 @@ class MuxNetwork @JvmOverloads constructor(
     override fun equals(other: Any?) = other is Response && hashCode() == other.hashCode()
     override fun toString(): String {
       return "Response(originalRequest=$originalRequest, status=$status, headers=$headers, " +
-              "body=${body?.contentToString()}, successful=$successful)"
+              "body=${body?.contentToString()?.take(80)}, successful=$successful)"
     }
   } // class Response
 
