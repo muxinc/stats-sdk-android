@@ -167,26 +167,27 @@ class MuxNetwork @JvmOverloads constructor(
       // Run the actual request on the IO dispatcher
       @Suppress("BlockingMethodInNonBlockingContext") // on the IO dispatcher here
       return withContext(Dispatchers.IO) {
-        val hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
-          // Basic options/config
-          readTimeout = READ_TIMEOUT_MS.toInt()
-          connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
-          requestMethod = request.method
-          //Headers
-          request.headers.onEach { header ->
-            header.value.onEach { setRequestProperty(header.key, it) }
-          }
-          request.contentType?.let { contentType ->
-            if (contentType.isNotEmpty()) {
-              setRequestProperty("Content-Type", contentType)
+        var hurlConn: HttpURLConnection? = null
+        try {
+          hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
+            // Basic options/config
+            readTimeout = READ_TIMEOUT_MS.toInt()
+            connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
+            requestMethod = request.method
+            //Headers
+            request.headers.onEach { header ->
+              header.value.onEach { setRequestProperty(header.key, it) }
+            }
+            request.contentType?.let { contentType ->
+              if (contentType.isNotEmpty()) {
+                setRequestProperty("Content-Type", contentType)
+              }
             }
           }
-        }
-        // Add Body
-        bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
+          // Add Body
+          bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
 
-        // Connect!
-        try {
+          // Connect!
           hurlConn.connect()
           val responseBytes = hurlConn.inputStream?.use { it.readBytes() }
 
@@ -197,7 +198,7 @@ class MuxNetwork @JvmOverloads constructor(
             body = responseBytes,
           )
         } finally {
-          hurlConn.disconnect()
+          hurlConn?.disconnect()
         } // try {} finally {}
       } // withContext(Dispatchers.IO)
     } // doOneCall
