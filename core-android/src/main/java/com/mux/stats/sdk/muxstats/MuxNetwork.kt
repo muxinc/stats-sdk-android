@@ -153,55 +153,51 @@ class MuxNetwork @JvmOverloads constructor(
     }
 
     @Throws(Exception::class)
-    private suspend fun callOnce(request: Request): Response {
+    @Suppress("BlockingMethodInNonBlockingContext") // already on the IO dispatcher here
+    private suspend fun callOnce(request: Request): Response = withContext(Dispatchers.IO) {
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
       val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
 
-      @Suppress("BlockingMethodInNonBlockingContext") // no IO is really done, won't block
       val bodyData = if (request.body != null && gzip) {
         request.body.gzip()
       } else {
         request.body
       }
 
-      // Run the actual request on the IO dispatcher
-      @Suppress("BlockingMethodInNonBlockingContext") // on the IO dispatcher here
-      return withContext(Dispatchers.IO) {
-        var hurlConn: HttpURLConnection? = null
-        try {
-          hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
-            // Basic options/config
-            readTimeout = READ_TIMEOUT_MS.toInt()
-            connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
-            requestMethod = request.method
-            //Headers
-            request.headers.onEach { header ->
-              header.value.onEach { setRequestProperty(header.key, it) }
-            }
-            request.contentType?.let { contentType ->
-              if (contentType.isNotEmpty()) {
-                setRequestProperty("Content-Type", contentType)
-              }
+      var hurlConn: HttpURLConnection? = null
+      try {
+        hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
+          // Basic options/config
+          readTimeout = READ_TIMEOUT_MS.toInt()
+          connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
+          requestMethod = request.method
+          //Headers
+          request.headers.onEach { header ->
+            header.value.onEach { setRequestProperty(header.key, it) }
+          }
+          request.contentType?.let { contentType ->
+            if (contentType.isNotEmpty()) {
+              setRequestProperty("Content-Type", contentType)
             }
           }
-          // Add Body
-          bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
+        }
+        // Add Body
+        bodyData?.let { dataBytes -> hurlConn.outputStream.use { it.write(dataBytes) } }
 
-          // Connect!
-          hurlConn.connect()
-          val responseBytes = hurlConn.inputStream?.use { it.readBytes() }
+        // Connect!
+        hurlConn.connect()
+        val responseBytes = hurlConn.inputStream?.use { it.readBytes() }
 
-          Response(
-            originalRequest = request,
-            status = Response.StatusLine(hurlConn.responseCode, hurlConn.responseMessage),
-            headers = hurlConn.headerFields,
-            body = responseBytes,
-          )
-        } finally {
-          hurlConn?.disconnect()
-        } // try {} finally {}
-      } // withContext(Dispatchers.IO)
-    } // doOneCall
+        Response(
+          originalRequest = request,
+          status = Response.StatusLine(hurlConn.responseCode, hurlConn.responseMessage),
+          headers = hurlConn.headerFields,
+          body = responseBytes,
+        )
+      } finally {
+        hurlConn?.disconnect()
+      } // try {} finally {}
+    } // fun callOnce = (...) = withContext(Dispatchers.IO)
 
     /**
      * Represents the result of an HTTP call. This
