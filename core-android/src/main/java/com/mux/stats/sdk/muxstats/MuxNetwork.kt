@@ -110,7 +110,7 @@ class MuxNetwork @JvmOverloads constructor(
     } // doCall
 
     private suspend fun callWithBackoff(request: Request, retries: Int = 0): CallResult {
-      suspend fun maybeRetry(request: Request, result: CallResult): CallResult {
+      suspend fun maybeRetry(result: CallResult): CallResult {
         val moreRetries = result.retries < MAX_REQUEST_RETRIES
         return if (moreRetries) {
           callWithBackoff(request, result.retries + 1)
@@ -118,24 +118,25 @@ class MuxNetwork @JvmOverloads constructor(
           result
         }
       }
+
       maybeBackoff(request, retries)
 
       return if (!device.isOnline()) {
-        maybeRetry(request, CallResult(offlineForCall = true, retries = retries))
+        maybeRetry(CallResult(offlineForCall = true, retries = retries))
       } else {
         try {
           val response = callOnce(request)
           MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
           if (response.status.code in 500..599) {
             MuxLogger.d(LOG_TAG, "Server needs a break. Backing off")
-            maybeRetry(request, CallResult(response = response, retries = retries))
+            maybeRetry(CallResult(response = response, retries = retries))
           } else {
             // Done! The request may have been rejected, but not for a retry-able reason
             CallResult(response = response, retries = retries)
           }
         } catch (e: Exception) {
           MuxLogger.exception(e, LOG_TAG, "doCall: I/O error for $request")
-          maybeRetry(request, CallResult(exception = e, retries = retries))
+          maybeRetry(CallResult(exception = e, retries = retries))
         }
       }
     }
