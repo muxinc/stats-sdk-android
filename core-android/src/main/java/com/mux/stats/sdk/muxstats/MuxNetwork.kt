@@ -156,15 +156,15 @@ class MuxNetwork @JvmOverloads constructor(
     @Suppress("BlockingMethodInNonBlockingContext") // already on the IO dispatcher here
     private suspend fun callOnce(request: Request): Response = withContext(Dispatchers.IO) {
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
-      val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
-      val bodyData = if (request.body != null && gzip) {
-        request.body.gzip()
-      } else {
-        request.body
-      }
-
       var hurlConn: HttpURLConnection? = null
       try {
+        val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
+        val bodyData = if (request.body != null && gzip) {
+          request.body.gzip()
+        } else {
+          request.body
+        }
+
         hurlConn = request.url.openConnection().let { it as HttpURLConnection }.apply {
           // Basic options/config
           readTimeout = READ_TIMEOUT_MS.toInt()
