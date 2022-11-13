@@ -85,7 +85,7 @@ class MuxNetwork @JvmOverloads constructor(
     coroutineScope.cancel("shutdown requested")
   }
 
-  // -- HTTP Client below here. It's a nested class to keep it out of java callers' namespace
+  // -- HTTP Client below here. It's a nested class to keep it out of callers' namespace
 
   /**
    * Small HTTP client with gzip, per-request exponential backoff, and GET and POST
@@ -106,32 +106,33 @@ class MuxNetwork @JvmOverloads constructor(
       MuxLogger.d(LOG_TAG, "doCall: Enqueue $request")
 
       var retries = 0
-      var badResult: CallResult
+      var result: CallResult
       do {
         maybeBackoff(request, retries)
-
-        try {
+        result = try {
           if (device.isOnline()) {
             val response = doOneCall(request)
             MuxLogger.d(LOG_TAG, "HTTP call completed:\n$request \n\t$response")
             if (response.status.code !in 500..599) {
               // Yay we made it!
-              return CallResult(response = response, retries = retries)
+              CallResult(response = response, retries = retries)
             } else {
+              // Backoff/Retry in case server is having a transient issue
               MuxLogger.d(LOG_TAG, "Server needs a break. Backing off")
-              badResult = CallResult(response = response, retries = retries)
+              CallResult(response = response, retries = retries)
             }
           } else {
+            // Backoff/Retry if the network was momentarily lost
             MuxLogger.d(LOG_TAG, "Device offline. Backing off")
-            badResult = CallResult(offlineForCall = true, retries = retries)
-          }
+            CallResult(offlineForCall = true, retries = retries)
+          } // if (device.isOnline) ... else ...
         } catch (e: Exception) {
           MuxLogger.exception(e, LOG_TAG, "doCall: I/O error for $request")
-          badResult = CallResult(exception = e, retries = retries)
-        }
-      } while (++retries <= MAX_REQUEST_RETRIES)
+          CallResult(exception = e, retries = retries)
+        } // val result = try { ..
+      } while (!result.successful && ++retries <= MAX_REQUEST_RETRIES)
 
-      return badResult
+      return result
     } // doCall
 
     private suspend fun maybeBackoff(request: Request, retries: Int) {
