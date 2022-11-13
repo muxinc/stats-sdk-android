@@ -157,7 +157,6 @@ class MuxNetwork @JvmOverloads constructor(
     private suspend fun callOnce(request: Request): Response = withContext(Dispatchers.IO) {
       MuxLogger.d(LOG_TAG, "doOneCall: Sending $request")
       val gzip = request.headers["Content-Encoding"]?.last() == "gzip"
-
       val bodyData = if (request.body != null && gzip) {
         request.body.gzip()
       } else {
