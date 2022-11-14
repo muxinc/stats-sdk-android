@@ -13,11 +13,7 @@ import com.mux.stats.sdk.muxstats.MuxDataSdk
 import com.mux.stats.sdk.muxstats.internal.allEqual
 import org.junit.Assert.*
 import org.junit.Test
-import org.robolectric.annotation.Config
 
-@Config(
-  sdk = [Build.VERSION_CODES.JELLY_BEAN, Build.VERSION_CODES.M]
-)
 class AndroidDeviceTests : AbsRobolectricTest() {
 
   @Test

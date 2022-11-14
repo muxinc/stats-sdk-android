@@ -56,7 +56,6 @@ class PlayerAdapterTests : AbsRobolectricTest() {
       basicBinding.bindPlayer(eq(basicPlayer2), any())
     }
 
-
     playerAdapter.extraPlayer = extraPlayer2
     verifySequence {
       extraBinding.bindPlayer(any(), any())

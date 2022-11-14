@@ -1,7 +1,6 @@
 plugins {
   id 'com.android.library'
   id 'org.jetbrains.kotlin.android'
-  id 'com.mux.gradle.android.mux-android-distribution'
 }
 
 android {
@@ -30,26 +29,9 @@ android {
   }
 }
 
-muxDistribution {
-  devVersion versionFromCommitHash('dev-')
-  releaseVersion versionFromTag()
-  artifactIds just("android")
-  groupIds just("com.mux.stats.sdk.muxstats")
-  publicReleaseIf releaseOnTag()
-
-  // TODO: This is kinda clumsy, packageJavadocs should be a function not a property probably
-  packageJavadocs = releaseOnTag().call()
-  publishIf { it.containsIgnoreCase("release") }
-  artifactoryConfig {
-    contextUrl = "https://muxinc.jfrog.io/artifactory/"
-    releaseRepoKey = 'default-maven-release-local'
-    devRepoKey = 'default-maven-local'
-  }
-}
-
 dependencies {
 
-  api "com.mux:stats.muxcore:7.5.0"
+  api "com.mux:stats.muxcore:7.3.2"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
 
   testImplementation 'junit:junit:4.13.2'
