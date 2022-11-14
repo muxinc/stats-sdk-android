@@ -305,7 +305,7 @@ class MuxNetwork @JvmOverloads constructor(
      * Parses the response body as a String, returning null if there was no response body
      */
     fun bodyAsString(): String? {
-      return body?.let { return decodeBody(headers["Content-Encoding"]?.last(), it) }
+      return body?.let { decodeBody(headers["Content-Encoding"]?.last(), it) }
     }
 
     /**
