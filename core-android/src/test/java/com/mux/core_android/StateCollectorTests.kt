@@ -1,11 +1,15 @@
 package com.mux.core_android
 
 import com.mux.core_android.testdoubles.FakeEventDispatcher
+import com.mux.stats.sdk.core.events.EventBus
+import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.muxstats.MuxPlayerState
 import com.mux.stats.sdk.muxstats.MuxStateCollector
 import com.mux.stats.sdk.muxstats.MuxStats
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -22,7 +26,11 @@ class StateCollectorTests : AbsRobolectricTest() {
   fun setUpCollector() {
     eventDispatcher = FakeEventDispatcher()
     val stats = mockk<MuxStats>(relaxed = true)
-    stateCollector = MuxStateCollector({ stats }, eventDispatcher)
+    val eventBus = mockk<EventBus>(relaxed = true) {
+      val slot = slot<IEvent>()
+      every { dispatch(capture(slot)) } answers { eventDispatcher.dispatch(slot.captured) }
+    }
+    stateCollector = MuxStateCollector(stats, eventBus)
   }
 
   @Test
