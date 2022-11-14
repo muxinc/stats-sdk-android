@@ -213,6 +213,15 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    */
   protected enum class LogcatLevel { NONE, DEBUG, VERBOSE }
 
+  companion object {
+    /**
+     * Generates a player ID based off the containing context and the ID of the View being used for
+     * playback
+     */
+    protected fun generatePlayerId(context: Context, view: View?) =
+      context.javaClass.canonicalName!! + (view?.id ?: "audio")
+  }
+
   // ----------------------------------------------------------------------------------------------
   // Android platform interaction below.
   // These are nested classes in order to keep them out of customers' classpath
