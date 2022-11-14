@@ -25,6 +25,7 @@ internal class ExamplePlayerBinding : PlayerBinding<ExamplePlayer> {
     playerEventListener = object : MyEventListener {
       override fun onPlay() = collector.play()
     }
+    // ... And so on
   }
   override fun unbindPlayer(player: ExamplePlayer, collector: MuxStateCollector) {
     playerEventListener?.let { player.removeListener(it) }
@@ -48,9 +49,14 @@ class MuxStatsExamplePlayer(
   envKey = envKey,
   customerData = customerData,
   playerAdapter = MuxPlayerAdapter(
-    player = Object(),
+    player = player,
     collector = MuxStateCollector(
-      muxStats = MuxStats(null, "", customerData, CustomOptions()),
+      muxStats = MuxStats(
+        null,
+        MuxDataSdk.generatePlayerId(context, view),
+        customerData,
+        CustomOptions()
+      ),
       dispatcher = EventBus(),
       trackFirstFrameRendered = false // Only set to `true` if the player can give this info!
     ),
@@ -60,12 +66,27 @@ class MuxStatsExamplePlayer(
   device = AndroidDevice(
     ctx = context,
     playerVersion = player.getVersion(),
-    muxPluginName = "example",
+    muxPluginName = "example-sdk",
     muxPluginVersion = BuildConfig.LIB_VERSION,
     playerSoftware = "example-player"
   ),
 ) {
   // The base class provides a lot of simple functionality but you can add additional capabilities,
   //  and all the public functions are open in case their implementation doesn't work for your SDK
+  
+  override fun videoChange(video: CustomerVideoData) {
+    super.videoChange(video.map { /* mutate the video data somehow */})
+  }
 }
 ```
+
+## Contributing
+
+The code in this repo conforms to
+the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). Please reformat
+before submission
+
+The code was formatted in Android Studio/IntelliJ using
+the [Google Java Style for IntelliJ](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml)
+. The style can be installed via the Java-style section of the IDE
+preferences (`Editor -> Code Style - >Java`).
