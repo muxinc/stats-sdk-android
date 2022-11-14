@@ -1,6 +1,5 @@
 package com.mux.core_android
 
-import android.os.Build
 import com.mux.core_android.testdoubles.mockHttpUrlConnection
 import com.mux.core_android.testdoubles.mockOutputStream
 import com.mux.core_android.testdoubles.mockURL
@@ -14,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.annotation.Config
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -44,11 +42,8 @@ class HttpClientTests : AbsRobolectricTest() {
   @Test
   fun testGzip() {
     // apparently gzip inflates really small sets of data, so make a big set
-    val inputBytes = "Hello I am a string that is probably compressible".let { str ->
-      val sb = StringBuilder()
-      repeat(10 * 1024) { sb.append(str) }
-      sb.toString().toByteArray()
-    }
+    val inputBytes =
+      "Hello I am a string that is probably compressible".repeat(10 * 1024).toByteArray()
     val outputBytes = inputBytes.gzip()
     assertTrue("gzipped data is smaller", inputBytes.size > outputBytes.size)
   }
@@ -56,22 +51,16 @@ class HttpClientTests : AbsRobolectricTest() {
   @Test
   fun testUnGzip() {
     // apparently gzip inflates really small sets of data, so make a big set
-    val inputBytes = "Hello I am a string that is probably compressible".let { str ->
-      val sb = StringBuilder()
-      repeat(10 * 1024) { sb.append(str) }
-      sb.toString().toByteArray()
-    }
+    val inputBytes =
+      "Hello I am a string that is probably compressible".repeat(10 * 1024).toByteArray()
     val outputBytes = inputBytes.gzip().unGzip()
     assertTrue("Unzipped data is the same", inputBytes.contentEquals(outputBytes))
   }
 
   @Test
   fun testClientGzips() {
-    val originalData = "Hello I am a string that is probably compressible".let { str ->
-      val sb = StringBuilder()
-      repeat(10 * 1024) { sb.append(str) }
-      sb.toString().toByteArray()
-    }
+    val originalData =
+      "Hello I am a string that is probably compressible".repeat(10 * 1024).toByteArray()
     val gzippedData = originalData.gzip()
 
     val requestBodySlot = slot<ByteArray>()
