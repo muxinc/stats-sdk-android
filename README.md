@@ -24,7 +24,7 @@ internal class ExamplePlayerBinding : PlayerBinding<ExamplePlayer> {
   override fun bindPlayer(player: ExamplePlayer, collector: MuxStateCollector) {
     playerEventListener = object : MyEventListener {
       override fun onPlay() = collector.play()
-    }
+    }.also { player.addListener(it) }
     // ... And so on
   }
   override fun unbindPlayer(player: ExamplePlayer, collector: MuxStateCollector) {
@@ -73,9 +73,9 @@ class MuxStatsExamplePlayer(
 ) {
   // The base class provides a lot of simple functionality but you can add additional capabilities,
   //  and all the public functions are open in case their implementation doesn't work for your SDK
-  
+
   override fun videoChange(video: CustomerVideoData) {
-    super.videoChange(video.map { /* mutate the video data somehow */})
+    super.videoChange(video.map { /* mutate the video data somehow */ })
   }
 }
 ```
