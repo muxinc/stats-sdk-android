@@ -244,28 +244,49 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     private var appName = ""
     private var appVersion = ""
 
-    // TODO: A new API is coming for these, using CustomerViewerData.
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenDeviceName: String? = null
+    @Deprecated(
+      message = "Mux core does not use this value anymore.",
+      replaceWith = ReplaceWith("CustomerViewerData")
+    )
+    override fun getMuxManufacturer(): String? = ""
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenOsFamilyName: String? = null
+    @Deprecated(
+      message = "Mux core does not use this value anymore.",
+      replaceWith = ReplaceWith("CustomerViewerData")
+    )
+    override fun getMuxOSFamily(): String? = ""
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenOsVersion: String? = null
+    @Deprecated(
+      message = "Mux core does not use this value anymore.",
+      replaceWith = ReplaceWith("CustomerViewerData")
+    )
+    override fun getMuxOSVersion(): String? = ""
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    var overwrittenManufacturer: String? = null
+    @Deprecated(
+      message = "Mux core does not use this value anymore.",
+      replaceWith = ReplaceWith("CustomerViewerData")
+    )
+    override fun getMuxDeviceName(): String = ""
+
+    @Deprecated(
+      message = "Mux core does not use this value anymore.",
+      replaceWith = ReplaceWith("CustomerViewerData")
+    )
+    override fun getMuxDeviceCategory(): String = ""
+
+    @Deprecated(
+      message = "Mux core does not use this value anymore.",
+      replaceWith = ReplaceWith("CustomerViewerData")
+    )
+    override fun getMuxModelName(): String? = ""
 
     override fun getHardwareArchitecture(): String? = Build.HARDWARE
     override fun getOSFamily() = "Android"
-    override fun getMuxOSFamily(): String? = overwrittenOsFamilyName
     override fun getOSVersion() = Build.VERSION.RELEASE + " (" + Build.VERSION.SDK_INT + ")"
-    override fun getMuxOSVersion(): String? = overwrittenOsVersion
+    override fun getDeviceName(): String = "" // Default gets the name from the server
+    override fun getDeviceCategory(): String = "" // Default behavior gets name via server
     override fun getManufacturer(): String? = Build.MANUFACTURER
-    override fun getMuxManufacturer(): String? = overwrittenManufacturer
     override fun getModelName(): String? = Build.MODEL
-    override fun getMuxModelName(): String? = overwrittenDeviceName
     override fun getPlayerVersion() = playerVersion
     override fun getDeviceId() = deviceId
     override fun getAppName() = appName
@@ -356,15 +377,19 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       return SystemClock.elapsedRealtime()
     }
 
-    override fun outputLog(logPriority: LogPriority, tag: String, msg: String) {
+    override fun outputLog(logPriority: LogPriority?, tag: String?, msg: String?, t: Throwable?) {
       when (logPriority) {
-        LogPriority.ERROR -> Log.e(tag, msg)
-        LogPriority.WARN -> Log.w(tag, msg)
-        LogPriority.INFO -> Log.i(tag, msg)
-        LogPriority.DEBUG -> Log.d(tag, msg)
-        LogPriority.VERBOSE -> Log.v(tag, msg)
-        else -> Log.v(tag, msg)
+        LogPriority.ERROR -> Log.e(tag, msg, t)
+        LogPriority.WARN -> Log.w(tag, msg, t)
+        LogPriority.INFO -> Log.i(tag, msg, t)
+        LogPriority.DEBUG -> Log.d(tag, msg, t)
+        LogPriority.VERBOSE -> Log.v(tag, msg, t)
+        else -> Log.v(tag, msg, t)
       }
+    }
+
+    override fun outputLog(logPriority: LogPriority, tag: String, msg: String) {
+      outputLog(logPriority, tag, msg)
     }
 
     /**
