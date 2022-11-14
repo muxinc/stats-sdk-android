@@ -66,7 +66,7 @@ class HttpClientTests : AbsRobolectricTest() {
     val requestBodySlot = slot<ByteArray>()
     val request = MuxNetwork.POST(
       url = mockURL(TEST_URL, mockHttpUrlConnection(output = mockOutputStream(requestBodySlot))),
-      headers = mapOf(Pair("Content-Encoding", listOf("gzip"))),
+      headers = mapOf("Content-Encoding" to listOf("gzip")),
       body = originalData
     )
     val result = runInBg { httpClient.call(request) }
