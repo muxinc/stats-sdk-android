@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import com.mux.stats.sdk.core.Core
+import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
@@ -43,19 +44,21 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   context: Context,
   envKey: String,
   customerData: CustomerData,
+  customOptions: CustomOptions? = null,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>,
+  val playerAdapter: MuxPlayerAdapter<PlayerView, *, *>, // TODO: Build this by parts (Defaults for each other than customer data/ctx
+  playerListener: IPlayerListener,
   device: IDevice,
-  network: INetworkRequest = MuxNetwork(device),
+  network: INetworkRequest, /* TODO: Implement NetworkRequest as a protected static class here */
   logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
 
   // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val muxStats: MuxStats by playerAdapter::muxStats
+  protected val muxStats: MuxStats
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val eventBus: EventBus by playerAdapter::eventBus
+  protected val eventBus = EventBus()
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected lateinit var playerId: String
@@ -184,8 +187,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   init {
     customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
     customerData.customerPlayerData.environmentKey = envKey
-    muxStats.customerData = customerData
-    eventBus.addListener(muxStats)
+
+    // Just don't hold the context ref
     displayDensity = context.resources.displayMetrics.density
 
     // These must be statically set before creating our MuxStats
@@ -201,6 +204,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
         playerId = context.javaClass.canonicalName!! + "audio"
       }
     }
+    muxStats = MuxStats(playerListener, playerId, customerData, customOptions ?: CustomOptions())
+      .also { eventBus.addListener(it) }
     Core.allowLogcatOutputForPlayer(
       playerId,
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
@@ -212,15 +217,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * Values for the verbosity of [MuxLogger]'s output
    */
   protected enum class LogcatLevel { NONE, DEBUG, VERBOSE }
-
-  companion object {
-    /**
-     * Generates a player ID based off the containing context and the ID of the View being used for
-     * playback
-     */
-    protected fun generatePlayerId(context: Context, view: View?) =
-      context.javaClass.canonicalName!! + (view?.id ?: "audio")
-  }
 
   // ----------------------------------------------------------------------------------------------
   // Android platform interaction below.
@@ -244,49 +240,28 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     private var appName = ""
     private var appVersion = ""
 
-    @Deprecated(
-      message = "Mux core does not use this value anymore.",
-      replaceWith = ReplaceWith("CustomerViewerData")
-    )
-    override fun getMuxManufacturer(): String? = ""
+    // TODO: A new API is coming for these, using CustomerViewerData.
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenDeviceName: String? = null
 
-    @Deprecated(
-      message = "Mux core does not use this value anymore.",
-      replaceWith = ReplaceWith("CustomerViewerData")
-    )
-    override fun getMuxOSFamily(): String? = ""
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenOsFamilyName: String? = null
 
-    @Deprecated(
-      message = "Mux core does not use this value anymore.",
-      replaceWith = ReplaceWith("CustomerViewerData")
-    )
-    override fun getMuxOSVersion(): String? = ""
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenOsVersion: String? = null
 
-    @Deprecated(
-      message = "Mux core does not use this value anymore.",
-      replaceWith = ReplaceWith("CustomerViewerData")
-    )
-    override fun getMuxDeviceName(): String = ""
-
-    @Deprecated(
-      message = "Mux core does not use this value anymore.",
-      replaceWith = ReplaceWith("CustomerViewerData")
-    )
-    override fun getMuxDeviceCategory(): String = ""
-
-    @Deprecated(
-      message = "Mux core does not use this value anymore.",
-      replaceWith = ReplaceWith("CustomerViewerData")
-    )
-    override fun getMuxModelName(): String? = ""
+    @Suppress("MemberVisibilityCanBePrivate")
+    var overwrittenManufacturer: String? = null
 
     override fun getHardwareArchitecture(): String? = Build.HARDWARE
     override fun getOSFamily() = "Android"
+    override fun getMuxOSFamily(): String? = overwrittenOsFamilyName
     override fun getOSVersion() = Build.VERSION.RELEASE + " (" + Build.VERSION.SDK_INT + ")"
-    override fun getDeviceName(): String = "" // Default gets the name from the server
-    override fun getDeviceCategory(): String = "" // Default behavior gets name via server
+    override fun getMuxOSVersion(): String? = overwrittenOsVersion
     override fun getManufacturer(): String? = Build.MANUFACTURER
+    override fun getMuxManufacturer(): String? = overwrittenManufacturer
     override fun getModelName(): String? = Build.MODEL
+    override fun getMuxModelName(): String? = overwrittenDeviceName
     override fun getPlayerVersion() = playerVersion
     override fun getDeviceId() = deviceId
     override fun getAppName() = appName
@@ -377,19 +352,15 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       return SystemClock.elapsedRealtime()
     }
 
-    override fun outputLog(logPriority: LogPriority?, tag: String?, msg: String?, t: Throwable?) {
-      when (logPriority) {
-        LogPriority.ERROR -> Log.e(tag, msg, t)
-        LogPriority.WARN -> Log.w(tag, msg, t)
-        LogPriority.INFO -> Log.i(tag, msg, t)
-        LogPriority.DEBUG -> Log.d(tag, msg, t)
-        LogPriority.VERBOSE -> Log.v(tag, msg, t)
-        else -> Log.v(tag, msg, t)
-      }
-    }
-
     override fun outputLog(logPriority: LogPriority, tag: String, msg: String) {
-      outputLog(logPriority, tag, msg)
+      when (logPriority) {
+        LogPriority.ERROR -> Log.e(tag, msg)
+        LogPriority.WARN -> Log.w(tag, msg)
+        LogPriority.INFO -> Log.i(tag, msg)
+        LogPriority.DEBUG -> Log.d(tag, msg)
+        LogPriority.VERBOSE -> Log.v(tag, msg)
+        else -> Log.v(tag, msg)
+      }
     }
 
     /**
@@ -428,7 +399,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       /**
        * Gets the singleton instance
        */
-      val muxStatsInstance get() = MuxStats.getHostDevice() as? AndroidDevice
+      val muxStatsInstance = MuxStats.getHostDevice() as? AndroidDevice
     }
 
     init {
