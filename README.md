@@ -33,7 +33,8 @@ internal class ExamplePlayerBinding : PlayerBinding<ExamplePlayer> {
 }
 ```
 
-Extend the `MuxDataSdk` facade
+Extend the `MuxDataSdk` facade. Don't make the user have to create a `PlayerAdapter` or a `MuxStats`
+or any other "plumbing"-level class. 
 
 ```kotlin
 class MuxStatsExamplePlayer(
