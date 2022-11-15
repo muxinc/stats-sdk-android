@@ -432,7 +432,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * and UI data through a [MuxUiDelegate] appropriate for your player UI
    */
   @Suppress("RedundantNullableReturnType") // Lots of java interaction here
-  open class PlayerListenerBase<PlayerView : View>(
+  open class PlayerListener<PlayerView : View>(
     @Suppress("MemberVisibilityCanBePrivate") protected val viewDelegate: MuxUiDelegate<PlayerView>,
     @Suppress("MemberVisibilityCanBePrivate") protected val collector: MuxStateCollector,
   ) : IPlayerListener {

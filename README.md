@@ -34,7 +34,7 @@ internal class ExamplePlayerBinding : PlayerBinding<ExamplePlayer> {
 ```
 
 Extend the `MuxDataSdk` facade. Don't make the user have to create a `PlayerAdapter` or a `MuxStats`
-or any other "plumbing"-level class. 
+or any other "plumbing"-level class.
 
 ```kotlin
 class MuxStatsExamplePlayer(
@@ -46,14 +46,15 @@ class MuxStatsExamplePlayer(
   customOptions: CustomOptions? = null,
   /* Plus whatever other inputs are required*/
 ) : MuxDataSdk<ExamplePlayer, ExamplePlayer, ExamplePlayerView>(
-  context = context,
   envKey = envKey,
   customerData = customerData,
   playerAdapter = MuxPlayerAdapter(
     player = player,
     collector = MuxStateCollector(
       muxStats = MuxStats(
-        null,
+        PlayerListener(
+          viewDelegate = AAAAA SEE WE CANT DO PRIMARY CTORS
+        ),
         MuxDataSdk.generatePlayerId(context, view),
         customerData,
         CustomOptions()
@@ -61,7 +62,7 @@ class MuxStatsExamplePlayer(
       dispatcher = EventBus(),
       trackFirstFrameRendered = false // Only set to `true` if the player can give this info!
     ),
-    uiDelegate = noUiDelegate(),
+    uiDelegate = player.muxUiDelegate(context as? Activity),
     basicMetrics = ExamplePlayerBinding(),
   ),
   device = AndroidDevice(
