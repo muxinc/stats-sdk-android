@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
-import com.mux.stats.sdk.core.Core
 import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
@@ -40,7 +39,6 @@ import java.util.*
  */
 @Suppress("unused")
 abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected constructor(
-  context: Context,
   envKey: String,
   customerData: CustomerData,
   @Suppress("MemberVisibilityCanBePrivate")
@@ -56,9 +54,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val eventBus: EventBus by playerAdapter::eventBus
-
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected lateinit var playerId: String
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val uiDelegate by playerAdapter::uiDelegate
@@ -190,17 +185,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
     //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
     MuxStats.setHostDevice(device)
     MuxStats.setHostNetworkApi(network)
-    if (!::playerId.isInitialized) {
-      // playerId is for tracking static instances of CorePlayer in core
-      val viewId = playerAdapter.uiDelegate.getViewId()
-      if (viewId != View.NO_ID) {
-        context.javaClass.canonicalName!! + playerAdapter.uiDelegate.getViewId()
-      } else {
-        playerId = context.javaClass.canonicalName!! + "audio"
-      }
-    }
-    Core.allowLogcatOutputForPlayer(
-      playerId,
+    muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
       logLevel == LogcatLevel.VERBOSE
     )
