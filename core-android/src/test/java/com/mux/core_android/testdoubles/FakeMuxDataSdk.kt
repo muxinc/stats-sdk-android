@@ -2,7 +2,6 @@ package com.mux.core_android.testdoubles
 
 import android.content.Context
 import android.view.View
-import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.model.CustomerData
 import com.mux.stats.sdk.muxstats.*
 
@@ -12,7 +11,6 @@ import com.mux.stats.sdk.muxstats.*
  * doesn't require any special mocked behavior from them
  */
 open class FakeMuxDataSdk<Player, ExtraPlayer, V : View>(
-  context: Context = mockActivity(),
   envKey: String = "fake-env-key",
   customerData: CustomerData = CustomerData(),
   playerAdapter: MuxPlayerAdapter<View, Player, ExtraPlayer> = mockPlayerAdapter(),
@@ -20,11 +18,10 @@ open class FakeMuxDataSdk<Player, ExtraPlayer, V : View>(
   network: INetworkRequest = FakeNetwork(),
   verboseLogging: Boolean = false
 ) : MuxDataSdk<Player, ExtraPlayer, View>(
-  context = context,
   envKey = envKey,
   customerData = customerData,
   playerAdapter = playerAdapter,
   device = device,
   network = network,
-  if (verboseLogging) LogcatLevel.VERBOSE else LogcatLevel.DEBUG
+  logLevel = if (verboseLogging) LogcatLevel.VERBOSE else LogcatLevel.DEBUG
 )
