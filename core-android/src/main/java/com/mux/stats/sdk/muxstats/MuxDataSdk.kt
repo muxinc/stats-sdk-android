@@ -20,10 +20,10 @@ import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
+import com.mux.stats.sdk.muxstats.internal.convertPxToDp
 import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
 import java.util.*
-import kotlin.math.ceil
 
 /**
  * Base class for Mux Data SDK facades for Android. This class provides some structure to hold a
@@ -177,16 +177,14 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * @return number of density pixels calculated.
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  protected fun pxToDp(px: Int): Int {
-    return ceil((px / displayDensity).toDouble()).toInt()
-  }
+  protected fun pxToDp(px: Int): Int = convertPxToDp(px, displayDensity)
 
   init {
     customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
     customerData.customerPlayerData.environmentKey = envKey
     muxStats.customerData = customerData
     eventBus.addListener(muxStats)
-    displayDensity = context.resources.displayMetrics.density
+    displayDensity = uiDelegate.displayDensity()
 
     // These must be statically set before creating our MuxStats
     //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
@@ -442,4 +440,37 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
       }
     } // init
   } // protected open class ... : IDevice
+
+
+  /**
+   * Base implementation of [IPlayerListener] that gets player data through a [MuxStateCollector]
+   * and UI data through a [MuxUiDelegate] appropriate for your player UI
+   */
+  @Suppress("RedundantNullableReturnType") // Lots of java interaction here
+  open class PlayerListenerBase<PlayerView : View>(
+    @Suppress("MemberVisibilityCanBePrivate") protected val viewDelegate: MuxUiDelegate<PlayerView>,
+    @Suppress("MemberVisibilityCanBePrivate") protected val collector: MuxStateCollector,
+  ) : IPlayerListener {
+    override fun getCurrentPosition(): Long = collector.playbackPositionMills
+    override fun getMimeType() = collector.mimeType
+    override fun getSourceWidth(): Int = collector.sourceWidth
+    override fun getSourceHeight(): Int = collector.sourceHeight
+    override fun getSourceAdvertisedBitrate(): Int = collector.sourceAdvertisedBitrate
+    override fun getSourceAdvertisedFramerate(): Float = collector.sourceAdvertisedFrameRate
+    override fun getSourceDuration() = collector.sourceDurationMs
+    override fun isPaused() = collector.isPaused()
+    override fun isBuffering(): Boolean = collector.muxPlayerState == MuxPlayerState.BUFFERING
+    override fun getPlayerProgramTime(): Long? = null
+    override fun getPlayerManifestNewestTime(): Long? = null
+    override fun getVideoHoldback(): Long? = null
+    override fun getVideoPartHoldback(): Long? = null
+    override fun getVideoPartTargetDuration(): Long? = null
+    override fun getVideoTargetDuration(): Long? = null
+    override fun getPlayerViewWidth() =
+      convertPxToDp(viewDelegate.getPlayerViewSize().x, viewDelegate.displayDensity())
+
+    override fun getPlayerViewHeight() =
+      convertPxToDp(viewDelegate.getPlayerViewSize().y, viewDelegate.displayDensity())
+
+  }
 } // abstract class MuxDataSdk
