@@ -1,6 +1,5 @@
 package com.mux.core_android.testdoubles
 
-import android.content.Context
 import android.view.View
 import com.mux.stats.sdk.core.model.CustomerData
 import com.mux.stats.sdk.muxstats.*

@@ -2,6 +2,7 @@ package com.mux.stats.sdk.muxstats
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -38,15 +39,67 @@ import java.util.*
  * and so can be extended if additional functionality is required
  */
 @Suppress("unused")
-abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected constructor(
+abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> private constructor(
   envKey: String,
   customerData: CustomerData,
   @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>,
+  val playerAdapter: MuxPlayerAdapter<View, Player, ExtraPlayer>,
   device: IDevice,
   network: INetworkRequest = MuxNetwork(device),
   logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
+  protected constructor(
+    context: Context,
+    envKey: String,
+    customerData: CustomerData,
+    collector: MuxStateCollector,
+    player: Player,
+    playerView: PlayerView?,
+    basicBinding: MuxPlayerAdapter.PlayerBinding<Player>,
+    extraBindings: MuxPlayerAdapter.ExtraPlayerBindings<ExtraPlayer>?,
+    @Suppress("MemberVisibilityCanBePrivate")
+    device: IDevice,
+    network: INetworkRequest = MuxNetwork(device),
+    logLevel: LogcatLevel = LogcatLevel.NONE,
+  ) : this(
+    envKey = envKey,
+    customerData = customerData,
+    uiDelegate = playerView.muxUiDelegate(context as? Activity),
+    collector = collector,
+    player = player,
+    basicBinding = basicBinding,
+    extraBindings = extraBindings,
+    device = device,
+    network = network,
+    logLevel = logLevel,
+  )
+
+  protected constructor(
+    envKey: String,
+    customerData: CustomerData,
+    collector: MuxStateCollector,
+    uiDelegate: MuxUiDelegate<View>,
+    player: Player,
+    basicBinding: MuxPlayerAdapter.PlayerBinding<Player>,
+    extraBindings: MuxPlayerAdapter.ExtraPlayerBindings<ExtraPlayer>?,
+    @Suppress("MemberVisibilityCanBePrivate")
+    device: IDevice,
+    network: INetworkRequest = MuxNetwork(device),
+    logLevel: LogcatLevel = LogcatLevel.NONE,
+  ) : this(
+    envKey = envKey,
+    customerData = customerData,
+    playerAdapter = MuxPlayerAdapter(
+      collector = collector,
+      player = player,
+      uiDelegate = uiDelegate,
+      basicMetrics = basicBinding,
+      extraMetrics = extraBindings
+    ),
+    device = device,
+    network = network,
+    logLevel = logLevel,
+  )
 
   // MuxCore Java Stuff
   @Suppress("MemberVisibilityCanBePrivate")
@@ -194,7 +247,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   /**
    * Values for the verbosity of [MuxLogger]'s output
    */
-  protected enum class LogcatLevel { NONE, DEBUG, VERBOSE }
+  enum class LogcatLevel { NONE, DEBUG, VERBOSE }
 
   companion object {
     /**

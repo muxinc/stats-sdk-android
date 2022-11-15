@@ -53,7 +53,7 @@ class MuxStatsExamplePlayer(
     collector = MuxStateCollector(
       muxStats = MuxStats(
         PlayerListener(
-          viewDelegate = AAAAA SEE WE CANT DO PRIMARY CTORS
+          viewDelegate = AAAAA SEE WE CANT DO PRIMARY CTORS, UI Delegate is now needed in 2 places here
         ),
         MuxDataSdk.generatePlayerId(context, view),
         customerData,
