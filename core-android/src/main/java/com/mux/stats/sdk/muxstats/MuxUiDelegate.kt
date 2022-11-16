@@ -33,6 +33,11 @@ abstract class MuxUiDelegate<PlayerView>(view: PlayerView?) {
    * there is no view
    */
   abstract fun getViewId(): Int
+
+  /**
+   * Returns the overall density of the host display, if applicable
+   */
+  abstract fun displayDensity(): Float
 }
 
 /**
@@ -42,6 +47,7 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
   MuxUiDelegate<PlayerView>(view) {
 
   private val _screenSize: Point = activity?.let { screenSize(it) } ?: Point()
+  private val displayDensity = activity?.resources?.displayMetrics?.density ?: 0F
 
   override fun getPlayerViewSize(): Point = view?.let { view ->
     Point().apply {
@@ -92,6 +98,8 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
   override fun getViewId(): Int {
     return view?.id ?: View.NO_ID
   }
+
+  override fun displayDensity(): Float = displayDensity
 }
 
 /**
@@ -99,8 +107,8 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
  */
 @Suppress("unused")
 @JvmSynthetic
-internal fun <V : View> V?.muxUiDelegate(activity: Activity)
-        : MuxUiDelegate<View> = AndroidUiDelegate(activity, this)
+internal fun <V : View> V?.muxUiDelegate(activity: Activity?)
+        : MuxUiDelegate<V> = AndroidUiDelegate(activity, this)
 
 /**
  * Create a MuxUiDelegate for a view-less playback experience. Returns 0 for all sizes, as we are

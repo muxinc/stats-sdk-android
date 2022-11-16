@@ -67,7 +67,7 @@ fun mockActivity(
   prefs: SharedPreferences = mockSharedPrefs(),
   pm: PackageManager = mockPackageManager(),
   connMgr: ConnectivityManager = mockConnectivityManager16(NetworkCapabilities.TRANSPORT_CELLULAR)
-) = mockk<Activity> {
+) = mockk<Activity>(relaxed = true) {
   every { windowManager } returns mockk {
     every { defaultDisplay } returns mockk {
       every { getSize(Point()) } answers {

@@ -34,7 +34,7 @@ internal class ExamplePlayerBinding : PlayerBinding<ExamplePlayer> {
 ```
 
 Extend the `MuxDataSdk` facade. Don't make the user have to create a `PlayerAdapter` or a `MuxStats`
-or any other "plumbing"-level class. 
+or any other "plumbing"-level class.
 
 ```kotlin
 class MuxStatsExamplePlayer(
@@ -49,32 +49,22 @@ class MuxStatsExamplePlayer(
   context = context,
   envKey = envKey,
   customerData = customerData,
-  playerAdapter = MuxPlayerAdapter(
-    player = player,
-    collector = MuxStateCollector(
-      muxStats = MuxStats(
-        null,
-        MuxDataSdk.generatePlayerId(context, view),
-        customerData,
-        CustomOptions()
-      ),
-      dispatcher = EventBus(),
-      trackFirstFrameRendered = false // Only set to `true` if the player can give this info!
-    ),
-    uiDelegate = noUiDelegate(),
-    basicMetrics = ExamplePlayerBinding(),
-  ),
+  customOptions = customOptions,
+  player = player,
+  playerView = playerView,
+  playerBinding = ExamplePlayerBinding(), // ExamplePlayerBinding provided by you
+  trackFirstFrame = false, // set to `true` only if your player can provide this information
   device = AndroidDevice(
     ctx = context,
-    playerVersion = player.getVersion(),
-    muxPluginName = "example-sdk",
-    muxPluginVersion = BuildConfig.LIB_VERSION,
-    playerSoftware = "example-player"
-  ),
+    playerSoftware = "someplayer",
+    playerVersion = "1.1.1",
+    muxPluginName = "plugin",
+    muxPluginVersion = BuildConfig.LIB_VERSION
+  )
 ) {
   // The base class provides a lot of simple functionality but you can add additional capabilities,
   //  and all the public functions are open in case their implementation doesn't work for your SDK
-
+  
   override fun videoChange(video: CustomerVideoData) {
     super.videoChange(video.map { /* mutate the video data somehow */ })
   }
