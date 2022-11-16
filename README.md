@@ -44,7 +44,7 @@ class MuxStatsExamplePlayer(
   player: ExamplePlayer,
   playerView: ExamplePlayerView? = null,
   customOptions: CustomOptions? = null,
-  /* Plus whatever other inputs are required*/
+  /* Plus whatever other inputs are required for your particular SDK*/
 ) : MuxDataSdk<ExamplePlayer, ExamplePlayer, ExamplePlayerView>(
   context = context,
   envKey = envKey,
@@ -64,7 +64,11 @@ class MuxStatsExamplePlayer(
 ) {
   // The base class provides a lot of simple functionality but you can add additional capabilities,
   //  and all the public functions are open in case their implementation doesn't work for your SDK
-  
+
+  /**
+   * For example, you could process the customer's video data somehow then pass it to the super 
+   * class
+   */
   override fun videoChange(video: CustomerVideoData) {
     super.videoChange(video.map { /* mutate the video data somehow */ })
   }
