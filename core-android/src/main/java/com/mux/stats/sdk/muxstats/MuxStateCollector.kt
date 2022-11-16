@@ -26,7 +26,7 @@ import kotlin.properties.Delegates
  */
 open class MuxStateCollector(
   val muxStats: MuxStats,
-  val dispatcher: EventBus,
+  val dispatcher: IEventDispatcher,
   private val trackFirstFrameRendered: Boolean = true,
 ) {
 

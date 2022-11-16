@@ -1,6 +1,7 @@
 package com.mux.stats.sdk.muxstats.internal
 
 import java.util.regex.Pattern
+import kotlin.math.ceil
 
 @JvmSynthetic
 internal fun <Any> Any.oneOf(vararg these: Any) = these.contains(this)
@@ -17,6 +18,11 @@ internal fun <Any> allEqual(these: List<Any>): Boolean {
     these.slice(1..these.lastIndex).onEach { if (head != it) return false }
     return true
   }
+}
+
+@JvmSynthetic
+internal fun convertPxToDp(px: Int, displayDensity: Float): Int {
+  return ceil((px / displayDensity).toDouble()).toInt()
 }
 
 /**

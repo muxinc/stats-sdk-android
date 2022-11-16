@@ -2,6 +2,7 @@ package com.mux.stats.sdk.muxstats
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -11,19 +12,20 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
-import com.mux.stats.sdk.core.Core
+import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
+import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.model.CustomerData
 import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
+import com.mux.stats.sdk.muxstats.internal.convertPxToDp
 import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
 import java.util.*
-import kotlin.math.ceil
 
 /**
  * Base class for Mux Data SDK facades for Android. This class provides some structure to hold a
@@ -42,31 +44,55 @@ import kotlin.math.ceil
 abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected constructor(
   context: Context,
   envKey: String,
+  player: Player,
+  playerView: PlayerView?,
   customerData: CustomerData,
-  @Suppress("MemberVisibilityCanBePrivate")
-  val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>,
   device: IDevice,
+  playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
+  customOptions: CustomOptions = CustomOptions(),
+  trackFirstFrame: Boolean = false,
+  makePlayerId: (context: Context, view: View?) -> String = Companion::generatePlayerId,
+  makeMuxStats: (
+    playerListener: IPlayerListener,
+    playerId: String,
+    customerData: CustomerData,
+    customOptions: CustomOptions
+  ) -> MuxStats = Companion::defaultMuxStats,
+  makeEventBus: () -> EventBus = { EventBus() },
+  makePlayerAdapter: (
+    player: Player,
+    uiDelegate: MuxUiDelegate<PlayerView>,
+    collector: MuxStateCollector,
+    playerBinding: MuxPlayerAdapter.PlayerBinding<Player>
+  ) -> MuxPlayerAdapter<PlayerView, Player, ExtraPlayer> = Companion::defaultPlayerAdapter,
+  makeStateCollector: (
+    muxStats: MuxStats,
+    dispatcher: IEventDispatcher,
+    trackFirstFrame: Boolean
+  ) -> MuxStateCollector = Companion::defaultMuxStateCollector,
+  makeUiDelegate: (
+    context: Context, view: PlayerView?
+  ) -> MuxUiDelegate<PlayerView> = Companion::defaultUiDelegate,
   network: INetworkRequest = MuxNetwork(device),
   logLevel: LogcatLevel = LogcatLevel.NONE,
-) {
-
-  // MuxCore Java Stuff
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected val muxStats: MuxStats by playerAdapter::muxStats
+) : IPlayerListener {
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val eventBus: EventBus by playerAdapter::eventBus
+  protected val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>
+  protected val muxStats: MuxStats
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected lateinit var playerId: String
+  protected val eventBus: EventBus
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val uiDelegate by playerAdapter::uiDelegate
-  protected val basicPlayer by playerAdapter::basicPlayer
-  protected val extraPlayer by playerAdapter::extraPlayer
+  protected val basicPlayer: Player
+  protected val extraPlayer: ExtraPlayer? = null
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val collector by playerAdapter::collector
+  protected val uiDelegate: MuxUiDelegate<PlayerView>
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val collector: MuxStateCollector
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val displayDensity: Float
@@ -177,32 +203,52 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
    * @return number of density pixels calculated.
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  protected fun pxToDp(px: Int): Int {
-    return ceil((px / displayDensity).toDouble()).toInt()
-  }
+  protected fun pxToDp(px: Int): Int = convertPxToDp(px, displayDensity)
+
+  override fun getCurrentPosition(): Long = collector.playbackPositionMills
+  override fun getMimeType() = collector.mimeType
+  override fun getSourceWidth(): Int = collector.sourceWidth
+  override fun getSourceHeight(): Int = collector.sourceHeight
+  override fun getSourceAdvertisedBitrate(): Int = collector.sourceAdvertisedBitrate
+  override fun getSourceAdvertisedFramerate(): Float = collector.sourceAdvertisedFrameRate
+  override fun getSourceDuration() = collector.sourceDurationMs
+  override fun isPaused() = collector.isPaused()
+  override fun isBuffering(): Boolean = collector.muxPlayerState == MuxPlayerState.BUFFERING
+  override fun getPlayerProgramTime(): Long? = null
+  override fun getPlayerManifestNewestTime(): Long? = null
+  override fun getVideoHoldback(): Long? = null
+  override fun getVideoPartHoldback(): Long? = null
+  override fun getVideoPartTargetDuration(): Long? = null
+  override fun getVideoTargetDuration(): Long? = null
+  override fun getPlayerViewWidth() =
+    convertPxToDp(uiDelegate.getPlayerViewSize().x, uiDelegate.displayDensity())
+
+  override fun getPlayerViewHeight() =
+    convertPxToDp(uiDelegate.getPlayerViewSize().y, uiDelegate.displayDensity())
+
 
   init {
+    basicPlayer = player
+    eventBus = makeEventBus()
+    @Suppress("LeakingThis")
+    muxStats = makeMuxStats(this, makePlayerId(context, playerView), customerData, customOptions)
+    collector = makeStateCollector(muxStats, eventBus, trackFirstFrame)
+    uiDelegate = makeUiDelegate(context, playerView)
+    playerAdapter = makePlayerAdapter(
+      player, uiDelegate, collector, playerBinding
+    )
+
     customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
     customerData.customerPlayerData.environmentKey = envKey
     muxStats.customerData = customerData
     eventBus.addListener(muxStats)
-    displayDensity = context.resources.displayMetrics.density
+    displayDensity = uiDelegate.displayDensity()
 
     // These must be statically set before creating our MuxStats
     //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
     MuxStats.setHostDevice(device)
     MuxStats.setHostNetworkApi(network)
-    if (!::playerId.isInitialized) {
-      // playerId is for tracking static instances of CorePlayer in core
-      val viewId = playerAdapter.uiDelegate.getViewId()
-      if (viewId != View.NO_ID) {
-        context.javaClass.canonicalName!! + playerAdapter.uiDelegate.getViewId()
-      } else {
-        playerId = context.javaClass.canonicalName!! + "audio"
-      }
-    }
-    Core.allowLogcatOutputForPlayer(
-      playerId,
+    muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
       logLevel == LogcatLevel.VERBOSE
     )
@@ -211,7 +257,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
   /**
    * Values for the verbosity of [MuxLogger]'s output
    */
-  protected enum class LogcatLevel { NONE, DEBUG, VERBOSE }
+  enum class LogcatLevel { NONE, DEBUG, VERBOSE }
 
   companion object {
     /**
@@ -220,6 +266,37 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected cons
      */
     protected fun generatePlayerId(context: Context, view: View?) =
       context.javaClass.canonicalName!! + (view?.id ?: "audio")
+
+    protected fun <V : View> defaultUiDelegate(
+      context: Context,
+      view: V?
+    ) = view.muxUiDelegate(context as? Activity)
+
+    protected fun defaultMuxStats(
+      playerListener: IPlayerListener,
+      playerId: String,
+      customerData: CustomerData,
+      customOptions: CustomOptions
+    ): MuxStats = MuxStats(playerListener, playerId, customerData, customOptions)
+
+    protected fun <Player, ExtraPlayer, PlayerView : View> defaultPlayerAdapter(
+      player: Player,
+      uiDelegate: MuxUiDelegate<PlayerView>,
+      collector: MuxStateCollector,
+      playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
+    ) = MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>(
+      player,
+      collector,
+      uiDelegate,
+      playerBinding
+    )
+
+    protected fun defaultMuxStateCollector(
+      muxStats: MuxStats,
+      dispatcher: IEventDispatcher,
+      trackFirstFrame: Boolean = false
+    ) = MuxStateCollector(muxStats, dispatcher, trackFirstFrame)
+
   }
 
   // ----------------------------------------------------------------------------------------------
