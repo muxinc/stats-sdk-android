@@ -53,6 +53,7 @@ class MuxStatsExamplePlayer(
   player = player,
   playerView = playerView,
   playerBinding = ExamplePlayerBinding(), // ExamplePlayerBinding provided by you
+  trackFirstFrame = false, // set to `true` only if your player can provide this information
   device = AndroidDevice(
     ctx = context,
     playerSoftware = "someplayer",
