@@ -46,36 +46,24 @@ class MuxStatsExamplePlayer(
   customOptions: CustomOptions? = null,
   /* Plus whatever other inputs are required*/
 ) : MuxDataSdk<ExamplePlayer, ExamplePlayer, ExamplePlayerView>(
+  context = context,
   envKey = envKey,
   customerData = customerData,
-  playerAdapter = MuxPlayerAdapter(
-    player = player,
-    collector = MuxStateCollector(
-      muxStats = MuxStats(
-        PlayerListener(
-          viewDelegate = AAAAA SEE WE CANT DO PRIMARY CTORS, UI Delegate is now needed in 2 places here
-        ),
-        MuxDataSdk.generatePlayerId(context, view),
-        customerData,
-        CustomOptions()
-      ),
-      dispatcher = EventBus(),
-      trackFirstFrameRendered = false // Only set to `true` if the player can give this info!
-    ),
-    uiDelegate = player.muxUiDelegate(context as? Activity),
-    basicMetrics = ExamplePlayerBinding(),
-  ),
+  customOptions = customOptions,
+  player = player,
+  playerView = playerView,
+  playerBinding = ExamplePlayerBinding(), // ExamplePlayerBinding provided by you
   device = AndroidDevice(
     ctx = context,
-    playerVersion = player.getVersion(),
-    muxPluginName = "example-sdk",
-    muxPluginVersion = BuildConfig.LIB_VERSION,
-    playerSoftware = "example-player"
-  ),
+    playerSoftware = "someplayer",
+    playerVersion = "1.1.1",
+    muxPluginName = "plugin",
+    muxPluginVersion = BuildConfig.LIB_VERSION
+  )
 ) {
   // The base class provides a lot of simple functionality but you can add additional capabilities,
   //  and all the public functions are open in case their implementation doesn't work for your SDK
-
+  
   override fun videoChange(video: CustomerVideoData) {
     super.videoChange(video.map { /* mutate the video data somehow */ })
   }

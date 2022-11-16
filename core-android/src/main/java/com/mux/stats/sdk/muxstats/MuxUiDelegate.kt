@@ -108,7 +108,7 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
 @Suppress("unused")
 @JvmSynthetic
 internal fun <V : View> V?.muxUiDelegate(activity: Activity?)
-        : MuxUiDelegate<View> = AndroidUiDelegate(activity, this)
+        : MuxUiDelegate<V> = AndroidUiDelegate(activity, this)
 
 /**
  * Create a MuxUiDelegate for a view-less playback experience. Returns 0 for all sizes, as we are
