@@ -249,8 +249,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   init {
     this.player = player
     eventBus = makeEventBus()
-    @Suppress("LeakingThis")
     uiDelegate = makeUiDelegate(context, playerView)
+    @Suppress("LeakingThis")
     muxStats = makeMuxStats(
       makePlayerListener(this),
       makePlayerId(context, playerView),
