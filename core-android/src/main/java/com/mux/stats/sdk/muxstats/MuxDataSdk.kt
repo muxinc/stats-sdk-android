@@ -56,6 +56,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
   customOptions: CustomOptions = CustomOptions(),
   trackFirstFrame: Boolean = false,
+  network: INetworkRequest = MuxNetwork(device),
+  logLevel: LogcatLevel = LogcatLevel.NONE,
   makePlayerId: (context: Context, view: View?) -> String = Companion::generatePlayerId,
   makePlayerListener: (
     of: MuxDataSdk<Player, ExtraPlayer, PlayerView>
@@ -81,8 +83,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   makeUiDelegate: (
     context: Context, view: PlayerView?
   ) -> MuxUiDelegate<PlayerView> = Companion::defaultUiDelegate,
-  network: INetworkRequest = MuxNetwork(device),
-  logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -212,6 +212,9 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected open inner class PlayerListenerBase : IPlayerListener {
+    @Suppress("RedundantNullableReturnType")
+    protected val collector: MuxStateCollector? get() = this@MuxDataSdk.collector
+
     /**
      * Convert physical pixels to device density independent pixels.
      *
@@ -221,15 +224,15 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun pxToDp(px: Int): Int = convertPxToDp(px, uiDelegate.displayDensity())
 
-    override fun getCurrentPosition(): Long = collector.playbackPositionMills
-    override fun getMimeType() = collector.mimeType
-    override fun getSourceWidth(): Int = collector.sourceWidth
-    override fun getSourceHeight(): Int = collector.sourceHeight
-    override fun getSourceAdvertisedBitrate(): Int = collector.sourceAdvertisedBitrate
-    override fun getSourceAdvertisedFramerate(): Float = collector.sourceAdvertisedFrameRate
-    override fun getSourceDuration() = collector.sourceDurationMs
-    override fun isPaused() = collector.isPaused()
-    override fun isBuffering(): Boolean = collector.muxPlayerState == MuxPlayerState.BUFFERING
+    override fun getCurrentPosition(): Long = collector?.playbackPositionMills ?: 0L
+    override fun getMimeType() = collector?.mimeType
+    override fun getSourceWidth(): Int? = collector?.sourceWidth
+    override fun getSourceHeight(): Int? = collector?.sourceHeight
+    override fun getSourceAdvertisedBitrate(): Int? = collector?.sourceAdvertisedBitrate
+    override fun getSourceAdvertisedFramerate(): Float? = collector?.sourceAdvertisedFrameRate
+    override fun getSourceDuration() = collector?.sourceDurationMs
+    override fun isPaused() = collector?.isPaused() ?: true
+    override fun isBuffering(): Boolean = collector?.muxPlayerState == MuxPlayerState.BUFFERING
     override fun getPlayerProgramTime(): Long? = null
     override fun getPlayerManifestNewestTime(): Long? = null
     override fun getVideoHoldback(): Long? = null
@@ -246,6 +249,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   init {
     this.player = player
     eventBus = makeEventBus()
+    uiDelegate = makeUiDelegate(context, playerView)
     @Suppress("LeakingThis")
     muxStats = makeMuxStats(
       makePlayerListener(this),
@@ -254,7 +258,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
       customOptions
     )
     collector = makeStateCollector(muxStats, eventBus, trackFirstFrame)
-    uiDelegate = makeUiDelegate(context, playerView)
     playerAdapter = makePlayerAdapter(
       player, uiDelegate, collector, playerBinding
     )
