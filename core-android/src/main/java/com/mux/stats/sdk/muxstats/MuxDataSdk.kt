@@ -212,6 +212,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected open inner class PlayerListenerBase : IPlayerListener {
+    protected val collector: MuxStateCollector get() = this@MuxDataSdk.collector
+
     /**
      * Convert physical pixels to device density independent pixels.
      *
