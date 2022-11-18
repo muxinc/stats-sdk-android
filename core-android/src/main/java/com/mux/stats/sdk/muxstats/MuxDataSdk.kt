@@ -250,6 +250,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
     this.player = player
     eventBus = makeEventBus()
     @Suppress("LeakingThis")
+    uiDelegate = makeUiDelegate(context, playerView)
     muxStats = makeMuxStats(
       makePlayerListener(this),
       makePlayerId(context, playerView),
@@ -257,7 +258,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
       customOptions
     )
     collector = makeStateCollector(muxStats, eventBus, trackFirstFrame)
-    uiDelegate = makeUiDelegate(context, playerView)
     playerAdapter = makePlayerAdapter(
       player, uiDelegate, collector, playerBinding
     )
