@@ -493,7 +493,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
     }
 
     override fun outputLog(logPriority: LogPriority, tag: String, msg: String) {
-      outputLog(logPriority, tag, msg)
+      outputLog(logPriority, tag, msg, null)
     }
 
     /**
