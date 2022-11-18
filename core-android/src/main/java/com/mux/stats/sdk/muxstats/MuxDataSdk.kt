@@ -56,6 +56,8 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
   customOptions: CustomOptions = CustomOptions(),
   trackFirstFrame: Boolean = false,
+  network: INetworkRequest = MuxNetwork(device),
+  logLevel: LogcatLevel = LogcatLevel.NONE,
   makePlayerId: (context: Context, view: View?) -> String = Companion::generatePlayerId,
   makePlayerListener: (
     of: MuxDataSdk<Player, ExtraPlayer, PlayerView>
@@ -81,8 +83,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   makeUiDelegate: (
     context: Context, view: PlayerView?
   ) -> MuxUiDelegate<PlayerView> = Companion::defaultUiDelegate,
-  network: INetworkRequest = MuxNetwork(device),
-  logLevel: LogcatLevel = LogcatLevel.NONE,
 ) {
 
   @Suppress("MemberVisibilityCanBePrivate")
