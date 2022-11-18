@@ -39,9 +39,14 @@ import java.util.*
  * This class also has two protected static classes, [AndroidDevice] and [MuxNetwork]. These
  * classes provide all platform and network interaction required for most SDKs. They are both open,
  * and so can be extended if additional functionality is required
+ *
+ * Using the class for its base features only requires extending it. If you need additional
+ * features, you can inject your own instances of [IPlayerListener], [MuxStateCollector],
+ * [MuxPlayerAdapter], and [MuxUiDelegate], that work with your [MuxPlayerAdapter.PlayerBinding] to
+ * track the required data.
  */
 @Suppress("unused")
-abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> protected constructor(
+abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads protected constructor(
   context: Context,
   envKey: String,
   player: Player,
