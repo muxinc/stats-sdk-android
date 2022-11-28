@@ -52,16 +52,11 @@ class PlayerAdapterTests : AbsRobolectricTest() {
       every { bindPlayer(any(), any()) } just runs
       every { unbindPlayer(any(), any()) } just runs
     }
-    val extraBinding = mockk<MuxPlayerAdapter.PlayerBinding<Any>> {
-      every { bindPlayer(any(), any()) } just runs
-      every { unbindPlayer(any(), any()) } just runs
-    }
     val playerAdapter = playerAdapter(basicBinding)
     playerAdapter.unbindEverything()
 
     verify {
       basicBinding.unbindPlayer(any(), any())
-      extraBinding.unbindPlayer(any(), any())
     }
   }
 

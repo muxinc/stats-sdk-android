@@ -9,14 +9,12 @@ import com.mux.stats.sdk.muxstats.internal.weak
  * Adapts a player framework to a [MuxStateCollector], passing events between them using
  * [PlayerBinding] implementations provided by the player SDK
  *
- * TODO: [PlayerView] will need to be further generified to support Compose, probably
+ * TODO: [MuxUiDelegate] will need to be further generified to support Compose, probably
  *
  * @param player the Player object that should be tracked, such as MediaPlayer or ExoPlayer
  * @param collector The [MuxStateCollector] used to track state & dispatch events
  * @param uiDelegate The [MuxUiDelegate] used for gathering UI-related metrics
  * @param basicMetrics A [PlayerBinding] that listens to state from a player of type [MainPlayer]
- * @param extraMetrics A list of [PlayerBinding]s for advanced metrics, which may come from a
- *                     different Player object, such as bandwidth metrics in Media3 or JWPlayer
  *
  * @param PlayerView The View used to show Player content and (possibly) player chrome.
  *                   When in doubt (or for player SDKs with multiple player views), use View
