@@ -45,7 +45,7 @@ class MuxStatsExamplePlayer(
   playerView: ExamplePlayerView? = null,
   customOptions: CustomOptions? = null,
   /* Plus whatever other inputs are required for your particular SDK*/
-) : MuxDataSdk<ExamplePlayer, ExamplePlayer, ExamplePlayerView>(
+) : MuxDataSdk<ExamplePlayer, ExamplePlayerView>(
   context = context,
   envKey = envKey,
   customerData = customerData,
