@@ -46,7 +46,7 @@ import java.util.*
  * track the required data.
  */
 @Suppress("unused")
-abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads protected constructor(
+abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected constructor(
   context: Context,
   envKey: String,
   player: Player,
@@ -58,35 +58,35 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
   trackFirstFrame: Boolean = false,
   network: INetworkRequest = MuxNetwork(device),
   logLevel: LogcatLevel = LogcatLevel.NONE,
-  makePlayerId: (context: Context, view: View?) -> String = Companion::generatePlayerId,
+  makePlayerId: (context: Context, view: View?) -> String = Factory::generatePlayerId,
   makePlayerListener: (
-    of: MuxDataSdk<Player, ExtraPlayer, PlayerView>
-  ) -> IPlayerListener = Companion::defaultPlayerListener,
+    of: MuxDataSdk<Player, PlayerView>
+  ) -> IPlayerListener = Factory::defaultPlayerListener,
   makeMuxStats: (
     playerListener: IPlayerListener,
     playerId: String,
     customerData: CustomerData,
     customOptions: CustomOptions
-  ) -> MuxStats = Companion::defaultMuxStats,
+  ) -> MuxStats = Factory::defaultMuxStats,
   makeEventBus: () -> EventBus = { EventBus() },
   makePlayerAdapter: (
     player: Player,
     uiDelegate: MuxUiDelegate<PlayerView>,
     collector: MuxStateCollector,
     playerBinding: MuxPlayerAdapter.PlayerBinding<Player>
-  ) -> MuxPlayerAdapter<PlayerView, Player, ExtraPlayer> = Companion::defaultPlayerAdapter,
+  ) -> MuxPlayerAdapter<PlayerView, Player> = Factory::defaultPlayerAdapter,
   makeStateCollector: (
     muxStats: MuxStats,
     dispatcher: IEventDispatcher,
     trackFirstFrame: Boolean
-  ) -> MuxStateCollector = Companion::defaultMuxStateCollector,
+  ) -> MuxStateCollector = Factory::defaultMuxStateCollector,
   makeUiDelegate: (
     context: Context, view: PlayerView?
-  ) -> MuxUiDelegate<PlayerView> = Companion::defaultUiDelegate,
+  ) -> MuxUiDelegate<PlayerView> = Factory::defaultUiDelegate,
 ) {
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>
+  protected val playerAdapter: MuxPlayerAdapter<PlayerView, Player>
   protected val muxStats: MuxStats
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -94,7 +94,6 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val player: Player
-  protected val extraPlayer: ExtraPlayer? = null
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val uiDelegate: MuxUiDelegate<PlayerView>
@@ -283,42 +282,42 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
    */
   enum class LogcatLevel { NONE, DEBUG, VERBOSE }
 
-  companion object {
+  protected companion object Factory {
     /**
      * Generates a player ID based off the containing context and the ID of the View being used for
      * playback
      */
-    protected fun generatePlayerId(context: Context, view: View?) =
+    fun generatePlayerId(context: Context, view: View?) =
       context.javaClass.canonicalName!! + (view?.id ?: "audio")
 
-    protected fun defaultPlayerListener(outerSdk: MuxDataSdk<*, *, *>): IPlayerListener =
+    fun defaultPlayerListener(outerSdk: MuxDataSdk<*, *>): IPlayerListener =
       outerSdk.PlayerListenerBase()
 
-    protected fun <V : View> defaultUiDelegate(
+    fun <V : View> defaultUiDelegate(
       context: Context,
       view: V?
     ) = view.muxUiDelegate(context as? Activity)
 
-    protected fun defaultMuxStats(
+    fun defaultMuxStats(
       playerListener: IPlayerListener,
       playerId: String,
       customerData: CustomerData,
       customOptions: CustomOptions
     ): MuxStats = MuxStats(playerListener, playerId, customerData, customOptions)
 
-    protected fun <Player, ExtraPlayer, PlayerView : View> defaultPlayerAdapter(
+    fun <Player, PlayerView : View> defaultPlayerAdapter(
       player: Player,
       uiDelegate: MuxUiDelegate<PlayerView>,
       collector: MuxStateCollector,
       playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
-    ) = MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>(
+    ) = MuxPlayerAdapter(
       player,
       collector,
       uiDelegate,
       playerBinding
     )
 
-    protected fun defaultMuxStateCollector(
+    fun defaultMuxStateCollector(
       muxStats: MuxStats,
       dispatcher: IEventDispatcher,
       trackFirstFrame: Boolean = false

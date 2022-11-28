@@ -1,6 +1,5 @@
 package com.mux.stats.sdk.muxstats
 
-import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.events.InternalErrorEvent
@@ -119,12 +118,12 @@ open class MuxStateCollector(
 
   /**
    * An asynchronous watcher for playback position. It waits for the given update interval, and
-   * then sets the [.playbackPositionMillis] property on this object. It can be stopped by
-   * calling [PositionWatcher.stop], and will automatically stop if it can no longer
+   * then sets the [playbackPositionMills] property on this object. It can be stopped by
+   * calling [PlayerWatcher.stop], and will automatically stop if it can no longer
    * access play time info
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  var positionWatcher: PositionWatcher<*>?
+  var playerWatcher: PlayerWatcher<*>?
           by Delegates.observable(null) @Synchronized { _, old, _ ->
             old?.apply { stop("watcher replaced") }
           }
@@ -414,7 +413,7 @@ open class MuxStateCollector(
    */
   @Suppress("unused")
   fun release() {
-    positionWatcher?.stop("tracker released")
+    playerWatcher?.stop("tracker released")
     dead = true
   }
 
@@ -476,6 +475,11 @@ open class MuxStateCollector(
    * Manages a timer loop in a coroutine scope that periodically polls the player for its current
    * playback position. The polling is done from the main thread.
    *
+   * To create this object you must provide a function that can read the state info from your
+   * player. This function takes both a [Player] and a [MuxStateCollector], allowing you to update
+   * any information you need to poll for. This function must return the reported playback position
+   * of the player, or [TIME_UNKNOWN] if the time isn't known
+   *
    * This object should be stopped when no longer needed. To handle cases where users forget to
    * release our SDK, implementations should not hold strong references to big objects like context
    * or a player. If [checkPositionMillis] returns null, this object will automatically stop
@@ -492,16 +496,16 @@ open class MuxStateCollector(
    *
    *  @param Player The type of the Player object. Should be something that returns playback pos
    */
-  class PositionWatcher<Player>(
+  class PlayerWatcher<Player>(
     @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
     @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
     player: Player, // reminder not to use val, a weak reference is kept instead
-    val checkPositionMillis: (Player) -> Long
+    val checkPositionMillis: (Player, MuxStateCollector) -> Long
   ) {
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val player by weak(player)
 
-    private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it) }
+    private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it, stateCollector) }
 
     fun stop(message: String) {
       timerScope.cancel(message)
