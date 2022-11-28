@@ -66,8 +66,7 @@ class MuxStatsExamplePlayer(
   //  and all the public functions are open in case their implementation doesn't work for your SDK
 
   /**
-   * For example, you could process the customer's video data somehow then pass it to the super 
-   * class
+   * For example, do some special logic when the video is changed
    */
   override fun videoChange(video: CustomerVideoData) {
     super.videoChange(video.map { /* mutate the video data somehow */ })
