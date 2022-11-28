@@ -74,7 +74,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
     uiDelegate: MuxUiDelegate<PlayerView>,
     collector: MuxStateCollector,
     playerBinding: MuxPlayerAdapter.PlayerBinding<Player>
-  ) -> MuxPlayerAdapter<PlayerView, Player, ExtraPlayer> = Companion::defaultPlayerAdapter,
+  ) -> MuxPlayerAdapter<PlayerView, Player> = Companion::defaultPlayerAdapter,
   makeStateCollector: (
     muxStats: MuxStats,
     dispatcher: IEventDispatcher,
@@ -86,7 +86,7 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
 ) {
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val playerAdapter: MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>
+  protected val playerAdapter: MuxPlayerAdapter<PlayerView, Player>
   protected val muxStats: MuxStats
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -306,12 +306,12 @@ abstract class MuxDataSdk<Player, ExtraPlayer, PlayerView : View> @JvmOverloads 
       customOptions: CustomOptions
     ): MuxStats = MuxStats(playerListener, playerId, customerData, customOptions)
 
-    protected fun <Player, ExtraPlayer, PlayerView : View> defaultPlayerAdapter(
+    protected fun <Player, PlayerView : View> defaultPlayerAdapter(
       player: Player,
       uiDelegate: MuxUiDelegate<PlayerView>,
       collector: MuxStateCollector,
       playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
-    ) = MuxPlayerAdapter<PlayerView, Player, ExtraPlayer>(
+    ) = MuxPlayerAdapter(
       player,
       collector,
       uiDelegate,
