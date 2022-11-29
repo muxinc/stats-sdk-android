@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -212,7 +213,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   @Suppress("MemberVisibilityCanBePrivate")
   protected open inner class PlayerListenerBase : IPlayerListener {
     @Suppress("RedundantNullableReturnType")
-    protected val collector: MuxStateCollector? get() = this@MuxDataSdk.collector
+    protected val collector: MuxStateCollector?
+      get() = this@MuxDataSdk.collector
 
     /**
      * Convert physical pixels to device density independent pixels.
@@ -518,6 +520,14 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       }
       return deviceId
     }
+
+    @Suppress("DEPRECATION")
+    private fun getPackageInfoLegacy(ctx: Context): PackageInfo =
+      ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+
+    @TargetApi(Build.VERSION_CODES.TIRAMISU)
+    private fun getPackageInfoApi33(ctx: Context): PackageInfo =
+      ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.PackageInfoFlags.of(0))
 
     companion object {
       const val CONNECTION_TYPE_CELLULAR = "cellular"
