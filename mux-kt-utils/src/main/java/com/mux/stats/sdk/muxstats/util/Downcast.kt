@@ -16,6 +16,7 @@ import kotlin.reflect.KProperty
  * @param Upper The type of the field being casted from. Has to be a superclass of [Lower]
  * @param Lower The type that should be casted to. Has to be a subclass of [Upper]
  */
+@Suppress("unused")
 fun <Upper, Lower : Upper> downcast(delegatedProperty: KMutableProperty0<Upper?>)
         : ReadWriteProperty<Any, Lower?> = Downcast(delegatedProperty)
 
