@@ -2,8 +2,7 @@ package com.mux.stats.sdk.muxstats
 
 import android.view.View
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter.PlayerBinding
-import com.mux.stats.sdk.muxstats.internal.observableWeak
-import com.mux.stats.sdk.muxstats.internal.weak
+import com.mux.stats.sdk.muxstats.util.weak
 
 /**
  * Adapts a player framework to a [MuxStateCollector], passing events between them using
@@ -33,7 +32,7 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
    * This is the Player that belongs to [basicMetrics]
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  var basicPlayer by observableWeak(player) { changeBasicPlayer(it, collector) }
+  val basicPlayer by weak(player)
 
   /**
    * The View being used to collect data related to the player view. This is the View being managed
@@ -56,7 +55,11 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
     }
   }
 
-  private fun changeBasicPlayer(player: MainPlayer?, collector: MuxStateCollector) {
+  /**
+   * Change the Player bound to this adapter
+   */
+  @Suppress("unused")
+  fun changeBasicPlayer(player: MainPlayer?) {
     basicPlayer?.let { oldPlayer -> basicMetrics.unbindPlayer(oldPlayer, collector) }
     player?.let { newPlayer -> basicMetrics.bindPlayer(newPlayer, collector) }
   }

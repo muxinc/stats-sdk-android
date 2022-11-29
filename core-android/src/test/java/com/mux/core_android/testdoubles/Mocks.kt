@@ -91,7 +91,7 @@ fun mockPackageManager() = mockk<PackageManager> {
   val fakePkgInfo = PackageInfo()
   fakePkgInfo.packageName = "com.mux.core_android.unittests"
   fakePkgInfo.versionName = "1.0.0"
-  every { getPackageInfo(any<String>(), any()) } returns fakePkgInfo
+  every { getPackageInfo(any<String>(), any<Int>()) } returns fakePkgInfo
   // TODO: VersionedPackage is new, but nothing is using it yet
   //every { getPackageInfo(any<VersionedPackage>(), any()) } returns fakePkgInfo
 }

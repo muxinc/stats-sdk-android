@@ -38,7 +38,7 @@ class PlayerAdapterTests : AbsRobolectricTest() {
     val basicPlayer1 = playerAdapter.basicPlayer
     val basicPlayer2: Any = Object()
 
-    playerAdapter.basicPlayer = basicPlayer2
+    playerAdapter.changeBasicPlayer(basicPlayer2)
     verifySequence {
       basicBinding.bindPlayer(any(), any())
       basicBinding.unbindPlayer(eq(basicPlayer1!!), any())
