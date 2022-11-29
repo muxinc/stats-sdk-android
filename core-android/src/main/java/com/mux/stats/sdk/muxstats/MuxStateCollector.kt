@@ -488,6 +488,7 @@ open class MuxStateCollector(
    * Stops if:
    *  the caller calls [stop]
    *  the superclass starts returning null from [getTimeMillis]
+   *  the [Player] referenced by the given WeakReferences is garbage collected
    *
    *  @param updateIntervalMillis The time interval, in milliseconds, between position updates
    *  @param stateCollector The [MuxStateCollector] that should track the playback position
