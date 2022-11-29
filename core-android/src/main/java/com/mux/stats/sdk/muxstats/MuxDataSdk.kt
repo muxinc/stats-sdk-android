@@ -22,9 +22,9 @@ import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
-import com.mux.stats.sdk.muxstats.internal.convertPxToDp
-import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
+import com.mux.stats.sdk.muxstats.util.convertPxToDp
+import com.mux.stats.sdk.muxstats.util.oneOf
 import java.util.*
 
 /**

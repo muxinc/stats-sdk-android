@@ -2,7 +2,7 @@ package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.internal.beaconAuthority
+import com.mux.stats.sdk.muxstats.util.beaconAuthority
 import kotlinx.coroutines.*
 import org.json.JSONException
 import org.json.JSONObject
