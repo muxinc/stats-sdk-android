@@ -7,10 +7,10 @@ import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.internal.weak
 import com.mux.stats.sdk.muxstats.util.logTag
 import com.mux.stats.sdk.muxstats.util.noneOf
 import com.mux.stats.sdk.muxstats.util.oneOf
+import com.mux.stats.sdk.muxstats.util.weak
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import java.util.*
@@ -33,10 +33,13 @@ open class MuxStateCollector(
   companion object {
     @Suppress("unused")
     const val TIME_UNKNOWN = -1L
+
     @Suppress("unused")
     const val ERROR_UNKNOWN = -1
+
     @Suppress("unused")
     const val ERROR_DRM = -2
+
     @Suppress("unused")
     const val ERROR_IO = -3
 

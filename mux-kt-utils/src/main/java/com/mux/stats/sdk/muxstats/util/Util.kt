@@ -2,11 +2,24 @@ package com.mux.stats.sdk.muxstats.util
 
 import kotlin.math.ceil
 
+/**
+ * Returns true if the receiver is not in the given objects.
+ *
+ * For example `"blue".oneOf("red", "green") == false` and `3.oneOf(3,5,6) == true`
+ */
 fun <Any> Any.oneOf(vararg these: Any) = these.contains(this)
 
+/**
+ * Returns true if the receiver is not in the given objects.
+ *
+ * For example `3.noneOf(1,4,5) == true` and `3.noneOf(3,5,6) = false`
+ */
 fun <Any> Any.noneOf(vararg these: Any) = !these.contains(this)
 
-fun <Any> allEqual(these: List<Any>): Boolean {
+/**
+ * Return true if all elements in the given set are equal
+ */
+fun <Any> allEqual(vararg these: Any): Boolean {
   if (these.isEmpty()) {
     return true
   } else {
@@ -16,6 +29,9 @@ fun <Any> allEqual(these: List<Any>): Boolean {
   }
 }
 
+/**
+ * Convert from a raw pixel dimension to a density-independent (dip) dimension
+ */
 fun convertPxToDp(px: Int, displayDensity: Float): Int {
   return ceil((px / displayDensity).toDouble()).toInt()
 }
@@ -25,4 +41,4 @@ fun convertPxToDp(px: Int, displayDensity: Float): Int {
  * obfuscated (such as muxstats)
  */
 @Suppress("unused") // T is used for its class
-inline fun <reified T> T.logTag() = T::class.java.simpleName
+inline fun <reified T> T.logTag(): String = T::class.java.simpleName

@@ -3,8 +3,8 @@ package com.mux.core_android.testdoubles
 import android.net.Uri
 import com.mux.core_android.log
 import com.mux.stats.sdk.muxstats.INetworkRequest
-import com.mux.stats.sdk.muxstats.internal.beaconAuthority
-import com.mux.stats.sdk.muxstats.internal.logTag
+import com.mux.stats.sdk.muxstats.beaconAuthority
+import com.mux.stats.sdk.muxstats.util.logTag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
