@@ -20,7 +20,14 @@ jobs:
       - name: Deploy to Release Repo
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: mux-kt-utils:artifactoryPublish core-android:artifactoryPublish
+          arguments: mux-kt-utils:artifactoryPublish
+        env:
+          ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_EMAIL }}
+          ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      - name: Deploy to Release Repo
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: core-android:artifactoryPublish
         env:
           ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_EMAIL }}
           ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
