@@ -12,6 +12,7 @@ import com.mux.stats.sdk.muxstats.internal.noneOf
 import com.mux.stats.sdk.muxstats.internal.oneOf
 import com.mux.stats.sdk.muxstats.internal.weak
 import kotlinx.coroutines.*
+import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -487,6 +488,7 @@ open class MuxStateCollector(
    * Stops if:
    *  the caller calls [stop]
    *  the superclass starts returning null from [getTimeMillis]
+   *  the [Player] referenced by the given WeakReferences is garbage collected
    *
    *  @param updateIntervalMillis The time interval, in milliseconds, between position updates
    *  @param stateCollector The [MuxStateCollector] that should track the playback position
@@ -499,11 +501,11 @@ open class MuxStateCollector(
   class PlayerWatcher<Player>(
     @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
     @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
-    player: Player, // reminder not to use val, a weak reference is kept instead
+    player: WeakReference<Player>, // reminder not to use val, a weak reference is kept instead
     val checkPositionMillis: (Player, MuxStateCollector) -> Long
   ) {
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-    private val player by weak(player)
+    private val player by weak(player.get())
 
     private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it, stateCollector) }
 
