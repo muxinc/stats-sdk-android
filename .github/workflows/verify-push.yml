@@ -15,7 +15,7 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - name: Build/Publish to the Dev repo
+      - name: Build/Publish mux-kt-utils to the Dev repo
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: mux-kt-utils:artifactoryPublish
@@ -24,7 +24,7 @@ jobs:
           ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
           GH_USER: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build/Publish to the Dev repo
+      - name: Build/Publish core-android to the Dev repo
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: core-android:artifactoryPublish
