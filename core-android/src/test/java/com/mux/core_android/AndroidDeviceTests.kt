@@ -10,7 +10,7 @@ import com.mux.core_android.testdoubles.mockConnectivityManager16
 import com.mux.core_android.testdoubles.mockConnectivityManager23
 import com.mux.core_android.testdoubles.mockSharedPrefs
 import com.mux.stats.sdk.muxstats.MuxDataSdk
-import com.mux.stats.sdk.muxstats.internal.allEqual
+import com.mux.stats.sdk.muxstats.util.allEqual
 import org.junit.Assert.*
 import org.junit.Test
 import org.robolectric.annotation.Config

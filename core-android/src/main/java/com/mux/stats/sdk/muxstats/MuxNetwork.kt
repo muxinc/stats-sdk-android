@@ -2,7 +2,6 @@ package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.internal.beaconAuthority
 import kotlinx.coroutines.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -14,6 +13,7 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.math.pow
@@ -405,4 +405,15 @@ internal fun ByteArray.gzip(): ByteArray {
 @Throws(IOException::class)
 internal fun ByteArray.unGzip(): ByteArray {
   return GZIPInputStream(ByteArrayInputStream(this)).use { it.readBytes() }
+}
+
+/**
+ * Gets the URI Authority used for POSTing beacons to the backend, provided a domain and env key
+ */
+internal fun beaconAuthority(envKey: String, domain: String): String {
+  return if (Pattern.matches("^[a-z0-9]+$", envKey)) {
+    "$envKey$domain"
+  } else {
+    "img$domain"
+  }
 }

@@ -5,6 +5,7 @@ plugins {
 }
 
 android {
+  namespace 'com.mux.stats.sdk.muxstats.kt'
   compileSdk 33
 
   defaultConfig {
@@ -33,8 +34,8 @@ android {
 muxDistribution {
   devVersion versionFromCommitHash('dev-')
   releaseVersion versionFromTag()
-  artifactIds just("android")
-  groupIds just("com.mux.stats.sdk.muxstats")
+  artifactIds just("utils-kt")
+  groupIds just("com.mux")
   publicReleaseIf releaseOnTag()
 
   // TODO: This is kinda clumsy, packageJavadocs should be a function not a property probably
@@ -48,17 +49,7 @@ muxDistribution {
 }
 
 dependencies {
-
-  api "com.mux:stats.muxcore:7.5.0"
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
-
-  debugImplementation project(':mux-kt-utils')
-  afterEvaluate { // The version isn't computed until after this file is finalized thanks to agp 8
-    releaseImplementation "com.mux:utils-kt:${project.version}"
-  }
-
   testImplementation 'junit:junit:4.13.2'
-  testImplementation 'androidx.test.ext:junit:1.1.3'
-  testImplementation "io.mockk:mockk:1.12.3"
-  testImplementation 'org.robolectric:robolectric:4.8.1'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 }

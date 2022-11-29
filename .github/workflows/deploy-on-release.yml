@@ -17,10 +17,17 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - name: Deploy to Release Repo
+      - name: Deploy mux-kt-utils to Release Repo
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: artifactoryPublish
+          arguments: mux-kt-utils:artifactoryPublish
+        env:
+          ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_EMAIL }}
+          ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      - name: Deploy core-android to Release Repo
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: core-android:artifactoryPublish
         env:
           ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_EMAIL }}
           ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}

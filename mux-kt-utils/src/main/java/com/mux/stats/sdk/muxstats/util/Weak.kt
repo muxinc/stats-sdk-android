@@ -1,4 +1,4 @@
-package com.mux.stats.sdk.muxstats.internal
+package com.mux.stats.sdk.muxstats.util
 
 import java.lang.ref.WeakReference
 import kotlin.properties.ReadWriteProperty
@@ -8,31 +8,15 @@ import kotlin.reflect.KProperty
  * Property Delegate that makes the object referenced by the property weakly-reachable
  * Not thread-safe
  */
-@JvmSynthetic // synthetic methods are hidden from java, and java has no property delegates
-internal fun <T> weak(t: T): ReadWriteProperty<Any, T?> = Weak(t)
+@Suppress("unused")
+fun <T> weak(t: T?): ReadWriteProperty<Any, T?> = Weak(t)
 
 /**
  * Property Delegate that makes the object referenced by the property weakly-reachable
  * Not thread-safe
  */
 @Suppress("unused")
-@JvmSynthetic // synthetic methods are hidden from java, and java has no property delegates
-internal fun <T> weak(): ReadWriteProperty<Any, T?> = Weak(null)
-
-/**
- * Weakly-reachable property delegate that is observable
- */
-@JvmSynthetic
-internal fun <T> observableWeak(t: T?, block: (T?) -> Unit): ReadWriteProperty<Any, T?> =
-  Weak(t).onSet { block(it) }
-
-/**
- * Weakly-reachable property delegate that is observable
- */
-@Suppress("unused")
-@JvmSynthetic
-internal fun <T> observableWeak(block: (T?) -> Unit): ReadWriteProperty<Any, T?> =
-  Weak<T>(null).onSet { block(it) }
+fun <T> weak(): ReadWriteProperty<Any, T?> = Weak(null)
 
 /**
  * Property Delegate where the property's referent is not reachable
