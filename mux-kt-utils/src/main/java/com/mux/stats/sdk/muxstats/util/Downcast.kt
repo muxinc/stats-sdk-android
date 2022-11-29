@@ -25,11 +25,11 @@ fun <Upper, Lower : Upper> downcast(delegatedProperty: KMutableProperty0<Upper?>
  * The Parameters are the upper & lower bounds
  * Access this class via the helper functions below
  */
-private class Downcast<Upper, Lower : Upper>(var t: KMutableProperty0<Upper?>)
-  : ReadWriteProperty<Any, Lower?> {
+private class Downcast<Upper, Lower : Upper>(var t: KMutableProperty0<Upper?>) :
+  ReadWriteProperty<Any, Lower?> {
 
   override fun getValue(thisRef: Any, property: KProperty<*>): Lower? {
-    @Suppress("UNCHECKED_CAST") // Safety guaranteed by compiler
+    @Suppress("UNCHECKED_CAST") // Safety guaranteed by type bounds
     return t.get() as? Lower
   }
 

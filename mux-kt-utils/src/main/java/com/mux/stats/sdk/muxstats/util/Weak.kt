@@ -9,7 +9,7 @@ import kotlin.reflect.KProperty
  * Not thread-safe
  */
 @Suppress("unused")
-fun <T> weak(t: T): ReadWriteProperty<Any, T?> = Weak(t)
+fun <T> weak(t: T?): ReadWriteProperty<Any, T?> = Weak(t)
 
 /**
  * Property Delegate that makes the object referenced by the property weakly-reachable
