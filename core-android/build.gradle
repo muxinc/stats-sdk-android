@@ -53,7 +53,9 @@ dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
 
   debugImplementation project(':mux-kt-utils')
-  releaseImplementation "com.mux.utils-kt:${project.version}"
+  afterEvaluate {
+    releaseImplementation "com.mux.utils-kt:${project.version}"
+  }
 
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'androidx.test.ext:junit:1.1.3'
