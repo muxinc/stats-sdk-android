@@ -38,8 +38,9 @@ class UiDelegateTests : AbsRobolectricTest() {
         MOCK_PLAYER_HEIGHT, MOCK_PLAYER_HEIGHT,
         MOCK_PLAYER_HEIGHT / 2, MOCK_PLAYER_HEIGHT / 2
       )
+      every { context } returns activity
     }
-    val uiDelegate = resizingView.muxUiDelegate(activity)
+    val uiDelegate = resizingView.muxUiDelegate()
 
     // basic case
     assertEquals(
@@ -68,7 +69,7 @@ class UiDelegateTests : AbsRobolectricTest() {
 
   @Test
   fun testScreenSize() {
-    val uiDelegate = view.muxUiDelegate(activity)
+    val uiDelegate = view.muxUiDelegate()
     assertEquals(
       "screen size is reported",
       uiDelegate.getScreenSize().x,
@@ -83,7 +84,7 @@ class UiDelegateTests : AbsRobolectricTest() {
 
   @Test
   fun testNoUi() {
-    val uiDelegate = noUiDelegate()
+    val uiDelegate = noUiDelegate<View>()
 
     val screenSize = uiDelegate.getScreenSize()
     assertEquals(
