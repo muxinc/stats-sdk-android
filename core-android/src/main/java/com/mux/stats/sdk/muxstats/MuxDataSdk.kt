@@ -2,7 +2,6 @@ package com.mux.stats.sdk.muxstats
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -82,7 +81,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     trackFirstFrame: Boolean
   ) -> MuxStateCollector = Factory::defaultMuxStateCollector,
   makeUiDelegate: (
-    context: Context, view: PlayerView?
+    view: PlayerView?
   ) -> MuxUiDelegate<PlayerView> = Factory::defaultUiDelegate,
 ) {
 
@@ -250,7 +249,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   init {
     this.player = player
     eventBus = makeEventBus()
-    uiDelegate = makeUiDelegate(context, playerView)
+    uiDelegate = makeUiDelegate(playerView)
     @Suppress("LeakingThis")
     muxStats = makeMuxStats(
       makePlayerListener(this),
@@ -295,10 +294,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     fun defaultPlayerListener(outerSdk: MuxDataSdk<*, *>): IPlayerListener =
       outerSdk.PlayerListenerBase()
 
-    fun <V : View> defaultUiDelegate(
-      context: Context,
-      view: V?
-    ) = view.muxUiDelegate(context as? Activity)
+    fun <V : View> defaultUiDelegate(view: V?): MuxUiDelegate<V> =
+      view?.muxUiDelegate() ?: noUiDelegate()
 
     fun defaultMuxStats(
       playerListener: IPlayerListener,

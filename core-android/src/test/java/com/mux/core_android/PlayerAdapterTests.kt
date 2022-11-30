@@ -65,7 +65,7 @@ class PlayerAdapterTests : AbsRobolectricTest() {
   ): MuxPlayerAdapter<View, Any> {
     val fakePlayer: Any = Object()
     val mockUiDelegate: MuxUiDelegate<View> =
-      mockView().muxUiDelegate(mockActivity())
+      mockView().muxUiDelegate()
     val mockCollector = mockStateCollector()
 
     return MuxPlayerAdapter(
