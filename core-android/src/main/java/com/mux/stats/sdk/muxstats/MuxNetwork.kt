@@ -275,10 +275,9 @@ class MuxNetwork @JvmOverloads constructor(
     val contentType: String? = null,
     val body: ByteArray?,
   ) {
-    override fun hashCode(): Int = toString().hashCode()
+    override fun hashCode(): Int = System.identityHashCode(this)
     override fun equals(other: Any?) =
       other?.let { it::class == this::class && hashCode() == it.hashCode() } ?: false
-
     override fun toString(): String {
       return "Request(method='$method', url=$url, headers=$headers, contentType=$contentType, " +
               "body=${body?.contentToString()?.take(80)})"
@@ -332,7 +331,7 @@ class MuxNetwork @JvmOverloads constructor(
       return String(expandedBody, charset)
     } // private fun decodeBody
 
-    override fun hashCode(): Int = toString().hashCode()
+    override fun hashCode(): Int = System.identityHashCode(this)
     override fun equals(other: Any?) = other is Response && hashCode() == other.hashCode()
     override fun toString(): String {
       return "Response(originalRequest=$originalRequest, status=$status, headers=$headers, " +
