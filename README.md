@@ -69,7 +69,7 @@ class MuxStatsExamplePlayer(
    * For example, do some special logic when the video is changed
    */
   override fun videoChange(video: CustomerVideoData) {
-    super.videoChange(video.map { /* mutate the video data somehow */ })
+    super.videoChange(video.apply { /* mutate the video data somehow */ })
   }
 }
 ```
