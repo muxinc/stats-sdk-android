@@ -6,8 +6,8 @@ import android.graphics.Point
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
+import com.mux.android.util.weak
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.util.weak
 
 /**
  * Allows implementers to supply data about the view and screen being used for playback

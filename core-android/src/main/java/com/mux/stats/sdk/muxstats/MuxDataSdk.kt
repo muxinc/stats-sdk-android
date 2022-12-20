@@ -12,6 +12,9 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import com.mux.android.util.convertPxToDp
+import com.mux.android.util.oneOf
+import com.mux.android.util.weak
 import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
@@ -22,9 +25,6 @@ import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
-import com.mux.stats.sdk.muxstats.util.convertPxToDp
-import com.mux.stats.sdk.muxstats.util.oneOf
-import com.mux.stats.sdk.muxstats.util.weak
 import java.util.*
 
 /**
