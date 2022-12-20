@@ -1,5 +1,9 @@
 package com.mux.stats.sdk.muxstats
 
+import com.mux.android.util.logTag
+import com.mux.android.util.noneOf
+import com.mux.android.util.oneOf
+import com.mux.android.util.weak
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.events.InternalErrorEvent
@@ -7,10 +11,6 @@ import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.util.logTag
-import com.mux.stats.sdk.muxstats.util.noneOf
-import com.mux.stats.sdk.muxstats.util.oneOf
-import com.mux.stats.sdk.muxstats.util.weak
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import java.util.*

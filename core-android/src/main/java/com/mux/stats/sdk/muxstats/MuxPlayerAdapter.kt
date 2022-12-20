@@ -1,8 +1,8 @@
 package com.mux.stats.sdk.muxstats
 
 import android.view.View
+import com.mux.android.util.weak
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter.PlayerBinding
-import com.mux.stats.sdk.muxstats.util.weak
 
 /**
  * Adapts a player framework to a [MuxStateCollector], passing events between them using

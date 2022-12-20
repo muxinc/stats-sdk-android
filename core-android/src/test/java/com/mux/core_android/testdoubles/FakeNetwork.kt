@@ -3,8 +3,8 @@ package com.mux.core_android.testdoubles
 import android.net.Uri
 import com.mux.core_android.log
 import com.mux.stats.sdk.muxstats.INetworkRequest
-import com.mux.stats.sdk.muxstats.beaconAuthority
-import com.mux.stats.sdk.muxstats.util.logTag
+import com.mux.android.http.beaconAuthority
+import com.mux.android.util.logTag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -46,7 +46,12 @@ open class FakeNetwork : INetworkRequest {
         url = URL(
           Uri.Builder()
             .scheme("https")
-            .authority(beaconAuthority(envKey ?: "", domain ?: ""))
+            .authority(
+              beaconAuthority(
+                envKey ?: "",
+                domain ?: ""
+              )
+            )
             .path("android")
             .build().toString()
         ),

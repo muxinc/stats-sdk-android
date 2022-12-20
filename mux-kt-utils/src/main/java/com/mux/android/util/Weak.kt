@@ -1,4 +1,4 @@
-package com.mux.stats.sdk.muxstats.util
+package com.mux.android.util
 
 import java.lang.ref.WeakReference
 import kotlin.properties.ReadWriteProperty

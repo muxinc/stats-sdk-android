@@ -1,12 +1,9 @@
-package com.mux.core_android
+package com.mux.stats.sdk.muxstats
 
-import com.mux.core_android.testdoubles.mockHttpUrlConnection
-import com.mux.core_android.testdoubles.mockOutputStream
-import com.mux.core_android.testdoubles.mockURL
-import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.MuxNetwork
-import com.mux.stats.sdk.muxstats.gzip
-import com.mux.stats.sdk.muxstats.unGzip
+import com.mux.android.http.*
+import com.mux.stats.sdk.muxstats.testdoubles.mockHttpUrlConnection
+import com.mux.stats.sdk.muxstats.testdoubles.mockOutputStream
+import com.mux.stats.sdk.muxstats.testdoubles.mockURL
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -20,7 +17,7 @@ import java.net.UnknownHostException
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientTests : AbsRobolectricTest() {
-  private lateinit var httpClient: MuxNetwork.HttpClient
+  private lateinit var httpClient: HttpClient
 
   companion object {
     const val TEST_URL = "https://docs.mux.com"
@@ -28,15 +25,7 @@ class HttpClientTests : AbsRobolectricTest() {
 
   @Before
   fun setUp() {
-    httpClient = MuxNetwork.HttpClient(
-      device = mockk {
-        every { networkConnectionType } returns "cellular"
-      },
-      backoffBaseTimeMs = 10
-    )
-
-    MuxLogger.setAllowLogcat(true)
-    MuxLogger.enable("all", null)
+    httpClient = HttpClient(mockk { every { isOnline() } returns true }, 5)
   }
 
   @Test
@@ -64,7 +53,7 @@ class HttpClientTests : AbsRobolectricTest() {
     val gzippedData = originalData.gzip()
 
     val requestBodySlot = slot<ByteArray>()
-    val request = MuxNetwork.POST(
+    val request = POST(
       url = mockURL(TEST_URL, mockHttpUrlConnection(output = mockOutputStream(requestBodySlot))),
       headers = mapOf("Content-Encoding" to listOf("gzip")),
       body = originalData
@@ -88,7 +77,7 @@ class HttpClientTests : AbsRobolectricTest() {
       every { responseMessage } returns "OK"
     }
 
-    val request = MuxNetwork.GET(mockURL("https://docs.mux.com", hurlConn))
+    val request = GET(mockURL("https://docs.mux.com", hurlConn))
     val result = runBlocking { httpClient.call(request) }
 
     assertTrue("Result is successful", result.successful)
@@ -121,18 +110,18 @@ class HttpClientTests : AbsRobolectricTest() {
         every { inputStream } throws UnknownHostException("stream threw")
       }
     }
-    val offlineClient = MuxNetwork.HttpClient(
-      device = mockk(relaxed = true) {
+    val offlineClient = HttpClient(
+      mockk {
         if (recovers) {
-          every { networkConnectionType } returns null andThen "cellular"
+          every { isOnline() } returns false andThen true
         } else {
-          every { networkConnectionType } returns null
+          every { isOnline() } returns false
         }
       },
       backoffBaseTimeMs = 5
     )
 
-    val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
+    val request = GET(url = mockURL("https://docs.mux.com", hurlConn))
     val result = runInBg { offlineClient.call(request) }
 
     if (recovers) {
@@ -200,7 +189,7 @@ class HttpClientTests : AbsRobolectricTest() {
       }
     }
 
-    val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
+    val request = GET(url = mockURL("https://docs.mux.com", hurlConn))
     val result = runInBg { httpClient.call(request) }
 
     if (recovers) {
@@ -263,7 +252,7 @@ class HttpClientTests : AbsRobolectricTest() {
       }
     }
 
-    val request = MuxNetwork.GET(url = mockURL("https://docs.mux.com", hurlConn))
+    val request = GET(url = mockURL("https://docs.mux.com", hurlConn))
     val result = runInBg { httpClient.call(request) }
 
     if (recovers) {
@@ -297,5 +286,11 @@ class HttpClientTests : AbsRobolectricTest() {
 
   private fun <R> runInBg(block: suspend () -> R): R {
     return runBlocking(Dispatchers.Unconfined) { block() }
+  }
+
+  private fun assertContentEquals(message: String = "", expected: ByteArray, actual: ByteArray?) {
+    if (!expected.contentEquals(actual)) {
+      throw AssertionError(message)
+    }
   }
 }

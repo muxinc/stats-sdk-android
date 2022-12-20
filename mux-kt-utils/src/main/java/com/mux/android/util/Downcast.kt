@@ -1,4 +1,4 @@
-package com.mux.stats.sdk.muxstats.util
+package com.mux.android.util
 
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty0
