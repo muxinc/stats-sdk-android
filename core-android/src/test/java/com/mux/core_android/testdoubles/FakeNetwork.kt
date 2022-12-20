@@ -46,7 +46,12 @@ open class FakeNetwork : INetworkRequest {
         url = URL(
           Uri.Builder()
             .scheme("https")
-            .authority(beaconAuthority(envKey ?: "", domain ?: ""))
+            .authority(
+              beaconAuthority(
+                envKey ?: "",
+                domain ?: ""
+              )
+            )
             .path("android")
             .build().toString()
         ),

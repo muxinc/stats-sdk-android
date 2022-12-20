@@ -2,8 +2,6 @@ package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
 import com.mux.android.http.*
-import com.mux.android.http.beaconAuthority
-import com.mux.android.http.toURL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -38,7 +36,13 @@ class MuxNetwork @JvmOverloads constructor(
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
       coroutineScope.launch {
-        httpClient.call(POST(url = url, json = body, headers = headers))
+        httpClient.call(
+          POST(
+            url = url,
+            json = body,
+            headers = headers
+          )
+        )
       }
     }
   }
@@ -60,7 +64,13 @@ class MuxNetwork @JvmOverloads constructor(
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
 
       coroutineScope.launch {
-        val result = httpClient.call(POST(url = url, headers = headers, bodyStr = body))
+        val result = httpClient.call(
+          POST(
+            url = url,
+            headers = headers,
+            bodyStr = body
+          )
+        )
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
           completion?.onComplete(result.successful)

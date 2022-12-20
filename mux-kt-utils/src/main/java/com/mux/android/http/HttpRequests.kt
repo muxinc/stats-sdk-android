@@ -1,7 +1,6 @@
 package com.mux.android.http
 
 import android.net.Uri
-import com.mux.stats.sdk.core.util.MuxLogger
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -135,7 +134,6 @@ class Response(
     val charset = try {
       bodyEncoding?.let { Charset.forName(it) } ?: DEFAULT_CHARSET
     } catch (e: Exception) {
-      MuxLogger.exception(e, LOG_TAG, "bad encoding $bodyEncoding")
       DEFAULT_CHARSET
     }
 

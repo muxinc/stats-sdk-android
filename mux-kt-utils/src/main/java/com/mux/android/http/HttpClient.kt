@@ -111,7 +111,10 @@ class HttpClient(
 
         Response(
           originalRequest = request,
-          status = Response.StatusLine(hurlConn.responseCode, hurlConn.responseMessage),
+          status = Response.StatusLine(
+            hurlConn.responseCode,
+            hurlConn.responseMessage
+          ),
           headers = hurlConn.headerFields,
           body = responseBytes,
         )
