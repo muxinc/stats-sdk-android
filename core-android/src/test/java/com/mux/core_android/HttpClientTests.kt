@@ -4,9 +4,10 @@ import com.mux.core_android.testdoubles.mockHttpUrlConnection
 import com.mux.core_android.testdoubles.mockOutputStream
 import com.mux.core_android.testdoubles.mockURL
 import com.mux.stats.sdk.core.util.MuxLogger
+import com.mux.android.http.HttpClient
 import com.mux.stats.sdk.muxstats.MuxNetwork
-import com.mux.stats.sdk.muxstats.gzip
-import com.mux.stats.sdk.muxstats.unGzip
+import com.mux.android.http.gzip
+import com.mux.android.http.unGzip
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -20,7 +21,7 @@ import java.net.UnknownHostException
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientTests : AbsRobolectricTest() {
-  private lateinit var httpClient: MuxNetwork.HttpClient
+  private lateinit var httpClient: HttpClient
 
   companion object {
     const val TEST_URL = "https://docs.mux.com"
@@ -28,7 +29,7 @@ class HttpClientTests : AbsRobolectricTest() {
 
   @Before
   fun setUp() {
-    httpClient = MuxNetwork.HttpClient(
+    httpClient = HttpClient(
       device = mockk {
         every { networkConnectionType } returns "cellular"
       },
@@ -121,7 +122,7 @@ class HttpClientTests : AbsRobolectricTest() {
         every { inputStream } throws UnknownHostException("stream threw")
       }
     }
-    val offlineClient = MuxNetwork.HttpClient(
+    val offlineClient = HttpClient(
       device = mockk(relaxed = true) {
         if (recovers) {
           every { networkConnectionType } returns null andThen "cellular"
