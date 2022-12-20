@@ -22,7 +22,7 @@ class MuxNetwork @JvmOverloads constructor(
   coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : INetworkRequest {
 
-  private val httpClient = HttpClient(device::isOnline)
+  private val httpClient = HttpClient(device.networkDevice())
   private val coroutineScope = CoroutineScope(coroutineScope.coroutineContext)
 
   override fun get(url: URL?) {
@@ -89,4 +89,6 @@ class MuxNetwork @JvmOverloads constructor(
 
 }
 
-private fun IDevice.isOnline() = networkConnectionType != null
+private fun IDevice.networkDevice() = object : HttpClient.DeviceNetwork {
+  override fun isOnline(): Boolean = networkConnectionType != null
+}

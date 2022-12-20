@@ -13,7 +13,7 @@ import kotlin.math.pow
  * @param isOnline a function that returns true when the device is online
  */
 class HttpClient(
-  private val isOnline: () -> Boolean,
+  private val network: DeviceNetwork,
   private val backoffBaseTimeMs: Long = RETRY_DELAY_BASE_MS
 ) {
 
@@ -48,7 +48,7 @@ class HttpClient(
 
     maybeBackoff(retries)
 
-    return if (!isOnline()) {
+    return if (!network.isOnline()) {
       maybeRetry(CallResult(offlineForCall = true, retries = retries))
     } else {
       try {
@@ -134,5 +134,12 @@ class HttpClient(
   ) {
     val successful
       get() = exception == null && (response?.successful ?: false) && (!offlineForCall)
+  }
+
+  /**
+   * Provides interaction with the device's network connection
+   */
+  interface DeviceNetwork {
+    fun isOnline(): Boolean
   }
 }
