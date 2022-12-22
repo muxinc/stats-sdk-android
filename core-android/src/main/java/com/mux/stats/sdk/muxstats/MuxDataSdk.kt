@@ -248,6 +248,11 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
 
   init {
     this.player = player
+    // These must be statically set before creating our MuxStats
+    //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
+    MuxStats.setHostDevice(device)
+    MuxStats.setHostNetworkApi(network)
+
     eventBus = makeEventBus()
     uiDelegate = makeUiDelegate(playerView)
     @Suppress("LeakingThis")
@@ -268,10 +273,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     eventBus.addListener(muxStats)
     displayDensity = uiDelegate.displayDensity()
 
-    // These must be statically set before creating our MuxStats
-    //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
-    MuxStats.setHostDevice(device)
-    MuxStats.setHostNetworkApi(network)
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
       logLevel == LogcatLevel.VERBOSE
