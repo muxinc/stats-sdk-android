@@ -92,6 +92,8 @@ class HttpClient(
           readTimeout = READ_TIMEOUT_MS.toInt()
           connectTimeout = CONNECTION_TIMEOUT_MS.toInt()
           requestMethod = request.method
+          doOutput = bodyData != null
+          doInput = true
           //Headers
           request.headers.onEach { header ->
             header.value.onEach { setRequestProperty(header.key, it) }
