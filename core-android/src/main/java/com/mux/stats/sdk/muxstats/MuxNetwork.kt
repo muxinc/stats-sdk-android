@@ -1,6 +1,7 @@
 package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
+import android.util.Log
 import com.mux.android.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
