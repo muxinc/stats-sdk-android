@@ -10,7 +10,7 @@ import kotlin.math.pow
 /**
  * Small HTTP client with gzip, per-request exponential backoff, and GET and POST
  *
- * @param isOnline a function that returns true when the device is online
+ * @param network An object that can access the state of the network on this client's behalf
  */
 class HttpClient(
   private val network: DeviceNetwork,
