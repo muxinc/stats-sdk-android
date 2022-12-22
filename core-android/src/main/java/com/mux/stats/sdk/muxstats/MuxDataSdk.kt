@@ -309,12 +309,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       uiDelegate: MuxUiDelegate<PlayerView>,
       collector: MuxStateCollector,
       playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
-    ) = MuxPlayerAdapter(
-      player,
-      collector,
-      uiDelegate,
-      playerBinding
-    )
+    ) = MuxPlayerAdapter(player, collector, uiDelegate, playerBinding)
 
     fun defaultMuxStateCollector(
       muxStats: MuxStats,
