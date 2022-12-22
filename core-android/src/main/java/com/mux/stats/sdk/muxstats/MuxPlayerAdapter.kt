@@ -20,19 +20,11 @@ import com.mux.stats.sdk.muxstats.MuxPlayerAdapter.PlayerBinding
  * @param MainPlayer The type of the main Player, such as ExoPlayer or MediaPlayer
  */
 class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
-  player: MainPlayer,
+  val player: MainPlayer,
   @Suppress("MemberVisibilityCanBePrivate") val collector: MuxStateCollector,
   @Suppress("MemberVisibilityCanBePrivate") val uiDelegate: MuxUiDelegate<PlayerView>,
   @Suppress("MemberVisibilityCanBePrivate") val basicMetrics: PlayerBinding<MainPlayer>,
 ) {
-
-  /**
-   * The main Player being observed by this Adapter. When changed, the old player will be unbound
-   * and the new player will be bound
-   * This is the Player that belongs to [basicMetrics]
-   */
-  @Suppress("MemberVisibilityCanBePrivate")
-  val basicPlayer by weak(player)
 
   /**
    * The View being used to collect data related to the player view. This is the View being managed
@@ -50,7 +42,7 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
    */
   @Suppress("unused")
   fun unbindEverything() {
-    basicPlayer?.let { player ->
+    player?.let { player ->
       basicMetrics.unbindPlayer(player, collector)
     }
   }
@@ -59,8 +51,8 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
    * Change the Player bound to this adapter
    */
   @Suppress("unused")
-  fun changeBasicPlayer(player: MainPlayer?) {
-    basicPlayer?.let { oldPlayer -> basicMetrics.unbindPlayer(oldPlayer, collector) }
+  fun changePlayer(player: MainPlayer?) {
+    this.player?.let { oldPlayer -> basicMetrics.unbindPlayer(oldPlayer, collector) }
     player?.let { newPlayer -> basicMetrics.bindPlayer(newPlayer, collector) }
   }
 

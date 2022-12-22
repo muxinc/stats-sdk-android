@@ -504,13 +504,12 @@ open class MuxStateCollector(
   class PlayerWatcher<Player>(
     @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
     @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
-    player: WeakReference<Player>, // reminder not to use val, a weak reference is kept instead
-    val checkPositionMillis: (Player, MuxStateCollector) -> Long
+    val player: Player,
+    val checkPositionMillis: (Player, MuxStateCollector) -> Long?
   ) {
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-    private val player by weak(player.get())
 
-    private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it, stateCollector) }
+    private fun getTimeMillis(): Long? = checkPositionMillis(player, stateCollector)
 
     fun stop(message: String) {
       timerScope.cancel(message)

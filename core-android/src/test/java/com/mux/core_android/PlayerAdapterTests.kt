@@ -2,7 +2,6 @@ package com.mux.core_android
 
 import android.view.View
 import com.mux.core_android.testdoubles.FakePlayerBinding
-import com.mux.core_android.testdoubles.mockActivity
 import com.mux.core_android.testdoubles.mockView
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter
 import com.mux.stats.sdk.muxstats.MuxStateCollector
@@ -35,10 +34,10 @@ class PlayerAdapterTests : AbsRobolectricTest() {
       every { unbindPlayer(any(), any()) } just runs
     }
     val playerAdapter = playerAdapter(basicBinding)
-    val basicPlayer1 = playerAdapter.basicPlayer
+    val basicPlayer1 = playerAdapter.player
     val basicPlayer2: Any = Object()
 
-    playerAdapter.changeBasicPlayer(basicPlayer2)
+    playerAdapter.changePlayer(basicPlayer2)
     verifySequence {
       basicBinding.bindPlayer(any(), any())
       basicBinding.unbindPlayer(eq(basicPlayer1!!), any())
