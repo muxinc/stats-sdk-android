@@ -1,6 +1,7 @@
 package com.mux.stats.sdk.muxstats
 
 import android.net.Uri
+import android.util.Log
 import com.mux.android.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,12 +27,14 @@ class MuxNetwork @JvmOverloads constructor(
   private val coroutineScope = CoroutineScope(coroutineScope.coroutineContext)
 
   override fun get(url: URL?) {
+    Log.d("STATE", "muxNetwork.get(): $url")
     if (url != null) {
       coroutineScope.launch { httpClient.call(GET(url = url)) }
     }
   }
 
   override fun post(url: URL?, body: JSONObject?, requestHeaders: Hashtable<String, String>?) {
+    Log.d("STATE", "muxNetwork.post(): $url")
     if (url != null) {
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
@@ -54,6 +57,7 @@ class MuxNetwork @JvmOverloads constructor(
     requestHeaders: Hashtable<String, String>?,
     completion: INetworkRequest.IMuxNetworkRequestsCompletion?
   ) {
+    Log.d("STATE", "muxNetwork.postWithCompletion(): $domain w/key $envKey")
     if (envKey != null) {
       val url = Uri.Builder()
         .scheme("https")

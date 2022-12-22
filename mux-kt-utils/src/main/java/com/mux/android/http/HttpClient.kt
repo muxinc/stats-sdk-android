@@ -1,5 +1,6 @@
 package com.mux.android.http
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -33,10 +34,12 @@ class HttpClient(
    * @return the result of the HTTP call. If there were retries,
    */
   suspend fun call(request: Request): CallResult {
+    Log.d("STATE", "HttpClient.call: $request")
     return callWithBackoff(request)
   } // doCall
 
   private suspend fun callWithBackoff(request: Request, retries: Int = 0): CallResult {
+    Log.d("STATE", "HttpClient.callWithBackoff: retries $retries\nRequest: $request")
     suspend fun maybeRetry(result: CallResult): CallResult {
       val moreRetries = result.retries < MAX_REQUEST_RETRIES
       return if (moreRetries) {
