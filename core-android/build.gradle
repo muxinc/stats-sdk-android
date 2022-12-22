@@ -50,7 +50,7 @@ muxDistribution {
 
 dependencies {
 
-  api "com.mux:stats.muxcore:dev-logging-for-that-4d4e6c7"
+  api "com.mux:stats.muxcore:7.6.0"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
 
   debugImplementation project(':mux-kt-utils')
