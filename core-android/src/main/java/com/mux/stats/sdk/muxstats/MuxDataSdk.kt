@@ -12,6 +12,9 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import com.mux.android.util.convertPxToDp
+import com.mux.android.util.oneOf
+import com.mux.android.util.weak
 import com.mux.stats.sdk.core.CustomOptions
 import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
@@ -22,9 +25,6 @@ import com.mux.stats.sdk.core.model.CustomerPlayerData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
-import com.mux.stats.sdk.muxstats.util.convertPxToDp
-import com.mux.stats.sdk.muxstats.util.oneOf
-import com.mux.stats.sdk.muxstats.util.weak
 import java.util.*
 
 /**
@@ -248,6 +248,11 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
 
   init {
     this.player = player
+    // These must be statically set before creating our MuxStats
+    //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
+    MuxStats.setHostDevice(device)
+    MuxStats.setHostNetworkApi(network)
+
     eventBus = makeEventBus()
     uiDelegate = makeUiDelegate(playerView)
     @Suppress("LeakingThis")
@@ -268,10 +273,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     eventBus.addListener(muxStats)
     displayDensity = uiDelegate.displayDensity()
 
-    // These must be statically set before creating our MuxStats
-    //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
-    MuxStats.setHostDevice(device)
-    MuxStats.setHostNetworkApi(network)
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
       logLevel == LogcatLevel.VERBOSE
@@ -309,12 +310,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       uiDelegate: MuxUiDelegate<PlayerView>,
       collector: MuxStateCollector,
       playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
-    ) = MuxPlayerAdapter(
-      player,
-      collector,
-      uiDelegate,
-      playerBinding
-    )
+    ) = MuxPlayerAdapter(player, collector, uiDelegate, playerBinding)
 
     fun defaultMuxStateCollector(
       muxStats: MuxStats,

@@ -1,5 +1,9 @@
 package com.mux.stats.sdk.muxstats
 
+import com.mux.android.util.logTag
+import com.mux.android.util.noneOf
+import com.mux.android.util.oneOf
+import com.mux.android.util.weak
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.events.InternalErrorEvent
@@ -7,10 +11,6 @@ import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.util.logTag
-import com.mux.stats.sdk.muxstats.util.noneOf
-import com.mux.stats.sdk.muxstats.util.oneOf
-import com.mux.stats.sdk.muxstats.util.weak
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import java.util.*
@@ -504,13 +504,12 @@ open class MuxStateCollector(
   class PlayerWatcher<Player>(
     @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
     @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
-    player: WeakReference<Player>, // reminder not to use val, a weak reference is kept instead
-    val checkPositionMillis: (Player, MuxStateCollector) -> Long
+    val player: Player,
+    val checkPositionMillis: (Player, MuxStateCollector) -> Long?
   ) {
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-    private val player by weak(player.get())
 
-    private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it, stateCollector) }
+    private fun getTimeMillis(): Long? = checkPositionMillis(player, stateCollector)
 
     fun stop(message: String) {
       timerScope.cancel(message)
