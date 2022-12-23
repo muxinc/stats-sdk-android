@@ -13,18 +13,20 @@ import com.mux.stats.sdk.muxstats.MuxPlayerAdapter.PlayerBinding
  * @param player the Player object that should be tracked, such as MediaPlayer or ExoPlayer
  * @param collector The [MuxStateCollector] used to track state & dispatch events
  * @param uiDelegate The [MuxUiDelegate] used for gathering UI-related metrics
- * @param basicMetrics A [PlayerBinding] that listens to state from a player of type [MainPlayer]
+ * @param basicMetrics A [PlayerBinding] that listens to state from a player of type [Player]
  *
  * @param PlayerView The View used to show Player content and (possibly) player chrome.
  *                   When in doubt (or for player SDKs with multiple player views), use View
- * @param MainPlayer The type of the main Player, such as ExoPlayer or MediaPlayer
+ * @param Player The type of the main Player, such as ExoPlayer or MediaPlayer
  */
-class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
-  val player: MainPlayer,
+class MuxPlayerAdapter<PlayerView : View, Player>(
+  player: Player,
   @Suppress("MemberVisibilityCanBePrivate") val collector: MuxStateCollector,
   @Suppress("MemberVisibilityCanBePrivate") val uiDelegate: MuxUiDelegate<PlayerView>,
-  @Suppress("MemberVisibilityCanBePrivate") val basicMetrics: PlayerBinding<MainPlayer>,
+  @Suppress("MemberVisibilityCanBePrivate") val basicMetrics: PlayerBinding<Player>,
 ) {
+
+  private var player by weak(player)
 
   /**
    * The View being used to collect data related to the player view. This is the View being managed
@@ -51,7 +53,7 @@ class MuxPlayerAdapter<PlayerView : View, MainPlayer>(
    * Change the Player bound to this adapter
    */
   @Suppress("unused")
-  fun changePlayer(player: MainPlayer?) {
+  fun changePlayer(player: Player?) {
     this.player?.let { oldPlayer -> basicMetrics.unbindPlayer(oldPlayer, collector) }
     player?.let { newPlayer -> basicMetrics.bindPlayer(newPlayer, collector) }
   }

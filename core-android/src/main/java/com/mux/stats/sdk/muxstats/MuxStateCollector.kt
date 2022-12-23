@@ -12,7 +12,6 @@ import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.util.MuxLogger
 import kotlinx.coroutines.*
-import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -504,12 +503,13 @@ open class MuxStateCollector(
   class PlayerWatcher<Player>(
     @Suppress("MemberVisibilityCanBePrivate") val updateIntervalMillis: Long,
     @Suppress("MemberVisibilityCanBePrivate") val stateCollector: MuxStateCollector,
-    val player: Player,
+    player: Player,
     val checkPositionMillis: (Player, MuxStateCollector) -> Long?
   ) {
     private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val player by weak(player)
 
-    private fun getTimeMillis(): Long? = checkPositionMillis(player, stateCollector)
+    private fun getTimeMillis(): Long? = player?.let { checkPositionMillis(it, stateCollector) }
 
     fun stop(message: String) {
       timerScope.cancel(message)
