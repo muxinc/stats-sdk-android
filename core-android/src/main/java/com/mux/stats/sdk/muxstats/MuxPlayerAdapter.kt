@@ -26,7 +26,10 @@ class MuxPlayerAdapter<PlayerView : View, Player>(
   @Suppress("MemberVisibilityCanBePrivate") val basicMetrics: PlayerBinding<Player>,
 ) {
 
-  private var player by weak(player)
+  /**
+   * The player being observed by the adapter. This Player will be bound to your [PlayerBinding]
+   */
+  var player by weak(player)
 
   /**
    * The View being used to collect data related to the player view. This is the View being managed
