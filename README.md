@@ -1,6 +1,6 @@
 # stats-sdk-android
 
-Core library for our Data SDKs for Android. It's a small layer over our Core Java lib that provides
+This is a core library for our Data SDKs for Android. It's a small layer over our Core Java lib that provides
 an android-specific SDK facade, code for ensuring that contracts around event ordering are
 obeyed,and implementations of some objects that Core Java leaves to the integrator.
 
