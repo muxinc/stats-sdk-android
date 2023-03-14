@@ -12,7 +12,7 @@ our [ExoPlayer SDK](https://github.com/muxinc/mux-stats-sdk-exoplayer).
 Add the dependency to your SDK.
 
 ```groovy
-api 'com.mux.stats.sdk.muxstats:android:0.6.0'
+api 'com.mux.stats.sdk.muxstats:android:0.7.2'
 ```
 
 Implement `PlayerBinding<>` to listen for changes from your Player
