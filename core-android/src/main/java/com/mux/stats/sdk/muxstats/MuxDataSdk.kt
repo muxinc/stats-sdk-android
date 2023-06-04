@@ -251,7 +251,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     MuxStats.setHostDevice(device)
     MuxStats.setHostNetworkApi(network)
 
-    // CustomerData fields are non-nullable internally Core is in java so it's enforced at runtime
+    // CustomerData fields are non-nullable internally in Core
     customerData.apply {
       if (customerPlayerData == null) {
         customerPlayerData = CustomerPlayerData()
