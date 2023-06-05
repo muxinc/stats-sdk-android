@@ -50,8 +50,8 @@ muxDistribution {
 
 dependencies {
 
-  api "com.mux:stats.muxcore:7.6.0"
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
+  api "com.mux:stats.muxcore:7.9.2"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
 
   debugImplementation project(':mux-kt-utils')
   afterEvaluate { // The version isn't computed until after this file is finalized thanks to agp 8

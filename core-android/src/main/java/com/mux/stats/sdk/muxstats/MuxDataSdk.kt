@@ -20,9 +20,7 @@ import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
-import com.mux.stats.sdk.core.model.CustomerData
-import com.mux.stats.sdk.core.model.CustomerPlayerData
-import com.mux.stats.sdk.core.model.CustomerVideoData
+import com.mux.stats.sdk.core.model.*
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
 import java.util.*
@@ -252,6 +250,25 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
     MuxStats.setHostDevice(device)
     MuxStats.setHostNetworkApi(network)
+
+    // CustomerData fields are non-nullable internally in Core
+    customerData.apply {
+      if (customerPlayerData == null) {
+        customerPlayerData = CustomerPlayerData()
+      }
+      if (customerVideoData == null) {
+        customerVideoData = CustomerVideoData()
+      }
+      if (customerViewData == null) {
+        customerViewData = CustomerViewData()
+      }
+      if (customerViewerData == null) {
+        customerViewerData = CustomerViewerData()
+      }
+      if (customData == null) {
+        customData = CustomData()
+      }
+    }
 
     eventBus = makeEventBus()
     uiDelegate = makeUiDelegate(playerView)
