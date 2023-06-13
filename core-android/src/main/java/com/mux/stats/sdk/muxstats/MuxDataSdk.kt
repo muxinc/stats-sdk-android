@@ -239,7 +239,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     override fun getVideoTargetDuration(): Long? = null
     override fun getPlayerViewWidth() =
       convertPxToDp(uiDelegate.getPlayerViewSize().x, uiDelegate.displayDensity())
-
     override fun getPlayerViewHeight() =
       convertPxToDp(uiDelegate.getPlayerViewSize().y, uiDelegate.displayDensity())
   }

@@ -123,12 +123,12 @@ open class MuxStateCollector(
    * An asynchronous watcher for playback position. It waits for the given update interval, and
    * then sets the [playbackPositionMills] property on this object. It can be stopped by
    * calling [PlayerWatcher.stop], and will automatically stop if it can no longer
-   * access play time info
+   * access play state info
    */
   @Suppress("MemberVisibilityCanBePrivate")
   var playerWatcher: PlayerWatcher<*>?
           by Delegates.observable(null) @Synchronized { _, old, _ ->
-            old?.apply { stop("watcher replaced") }
+            old?.stop("watcher replaced")
           }
 
   private var sessionTags: List<SessionTag> = Collections.emptyList()
