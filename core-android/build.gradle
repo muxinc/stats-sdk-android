@@ -18,9 +18,8 @@ android {
   }
 
   buildFeatures {
-    buildConfig = true
+    buildConfig = true // TODO: The distribution plugin needs this and can/should set it
   }
-
   buildTypes {
     release {
       minifyEnabled false
