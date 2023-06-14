@@ -203,6 +203,8 @@ fun ByteArray.unGzip(): ByteArray {
 
 /**
  * Gets the URI Authority used for POSTing beacons to the backend, provided a domain and env key
+ * @param envKey An env key for an environment, or blank to infer the key server-side
+ * @param domain The domain, prepended with a '.'
  */
 fun beaconAuthority(envKey: String, domain: String): String {
   return if (Pattern.matches("^[a-z0-9]+$", envKey)) {
