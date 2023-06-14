@@ -268,6 +268,9 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         customData = CustomData()
       }
     }
+    // Core wants the env key on CustomerPlayerData
+    customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
+    customerData.customerPlayerData.environmentKey = envKey
 
     eventBus = makeEventBus()
     uiDelegate = makeUiDelegate(playerView)
@@ -283,8 +286,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       player, uiDelegate, collector, playerBinding
     )
 
-    customerData.apply { if (customerPlayerData == null) customerPlayerData = CustomerPlayerData() }
-    customerData.customerPlayerData.environmentKey = envKey
     muxStats.customerData = customerData
     eventBus.addListener(muxStats)
     displayDensity = uiDelegate.displayDensity()
