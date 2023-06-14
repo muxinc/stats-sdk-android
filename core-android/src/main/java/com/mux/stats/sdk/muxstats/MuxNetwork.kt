@@ -57,6 +57,7 @@ class MuxNetwork @JvmOverloads constructor(
     requestHeaders: Hashtable<String, String>?,
     completion: INetworkRequest.IMuxNetworkRequestsCompletion?
   ) {
+    System.out.println("ReqLoss: postWithCompletion() for envkey $envKey")
     if (envKey != null) {
       val url = Uri.Builder()
         .scheme("https")
