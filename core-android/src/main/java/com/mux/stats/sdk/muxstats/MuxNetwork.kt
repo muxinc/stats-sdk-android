@@ -76,8 +76,8 @@ class MuxNetwork @JvmOverloads constructor(
           )
         )
         System.out.println("ReqLoss: postWithCompletion() result $result")
-        val txt = result.response?.body?.decodeToString()
-        System.out.println("ReqLoss: postWithCompletion() result txt: $txt")
+        val txt = body
+        System.out.println("ReqLoss: postWithCompletion() What I just sent: $txt")
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
           System.out.println("ReqLoss: postWithCompletion() calling callback")
