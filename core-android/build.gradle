@@ -52,7 +52,7 @@ muxDistribution {
 
 dependencies {
 
-  api "com.mux:stats.muxcore:dev-fix-first-dropped-req-6ced093"
+  api "com.mux:stats.muxcore:dev-fix-first-dropped-req-6dda10e"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
 
   debugImplementation project(':mux-kt-utils')
