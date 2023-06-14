@@ -92,7 +92,7 @@ class MuxNetwork @JvmOverloads constructor(
 
 private fun IDevice.networkDevice() = object : HttpClient.DeviceNetwork {
   override fun isOnline(): Boolean   {
-    Log.d("ReqLoss", "network connection type $networkConnectionType")
+    System.out.println("ReqLoss"+ " network connection type $networkConnectionType")
     return networkConnectionType != null
   }
 }
