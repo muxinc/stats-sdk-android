@@ -33,6 +33,7 @@ class MuxNetwork @JvmOverloads constructor(
   }
 
   override fun post(url: URL?, body: JSONObject?, requestHeaders: Hashtable<String, String>?) {
+    System.out.println("ReqLoss: post() Sending to $url")
     if (url != null) {
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
@@ -61,6 +62,7 @@ class MuxNetwork @JvmOverloads constructor(
         .authority(beaconAuthority(envKey = envKey, domain = domain ?: ""))
         .path("android")
         .build().toURL()
+      System.out.println("ReqLoss: postWithCompletion() Sending to $url")
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
 
@@ -72,8 +74,10 @@ class MuxNetwork @JvmOverloads constructor(
             bodyStr = body
           )
         )
+        System.out.println("ReqLoss: postWithCompletion() result $result")
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
+          System.out.println("ReqLoss: postWithCompletion() calling callback")
           completion?.onComplete(result.successful)
         }
       }
