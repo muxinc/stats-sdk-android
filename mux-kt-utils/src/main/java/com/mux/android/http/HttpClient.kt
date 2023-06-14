@@ -38,7 +38,7 @@ class HttpClient(
   } // doCall
 
   private suspend fun callWithBackoff(request: Request, retries: Int = 0): CallResult {
-    println("ReqLoss callWithBackoff: called with $retries retries")
+    System.out.println("ReqLoss callWithBackoff: called with $retries retries")
     suspend fun maybeRetry(result: CallResult): CallResult {
       val moreRetries = result.retries < MAX_REQUEST_RETRIES
       return if (moreRetries) {
@@ -52,7 +52,7 @@ class HttpClient(
     maybeBackoff(retries)
 
     return if (!network.isOnline()) {
-      println("ReqLoss"+ " Network offline, backing off")
+      System.out.println("ReqLoss"+ " Network offline, backing off")
       maybeRetry(CallResult(offlineForCall = true, retries = retries))
     } else {
       try {
