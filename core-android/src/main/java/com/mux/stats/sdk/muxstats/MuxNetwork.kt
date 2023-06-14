@@ -27,6 +27,7 @@ class MuxNetwork @JvmOverloads constructor(
   private val coroutineScope = CoroutineScope(coroutineScope.coroutineContext)
 
   override fun get(url: URL?) {
+    System.out.println("ReqLoss: get() from $url")
     if (url != null) {
       coroutineScope.launch { httpClient.call(GET(url = url)) }
     }
@@ -75,6 +76,8 @@ class MuxNetwork @JvmOverloads constructor(
           )
         )
         System.out.println("ReqLoss: postWithCompletion() result $result")
+        val txt = result.response?.body?.decodeToString()
+        System.out.println("ReqLoss: postWithCompletion() result txt: $txt")
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
           System.out.println("ReqLoss: postWithCompletion() calling callback")
