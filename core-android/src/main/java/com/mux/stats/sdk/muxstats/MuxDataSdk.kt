@@ -239,7 +239,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     override fun getVideoTargetDuration(): Long? = null
     override fun getPlayerViewWidth() =
       convertPxToDp(uiDelegate.getPlayerViewSize().x, uiDelegate.displayDensity())
-
     override fun getPlayerViewHeight() =
       convertPxToDp(uiDelegate.getPlayerViewSize().y, uiDelegate.displayDensity())
   }
@@ -437,15 +436,19 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
             MuxLogger.w(TAG, "Could not get network capabilities")
             null
           }
+
           nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
             CONNECTION_TYPE_WIRED
           }
+
           nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
             CONNECTION_TYPE_WIFI
           }
+
           nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
             CONNECTION_TYPE_CELLULAR
           }
+
           else -> {
             CONNECTION_TYPE_OTHER
           }
@@ -469,9 +472,11 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
             ConnectivityManager.TYPE_ETHERNET -> {
               CONNECTION_TYPE_WIRED
             }
+
             ConnectivityManager.TYPE_WIFI -> {
               CONNECTION_TYPE_WIFI
             }
+
             ConnectivityManager.TYPE_MOBILE,
             ConnectivityManager.TYPE_MOBILE_DUN,
             ConnectivityManager.TYPE_MOBILE_HIPRI,
@@ -480,6 +485,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
             ConnectivityManager.TYPE_MOBILE_MMS -> {
               CONNECTION_TYPE_CELLULAR
             }
+
             else -> {
               CONNECTION_TYPE_OTHER
             }
@@ -557,9 +563,13 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     init {
       deviceId = getOrCreateDeviceId(ctx)
       try {
-        val pi = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
-        appName = pi.packageName
-        appVersion = pi.versionName
+        val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+          getPackageInfoApi33(ctx)
+        } else {
+          getPackageInfoLegacy(ctx)
+        }
+        appName = packageInfo.packageName
+        appVersion = packageInfo.versionName
       } catch (e: PackageManager.NameNotFoundException) {
         MuxLogger.d(TAG, "could not get package info")
       }
