@@ -77,6 +77,11 @@ class MuxNetwork @JvmOverloads constructor(
           completion?.onComplete(result.successful)
         }
       }
+    } else {
+      // If no envKey was supplied from java core, that's an error
+      coroutineScope.launch(Dispatchers.Main) {
+        completion?.onComplete(false)
+      }
     }
   }
 
@@ -91,5 +96,7 @@ class MuxNetwork @JvmOverloads constructor(
 }
 
 private fun IDevice.networkDevice() = object : HttpClient.DeviceNetwork {
-  override fun isOnline(): Boolean = networkConnectionType != null
+  override fun isOnline(): Boolean   {
+    return networkConnectionType != null
+  }
 }
