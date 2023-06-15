@@ -27,14 +27,12 @@ class MuxNetwork @JvmOverloads constructor(
   private val coroutineScope = CoroutineScope(coroutineScope.coroutineContext)
 
   override fun get(url: URL?) {
-    System.out.println("ReqLoss: get() from $url")
     if (url != null) {
       coroutineScope.launch { httpClient.call(GET(url = url)) }
     }
   }
 
   override fun post(url: URL?, body: JSONObject?, requestHeaders: Hashtable<String, String>?) {
-    System.out.println("ReqLoss: post() Sending to $url")
     if (url != null) {
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
@@ -57,14 +55,12 @@ class MuxNetwork @JvmOverloads constructor(
     requestHeaders: Hashtable<String, String>?,
     completion: INetworkRequest.IMuxNetworkRequestsCompletion?
   ) {
-    System.out.println("ReqLoss: postWithCompletion() for envkey $envKey")
     if (envKey != null) {
       val url = Uri.Builder()
         .scheme("https")
         .authority(beaconAuthority(envKey = envKey, domain = domain ?: ""))
         .path("android")
         .build().toURL()
-      System.out.println("ReqLoss: postWithCompletion() Sending to $url")
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
 
@@ -76,12 +72,9 @@ class MuxNetwork @JvmOverloads constructor(
             bodyStr = body
           )
         )
-        System.out.println("ReqLoss: postWithCompletion() result $result")
         val txt = body
-        System.out.println("ReqLoss: postWithCompletion() What I just sent: $txt")
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
-          System.out.println("ReqLoss: postWithCompletion() calling callback")
           completion?.onComplete(result.successful)
         }
       }
@@ -100,7 +93,6 @@ class MuxNetwork @JvmOverloads constructor(
 
 private fun IDevice.networkDevice() = object : HttpClient.DeviceNetwork {
   override fun isOnline(): Boolean   {
-    System.out.println("ReqLoss"+ " network connection type $networkConnectionType")
     return networkConnectionType != null
   }
 }
