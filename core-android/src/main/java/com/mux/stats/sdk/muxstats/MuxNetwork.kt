@@ -53,9 +53,9 @@ class MuxNetwork @JvmOverloads constructor(
     envKey: String?,
     body: String?,
     requestHeaders: Hashtable<String, String>?,
-    completion: INetworkRequest.IMuxNetworkRequestsCompletion?
+    completion: INetworkRequest.IMuxNetworkRequestsCompletion2?
   ) {
-    if (envKey != null) {
+  if (envKey != null) {
       val url = Uri.Builder()
         .scheme("https")
         .authority(beaconAuthority(envKey = envKey, domain = domain ?: ""))
@@ -74,14 +74,25 @@ class MuxNetwork @JvmOverloads constructor(
         )
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
-          completion?.onComplete(result.successful)
+          completion?.onComplete(result.successful, result.response?.headers)
         }
       }
     } else {
       // If no envKey was supplied from java core, that's an error
       coroutineScope.launch(Dispatchers.Main) {
-        completion?.onComplete(false)
+        completion?.onComplete(false, null)
       }
+    }}
+
+  override fun postWithCompletion(
+    domain: String?,
+    envKey: String?,
+    body: String?,
+    requestHeaders: Hashtable<String, String>?,
+    completion: INetworkRequest.IMuxNetworkRequestsCompletion?
+  ) {
+    postWithCompletion(domain, envKey, body, requestHeaders) { success, _ ->
+      completion?.onComplete(success)
     }
   }
 
