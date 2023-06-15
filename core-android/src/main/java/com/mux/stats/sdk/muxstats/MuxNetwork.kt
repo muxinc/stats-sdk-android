@@ -72,7 +72,6 @@ class MuxNetwork @JvmOverloads constructor(
             bodyStr = body
           )
         )
-        val txt = body
         // Dispatch the result back on the main thread
         coroutineScope.launch(Dispatchers.Main) {
           completion?.onComplete(result.successful)
