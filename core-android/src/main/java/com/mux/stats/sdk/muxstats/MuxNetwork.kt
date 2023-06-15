@@ -78,6 +78,11 @@ class MuxNetwork @JvmOverloads constructor(
           completion?.onComplete(result.successful)
         }
       }
+    } else {
+      // If no envKey was supplied from java core, that's an error
+      coroutineScope.launch(Dispatchers.Main) {
+        completion?.onComplete(false)
+      }
     }
   }
 
