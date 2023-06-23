@@ -120,6 +120,12 @@ open class MuxStateCollector(
   var sourceHeight: Int = 0
 
   /**
+   * The number of frames dropped during this view, or 0 if not tracked
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+   var droppedFrames = 0
+
+  /**
    * An asynchronous watcher for playback position. It waits for the given update interval, and
    * then sets the [playbackPositionMills] property on this object. It can be stopped by
    * calling [PlayerWatcher.stop], and will automatically stop if it can no longer
@@ -306,6 +312,13 @@ open class MuxStateCollector(
     firstFrameRenderedAtMillis = FIRST_FRAME_NOT_RENDERED
     dispatch(SeekingEvent(null))
     firstFrameReceived = false
+  }
+
+  /**
+   * Increment the number of frames dropped during this view by the given amount
+   */
+  fun incrementDroppedFrames(droppedFrames: Int) {
+    this.droppedFrames += droppedFrames
   }
 
   /**
