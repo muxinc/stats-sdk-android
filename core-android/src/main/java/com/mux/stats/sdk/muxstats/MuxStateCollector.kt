@@ -8,6 +8,7 @@ import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.events.InternalErrorEvent
 import com.mux.stats.sdk.core.events.playback.*
+import com.mux.stats.sdk.core.model.BandwidthMetricData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.util.MuxLogger
@@ -123,7 +124,13 @@ open class MuxStateCollector(
    * The number of frames dropped during this view, or 0 if not tracked
    */
   @Suppress("MemberVisibilityCanBePrivate")
-   var droppedFrames = 0
+  var droppedFrames = 0
+
+  /**
+   * The list of renditions currently available as part of an HLS, DASH, etc stream
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var renditionList: List<BandwidthMetricData.Rendition>? = null
 
   /**
    * An asynchronous watcher for playback position. It waits for the given update interval, and
@@ -477,9 +484,11 @@ open class MuxStateCollector(
       PlayEvent.TYPE -> {
         playEventsSent++
       }
+
       PauseEvent.TYPE -> {
         pauseEventsSent++
       }
+
       SeekingEvent.TYPE -> {
         seekingEventsSent++
       }
