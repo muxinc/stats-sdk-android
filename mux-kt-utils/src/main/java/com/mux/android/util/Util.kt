@@ -30,12 +30,15 @@ fun <Any> allEqual(vararg these: Any): Boolean {
 }
 
 /**
- * Flattens a list of collections into a list that contains the contents of each collection in order
+ * Clamps an integer between the given min and max
  */
-fun <R> List<Collection<R>>.flattenNested(): List<R> {
-  return fold(mutableListOf<R>()) { acc, rs ->
-    acc.addAll(rs)
-    acc
+fun Int.clamp(min: Int, max: Int): Int {
+  return if(this >= max) {
+    max
+  } else if(this <= min) {
+    min
+  } else {
+    this
   }
 }
 
