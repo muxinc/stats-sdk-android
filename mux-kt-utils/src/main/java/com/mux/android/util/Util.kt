@@ -30,6 +30,19 @@ fun <Any> allEqual(vararg these: Any): Boolean {
 }
 
 /**
+ * Clamps an integer between the given min and max
+ */
+fun Int.clamp(min: Int, max: Int): Int {
+  return if(this >= max) {
+    max
+  } else if(this <= min) {
+    min
+  } else {
+    this
+  }
+}
+
+/**
  * Convert from a raw pixel dimension to a density-independent (dip) dimension
  */
 fun convertPxToDp(px: Int, displayDensity: Float): Int {
