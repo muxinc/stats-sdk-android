@@ -231,12 +231,12 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     override fun getSourceDuration() = collector?.sourceDurationMs
     override fun isPaused() = collector?.isPaused() ?: true
     override fun isBuffering(): Boolean = collector?.muxPlayerState == MuxPlayerState.BUFFERING
-    override fun getPlayerProgramTime(): Long? = null
-    override fun getPlayerManifestNewestTime(): Long? = null
-    override fun getVideoHoldback(): Long? = null
-    override fun getVideoPartHoldback(): Long? = null
-    override fun getVideoPartTargetDuration(): Long? = null
-    override fun getVideoTargetDuration(): Long? = null
+    override fun getPlayerProgramTime(): Long? = collector?.hlsPlayerProgramTime
+    override fun getPlayerManifestNewestTime(): Long? = collector?.hlsManifestNewestTime
+    override fun getVideoHoldback(): Long? = collector?.hlsHoldBack
+    override fun getVideoPartHoldback(): Long? = collector?.hlsPartHoldBack
+    override fun getVideoPartTargetDuration(): Long? = collector?.hlsPartTargetDuration
+    override fun getVideoTargetDuration(): Long? = collector?.hlsTargetDuration
     override fun getPlayerViewWidth() =
       convertPxToDp(uiDelegate.getPlayerViewSize().x, uiDelegate.displayDensity())
     override fun getPlayerViewHeight() =
