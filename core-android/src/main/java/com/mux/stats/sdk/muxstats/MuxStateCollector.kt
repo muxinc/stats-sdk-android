@@ -324,6 +324,7 @@ open class MuxStateCollector(
   /**
    * Increment the number of frames dropped during this view by the given amount
    */
+  @Suppress("unused")
   fun incrementDroppedFrames(droppedFrames: Int) {
     this.droppedFrames += droppedFrames
   }
