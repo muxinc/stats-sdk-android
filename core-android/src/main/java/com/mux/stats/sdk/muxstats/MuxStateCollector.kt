@@ -144,31 +144,31 @@ open class MuxStateCollector(
    * For HLS streams, the newest timestamp received (for live, this ~= the time we started watching)
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  val hlsManifestNewestTime: Long? = null
+  var hlsManifestNewestTime: Long? = null
 
   /**
    * For HLS live streams, the value of the HOLD-BACK tag
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  val hlsHoldBack: Long? = null
+  var hlsHoldBack: Long? = null
 
   /**
    * For HLS live streams, the value of the PART-HOLD-BACK tag
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  val hlsPartHoldBack: Long? = null
+  var hlsPartHoldBack: Long? = null
 
   /**
    * For HLS live streams, the value of the PART-TARGET tag
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  val hlsPartTargetDuration: Long? = null
+  var hlsPartTargetDuration: Long? = null
 
   /**
    * For HLS live streams, the value of the EXT-X-TARGETDURATION tag
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  val hlsTargetDuration: Long? = null
+  var hlsTargetDuration: Long? = null
 
   /**
    * An asynchronous watcher for playback position. It waits for the given update interval, and
