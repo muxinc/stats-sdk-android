@@ -8,6 +8,7 @@ import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.events.InternalErrorEvent
 import com.mux.stats.sdk.core.events.playback.*
+import com.mux.stats.sdk.core.model.BandwidthMetricData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.util.MuxLogger
@@ -118,6 +119,56 @@ open class MuxStateCollector(
    */
   @Suppress("MemberVisibilityCanBePrivate")
   var sourceHeight: Int = 0
+
+  /**
+   * The number of frames dropped during this view, or 0 if not tracked
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var droppedFrames = 0
+
+  /**
+   * The list of renditions currently available as part of an HLS, DASH, etc stream
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var renditionList: List<BandwidthMetricData.Rendition>? = null
+
+  /**
+   * For HLS live streams, the PROGRAM-DATE-TIME or an approximation
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  val hlsPlayerProgramTime: Long? get() {
+    return hlsManifestNewestTime?.let { it + playbackPositionMills }
+  }
+
+  /**
+   * For HLS streams, the newest timestamp received (for live, this ~= the time we started watching)
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsManifestNewestTime: Long? = null
+
+  /**
+   * For HLS live streams, the value of the HOLD-BACK tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsHoldBack: Long? = null
+
+  /**
+   * For HLS live streams, the value of the PART-HOLD-BACK tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsPartHoldBack: Long? = null
+
+  /**
+   * For HLS live streams, the value of the PART-TARGET tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsPartTargetDuration: Long? = null
+
+  /**
+   * For HLS live streams, the value of the EXT-X-TARGETDURATION tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsTargetDuration: Long? = null
 
   /**
    * An asynchronous watcher for playback position. It waits for the given update interval, and
@@ -309,6 +360,14 @@ open class MuxStateCollector(
   }
 
   /**
+   * Increment the number of frames dropped during this view by the given amount
+   */
+  @Suppress("unused")
+  fun incrementDroppedFrames(droppedFrames: Int) {
+    this.droppedFrames += droppedFrames
+  }
+
+  /**
    * Call when the end of playback was reached.
    * A PauseEvent and EndedEvent will both be sent, and the state will be set to ENDED
    */
@@ -464,9 +523,11 @@ open class MuxStateCollector(
       PlayEvent.TYPE -> {
         playEventsSent++
       }
+
       PauseEvent.TYPE -> {
         pauseEventsSent++
       }
+
       SeekingEvent.TYPE -> {
         seekingEventsSent++
       }
