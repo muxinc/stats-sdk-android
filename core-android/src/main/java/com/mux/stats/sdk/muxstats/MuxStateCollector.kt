@@ -133,6 +133,44 @@ open class MuxStateCollector(
   var renditionList: List<BandwidthMetricData.Rendition>? = null
 
   /**
+   * For HLS live streams, the PROGRAM-DATE-TIME or an approximation
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  val hlsPlayerProgramTime: Long? get() {
+    return hlsManifestNewestTime?.let { it + playbackPositionMills }
+  }
+
+  /**
+   * For HLS streams, the newest timestamp received (for live, this ~= the time we started watching)
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsManifestNewestTime: Long? = null
+
+  /**
+   * For HLS live streams, the value of the HOLD-BACK tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsHoldBack: Long? = null
+
+  /**
+   * For HLS live streams, the value of the PART-HOLD-BACK tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsPartHoldBack: Long? = null
+
+  /**
+   * For HLS live streams, the value of the PART-TARGET tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsPartTargetDuration: Long? = null
+
+  /**
+   * For HLS live streams, the value of the EXT-X-TARGETDURATION tag
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  var hlsTargetDuration: Long? = null
+
+  /**
    * An asynchronous watcher for playback position. It waits for the given update interval, and
    * then sets the [playbackPositionMills] property on this object. It can be stopped by
    * calling [PlayerWatcher.stop], and will automatically stop if it can no longer
@@ -324,6 +362,7 @@ open class MuxStateCollector(
   /**
    * Increment the number of frames dropped during this view by the given amount
    */
+  @Suppress("unused")
   fun incrementDroppedFrames(droppedFrames: Int) {
     this.droppedFrames += droppedFrames
   }

@@ -166,7 +166,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     stateCollector.pause()
     stateCollector.playing()
     assertEquals(
-      "pause -> playing() => play",
+      "pause -> playing() => play -> playing",
       MuxPlayerState.PLAYING,
       stateCollector.muxPlayerState,
     )
@@ -182,7 +182,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     stateCollector.buffering()
     stateCollector.playing()
     assertEquals(
-      "pause -> playing() => play",
+      "play -> playing -> buffering -> playing => playing",
       MuxPlayerState.PLAYING,
       stateCollector.muxPlayerState,
     )
@@ -244,7 +244,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     stateCollector.seeking()
     stateCollector.pause()
     assertEquals(
-      "seeking -> pause => pause",
+      "seeking -> pause => seeked",
       MuxPlayerState.SEEKED,
       stateCollector.muxPlayerState,
     )
