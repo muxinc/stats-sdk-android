@@ -592,11 +592,6 @@ open class MuxStateCollector(
         val position = getTimeMillis()
         if (position != null) {
           stateCollector.playbackPositionMills = position
-          // pick up seeked events that may not otherwise be delivered in sequence
-          if (stateCollector.seekingInProgress) {
-            // seeked() can infer the playing state and decide whether there was actually a seek
-            stateCollector.seeked(true)
-          }
         } else {
           // If the data source is returning null, assume caller cleaned up the player
           MuxLogger.d(logTag(), "PlaybackPositionWatcher: Player lost. Stopping")
