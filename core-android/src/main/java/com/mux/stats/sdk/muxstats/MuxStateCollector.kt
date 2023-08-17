@@ -59,7 +59,9 @@ open class MuxStateCollector(
   var timeToWaitAfterFirstFrameReceived: Long = 50
 
   /**
-   * The current state of the player, as represented by Mux Data. Only mutable from the inside
+   * The current state of the player, as represented by Mux Data. This value changes in response to
+   * player state events reported by you. The events are reported via methods like [pause], [play],
+   * [seeking], etc
    *
    * @see pause
    * @see playing
