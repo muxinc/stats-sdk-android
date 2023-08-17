@@ -312,6 +312,7 @@ open class MuxStateCollector(
   fun seeked() {
     // Only handle if we were previously seeking
     if (seekingInProgress) {
+      dispatch(SeekedEvent(null))
       seekingInProgress = false
       _playerState = MuxPlayerState.SEEKED
     }
