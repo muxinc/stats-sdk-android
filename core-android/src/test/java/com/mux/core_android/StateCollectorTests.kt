@@ -10,8 +10,6 @@ import com.mux.stats.sdk.muxstats.MuxStats
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
@@ -92,7 +90,7 @@ class StateCollectorTests : AbsRobolectricTest() {
   fun testFirstPlayWhileSeeked() {
     // The first play() while seeked should be recorded
     stateCollector.seeking()
-    stateCollector.seeked(false)
+    stateCollector.seeked()
     stateCollector.play()
     assertEquals(
       "the first play event should always be recorded",
@@ -122,7 +120,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     // subsequent play() while seeked should be ignored
     stateCollector.play()
     stateCollector.seeking()
-    stateCollector.seeked(false)
+    stateCollector.seeked()
     stateCollector.play()
     assertNotEquals(
       "play -> buffering -> play => buffering",
@@ -195,7 +193,7 @@ class StateCollectorTests : AbsRobolectricTest() {
   fun testFirstPauseWhileSeeked() {
     // if seeked, and this is the first pause event, process as paused
     stateCollector.seeking()
-    stateCollector.seeked(false)
+    stateCollector.seeked()
     stateCollector.pause()
     assertEquals(
       "seeked -> pause => pause (if 1st pause)",
@@ -211,7 +209,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     stateCollector.pause()
     stateCollector.play()
     stateCollector.seeking()
-    stateCollector.seeked(false)
+    stateCollector.seeked()
     stateCollector.pause()
     assertEquals(
       "seeking -> seeked -> pause => pause (if 1st pause)",
@@ -254,8 +252,8 @@ class StateCollectorTests : AbsRobolectricTest() {
   @Test
   fun testSeekedWhileNotSeeking() {
     // if not seeking, seeked should be skipped
-    stateCollector.seeked(false)
-    stateCollector.seeked(true)
+    stateCollector.seeked()
+    stateCollector.seeked()
     assertNotEquals(
       "seeked while not seeking should be ignored",
       MuxPlayerState.SEEKED,
@@ -269,36 +267,13 @@ class StateCollectorTests : AbsRobolectricTest() {
     // If seeking and not inferring state info, just go to seeked
     stateCollector.play() // Seek events are ignored before play()
     stateCollector.seeking()
-    stateCollector.seeked(false)
+    stateCollector.seeked()
     assertEquals(
-      "seeking -> seeked(false) => seeked",
+      "seeking -> seeked() => seeked",
       MuxPlayerState.SEEKED,
       stateCollector.muxPlayerState,
     )
     eventDispatcher.assertHasNoneOf(PlayingEvent(null))
     eventDispatcher.assertHasOneOf(SeekedEvent(null))
-  }
-
-  @Test
-  fun testSeekedInferringPlay() {
-    // If seeking and *are* inferring state info, and frames rendered, end up in PLAYING state
-    stateCollector.play() // Seek events are ignored before play()
-    stateCollector.seeking()
-    stateCollector.onFirstFrameRendered()
-    runBlocking { delay(100) } // onFirstFrameRendered is delayed 50ms
-    stateCollector.seeked(true)
-    assertEquals(
-      "seeking -> seeked(true) => playing (for first frame already rendered since seek)",
-      MuxPlayerState.PLAYING,
-      stateCollector.muxPlayerState,
-    )
-    eventDispatcher.assertHasExactlyThese(
-      listOf(
-        PlayEvent(null),
-        SeekingEvent(null),
-        SeekedEvent(null),
-        PlayingEvent(null),
-      )
-    )
   }
 }
