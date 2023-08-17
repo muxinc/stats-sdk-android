@@ -60,6 +60,15 @@ open class MuxStateCollector(
 
   /**
    * The current state of the player, as represented by Mux Data. Only mutable from the inside
+   *
+   * @see pause
+   * @see playing
+   * @see buffering
+   * @see seeking
+   * @see seeked
+   * @see playingAds
+   * @see finishedPlayingAds
+   * @see ended
    */
   @Suppress("MemberVisibilityCanBePrivate")
   val muxPlayerState by ::_playerState
@@ -301,7 +310,6 @@ open class MuxStateCollector(
   fun seeked() {
     // Only handle if we were previously seeking
     if (seekingInProgress) {
-      dispatch(SeekedEvent(null))
       seekingInProgress = false
       _playerState = MuxPlayerState.SEEKED
     }
