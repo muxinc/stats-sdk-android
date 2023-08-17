@@ -287,7 +287,7 @@ open class MuxStateCollector(
       rebufferingEnded()
     }
     if (seekingInProgress) {
-      seeked(false)
+      seeked()
       return
     }
     _playerState = MuxPlayerState.PAUSED
@@ -297,40 +297,17 @@ open class MuxStateCollector(
   /**
    * Call when the player has stopped seeking. This is normally handled automatically, but may need
    * to be called if there was an surprise position discontinuity in some cases
-   *
-   * @param checkIfMissedSeeked If true, this method will check for missed seek-ends and dispatched
-   *      'seeked' and 'playing' only if appropriate
    */
-  fun seeked(checkIfMissedSeeked: Boolean) {
+  fun seeked() {
     // Only handle if we were previously seeking
     if (seekingInProgress) {
-      if (checkIfMissedSeeked) {
-        // If inferring playing state, we may also assume the player is playing based on
-        // collected state data
-        if (
-          (((System.currentTimeMillis() - firstFrameRenderedAtMillis
-                  > timeToWaitAfterFirstFrameReceived) && firstFrameReceived) || !mediaHasVideoTrack!!)
-          && seekingEventsSent > 0
-        ) {
-          // This is a playback !!!
-          dispatch(SeekedEvent(null))
-          seekingInProgress = false
-          MuxLogger.d("MuxStats", "Playing called from seeked event !!!")
-          playing()
-        } else {
-          // No playback yet.
-          MuxLogger.d("MuxStats", "Seeked before playback started")
-        }
-      } else {
-        // If not inferring player state, just dispatch the event
-        dispatch(SeekedEvent(null))
-        seekingInProgress = false
-        _playerState = MuxPlayerState.SEEKED
-      }
+      dispatch(SeekedEvent(null))
+      seekingInProgress = false
+      _playerState = MuxPlayerState.SEEKED
+    }
 
-      if (seekingEventsSent == 0) {
-        seekingInProgress = false
-      }
+    if (seekingEventsSent == 0) {
+      seekingInProgress = false
     }
   }
 
