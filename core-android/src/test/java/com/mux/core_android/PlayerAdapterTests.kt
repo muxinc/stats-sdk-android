@@ -3,6 +3,7 @@ package com.mux.core_android
 import android.view.View
 import com.mux.core_android.test.tools.AbsRobolectricTest
 import com.mux.core_android.test.tools.testdoubles.FakePlayerBinding
+import com.mux.core_android.test.tools.testdoubles.mockActivity
 import com.mux.core_android.test.tools.testdoubles.mockView
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter
 import com.mux.stats.sdk.muxstats.MuxStateCollector
@@ -65,7 +66,7 @@ class PlayerAdapterTests : AbsRobolectricTest() {
   ): MuxPlayerAdapter<View, Any> {
     val fakePlayer: Any = Object()
     val mockUiDelegate: MuxUiDelegate<View> =
-      mockView().muxUiDelegate()
+      mockView().muxUiDelegate(mockActivity())
     val mockCollector = mockStateCollector()
 
     return MuxPlayerAdapter(

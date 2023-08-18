@@ -46,7 +46,7 @@ fun mockNetworkRequest() = mockk<INetworkRequest> {}
  */
 fun <Player> mockPlayerAdapter(): MuxPlayerAdapter<View, Player> =
   mockk {
-    every { uiDelegate } returns mockView().muxUiDelegate()
+    every { uiDelegate } returns mockView().muxUiDelegate(mockActivity())
   }
 
 
