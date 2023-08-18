@@ -79,6 +79,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     trackFirstFrame: Boolean
   ) -> MuxStateCollector = Factory::defaultMuxStateCollector,
   makeUiDelegate: (
+    context: Context,
     view: PlayerView?
   ) -> MuxUiDelegate<PlayerView> = Factory::defaultUiDelegate,
 ) {
@@ -100,7 +101,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   protected val collector: MuxStateCollector
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val displayDensity: Float
+  protected val displayDensity: Float get() = uiDelegate.displayDensity()
 
   /**
    * Update all Customer Data (custom player, video, and view data) with the data found here
@@ -273,7 +274,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     customerData.customerPlayerData.environmentKey = envKey
 
     eventBus = makeEventBus()
-    uiDelegate = makeUiDelegate(playerView)
+    uiDelegate = makeUiDelegate(context, playerView)
     @Suppress("LeakingThis")
     muxStats = makeMuxStats(
       makePlayerListener(this),
@@ -288,7 +289,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
 
     muxStats.customerData = customerData
     eventBus.addListener(muxStats)
-    displayDensity = uiDelegate.displayDensity()
 
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
@@ -312,8 +312,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     fun defaultPlayerListener(outerSdk: MuxDataSdk<*, *>): IPlayerListener =
       outerSdk.PlayerListenerBase()
 
-    fun <V : View> defaultUiDelegate(view: V?): MuxUiDelegate<V> =
-      view?.muxUiDelegate() ?: noUiDelegate()
+    fun <V : View> defaultUiDelegate(context: Context, view: V?): MuxUiDelegate<V> =
+      view?.muxUiDelegate(context) ?: noUiDelegate(context)
 
     fun defaultMuxStats(
       playerListener: IPlayerListener,

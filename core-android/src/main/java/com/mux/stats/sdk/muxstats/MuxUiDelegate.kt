@@ -2,6 +2,7 @@ package com.mux.stats.sdk.muxstats
 
 import android.annotation.TargetApi
 import android.app.Activity
+import android.content.Context
 import android.graphics.Point
 import android.os.Build
 import android.view.View
@@ -43,11 +44,12 @@ abstract class MuxUiDelegate<PlayerView>(view: PlayerView?) {
 /**
  * MuxViewDelegate for an Android View.
  */
-private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: PlayerView?) :
+private class AndroidUiDelegate<PlayerView : View>(context: Context?, view: PlayerView?) :
   MuxUiDelegate<PlayerView>(view) {
 
-  private val _screenSize: Point = activity?.let { screenSize(it) } ?: Point()
-  private val displayDensity = activity?.resources?.displayMetrics?.density ?: 0F
+  private val _screenSize: Point =
+    context?.let { it as? Activity }?.let { screenSize(it) } ?: Point()
+  private val displayDensity = context?.resources?.displayMetrics?.density ?: 0F
 
   override fun getPlayerViewSize(): Point = view?.let { view ->
     Point().apply {
@@ -107,7 +109,7 @@ private class AndroidUiDelegate<PlayerView : View>(activity: Activity?, view: Pl
  */
 @Suppress("unused")
 @JvmSynthetic
-internal fun <V : View> V.muxUiDelegate()
+internal fun <V : View> V.muxUiDelegate(context: Context)
         : MuxUiDelegate<V> = AndroidUiDelegate(context as? Activity, this)
 
 /**
@@ -116,4 +118,4 @@ internal fun <V : View> V.muxUiDelegate()
  */
 @Suppress("unused")
 @JvmSynthetic
-internal fun <V : View> noUiDelegate(): MuxUiDelegate<V> = AndroidUiDelegate(null, null)
+internal fun <V : View> noUiDelegate(context: Context): MuxUiDelegate<V> = AndroidUiDelegate(context, null)

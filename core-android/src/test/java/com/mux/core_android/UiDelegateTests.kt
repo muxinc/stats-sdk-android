@@ -2,12 +2,13 @@ package com.mux.core_android
 
 import android.app.Activity
 import android.view.View
-import com.mux.core_android.testdoubles.MOCK_PLAYER_HEIGHT
-import com.mux.core_android.testdoubles.MOCK_PLAYER_WIDTH
-import com.mux.core_android.testdoubles.MOCK_SCREEN_HEIGHT
-import com.mux.core_android.testdoubles.MOCK_SCREEN_WIDTH
-import com.mux.core_android.testdoubles.mockActivity
-import com.mux.core_android.testdoubles.mockView
+import com.mux.core_android.test.tools.AbsRobolectricTest
+import com.mux.core_android.test.tools.testdoubles.MOCK_PLAYER_HEIGHT
+import com.mux.core_android.test.tools.testdoubles.MOCK_PLAYER_WIDTH
+import com.mux.core_android.test.tools.testdoubles.MOCK_SCREEN_HEIGHT
+import com.mux.core_android.test.tools.testdoubles.MOCK_SCREEN_WIDTH
+import com.mux.core_android.test.tools.testdoubles.mockActivity
+import com.mux.core_android.test.tools.testdoubles.mockView
 import com.mux.stats.sdk.muxstats.muxUiDelegate
 import com.mux.stats.sdk.muxstats.noUiDelegate
 import io.mockk.every
@@ -40,7 +41,7 @@ class UiDelegateTests : AbsRobolectricTest() {
       )
       every { context } returns activity
     }
-    val uiDelegate = resizingView.muxUiDelegate()
+    val uiDelegate = resizingView.muxUiDelegate(mockActivity())
 
     // basic case
     assertEquals(
@@ -69,7 +70,7 @@ class UiDelegateTests : AbsRobolectricTest() {
 
   @Test
   fun testScreenSize() {
-    val uiDelegate = view.muxUiDelegate()
+    val uiDelegate = view.muxUiDelegate(mockActivity())
     assertEquals(
       "screen size is reported",
       uiDelegate.getScreenSize().x,
@@ -84,19 +85,7 @@ class UiDelegateTests : AbsRobolectricTest() {
 
   @Test
   fun testNoUi() {
-    val uiDelegate = noUiDelegate<View>()
-
-    val screenSize = uiDelegate.getScreenSize()
-    assertEquals(
-      "no ui: screen size should be 0",
-      screenSize.x,
-      0
-    )
-    assertEquals(
-      "no ui: screen size should be 0",
-      screenSize.y,
-      0
-    )
+    val uiDelegate = noUiDelegate<View>(mockActivity())
 
     val playerSize = uiDelegate.getPlayerViewSize()
     assertEquals(

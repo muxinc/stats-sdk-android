@@ -1,4 +1,4 @@
-package com.mux.core_android.testdoubles
+package com.mux.core_android.test.tools.testdoubles
 
 import android.app.Activity
 import android.content.Context
@@ -46,7 +46,7 @@ fun mockNetworkRequest() = mockk<INetworkRequest> {}
  */
 fun <Player> mockPlayerAdapter(): MuxPlayerAdapter<View, Player> =
   mockk {
-    every { uiDelegate } returns mockView().muxUiDelegate()
+    every { uiDelegate } returns mockView().muxUiDelegate(mockActivity())
   }
 
 

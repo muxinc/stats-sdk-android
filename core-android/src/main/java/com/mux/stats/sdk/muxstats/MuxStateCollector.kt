@@ -52,16 +52,25 @@ open class MuxStateCollector(
 
   /**
    * This is the time to wait in ms that needs to pass after the player has seeked in
-   * order for us to conclude that playback has actually started. We use this value in a workaround
-   * to detect the playing event when {@link SeekedEvent} event is some times reported by
-   * {@link ExoPlayer} a few milliseconds after the {@link PlayingEvent} which is not what is
-   * expected.
+   * order for us to conclude that playback has actually started. This is to ensure that callback
+   * ordering doesn't cause state issues during sometimes-chaotic player startup
    * */
   @Suppress("unused")
   var timeToWaitAfterFirstFrameReceived: Long = 50
 
   /**
-   * The current state of the player, as represented by Mux Data
+   * The current state of the player, as represented by Mux Data. This value changes in response to
+   * player state events reported by you. The events are reported via methods like [pause], [play],
+   * [seeking], etc
+   *
+   * @see pause
+   * @see playing
+   * @see buffering
+   * @see seeking
+   * @see seeked
+   * @see playingAds
+   * @see finishedPlayingAds
+   * @see ended
    */
   @Suppress("MemberVisibilityCanBePrivate")
   val muxPlayerState by ::_playerState
@@ -136,9 +145,10 @@ open class MuxStateCollector(
    * For HLS live streams, the PROGRAM-DATE-TIME or an approximation
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  val hlsPlayerProgramTime: Long? get() {
-    return hlsManifestNewestTime?.let { it + playbackPositionMills }
-  }
+  val hlsPlayerProgramTime: Long?
+    get() {
+      return hlsManifestNewestTime?.let { it + playbackPositionMills }
+    }
 
   /**
    * For HLS streams, the newest timestamp received (for live, this ~= the time we started watching)
@@ -218,6 +228,7 @@ open class MuxStateCollector(
     ) {
       if (_playerState == MuxPlayerState.PLAYING) {
         // If we were playing then the player buffers, that's re-buffering instead
+        //  Buffering can also happen because of seeking
         rebufferingStarted()
       } else {
         _playerState = MuxPlayerState.BUFFERING
@@ -287,7 +298,7 @@ open class MuxStateCollector(
       rebufferingEnded()
     }
     if (seekingInProgress) {
-      seeked(false)
+      seeked()
       return
     }
     _playerState = MuxPlayerState.PAUSED
@@ -297,39 +308,17 @@ open class MuxStateCollector(
   /**
    * Call when the player has stopped seeking. This is normally handled automatically, but may need
    * to be called if there was an surprise position discontinuity in some cases
-   *
-   * This method can also infer a PLAYING state transition, if required. Use @param inferPlayingState
    */
-  fun seeked(inferPlayingState: Boolean) {
+  fun seeked() {
     // Only handle if we were previously seeking
     if (seekingInProgress) {
-      if (inferPlayingState) {
-        // If inferring playing state, we may also assume the player is playing based on
-        // collected state data
-        if (
-          (((System.currentTimeMillis() - firstFrameRenderedAtMillis
-                  > timeToWaitAfterFirstFrameReceived) && firstFrameReceived) || !mediaHasVideoTrack!!)
-          && seekingEventsSent > 0
-        ) {
-          // This is a playback !!!
-          dispatch(SeekedEvent(null))
-          seekingInProgress = false
-          MuxLogger.d("MuxStats", "Playing called from seeked event !!!")
-          playing()
-        } else {
-          // No playback yet.
-          MuxLogger.d("MuxStats", "Seeked before playback started")
-        }
-      } else {
-        // If not inferring player state, just dispatch the event
-        dispatch(SeekedEvent(null))
-        seekingInProgress = false
-        _playerState = MuxPlayerState.SEEKED
-      }
+      dispatch(SeekedEvent(null))
+      seekingInProgress = false
+      _playerState = MuxPlayerState.SEEKED
+    }
 
-      if (seekingEventsSent == 0) {
-        seekingInProgress = false
-      }
+    if (seekingEventsSent == 0) {
+      seekingInProgress = false
     }
   }
 
@@ -343,7 +332,7 @@ open class MuxStateCollector(
     // TODO: We are getting a seeking() before the start of the view for some reason.
     //  This (I think?) causes state handling for another event to call seeked()
     //  We should eliminate the improper seeking() call, or find good criteria to ignore it,
-    //  or reset seeking state (possibly other state data too) when ViewStart is dispatched (use an IEventListener I guess)
+
     if (playEventsSent == 0) {
       // Ignore this, we have received a seek event before we have received playerready event,
       // so this event should be ignored.
@@ -591,10 +580,6 @@ open class MuxStateCollector(
         val position = getTimeMillis()
         if (position != null) {
           stateCollector.playbackPositionMills = position
-          // pick up seeked events that may not otherwise be delivered in sequence
-          if (stateCollector.seekingInProgress) {
-            stateCollector.seeked(true)
-          }
         } else {
           // If the data source is returning null, assume caller cleaned up the player
           MuxLogger.d(logTag(), "PlaybackPositionWatcher: Player lost. Stopping")
