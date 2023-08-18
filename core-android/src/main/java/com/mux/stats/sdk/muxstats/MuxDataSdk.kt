@@ -100,7 +100,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   protected val collector: MuxStateCollector
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val displayDensity: Float
+  protected val displayDensity: Float get() = uiDelegate.displayDensity()
 
   /**
    * Update all Customer Data (custom player, video, and view data) with the data found here
@@ -288,7 +288,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
 
     muxStats.customerData = customerData
     eventBus.addListener(muxStats)
-    displayDensity = uiDelegate.displayDensity()
 
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
