@@ -1,6 +1,6 @@
-package com.mux.core_android.testdoubles
+package com.mux.core_android.test.tools.testdoubles
 
-import com.mux.core_android.log
+import com.mux.core_android.test.tools.log
 import com.mux.stats.sdk.muxstats.IDevice
 import com.mux.stats.sdk.muxstats.LogPriority
 

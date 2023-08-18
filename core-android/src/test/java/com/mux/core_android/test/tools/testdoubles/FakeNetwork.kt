@@ -1,7 +1,7 @@
-package com.mux.core_android.testdoubles
+package com.mux.core_android.test.tools.testdoubles
 
 import android.net.Uri
-import com.mux.core_android.log
+import com.mux.core_android.test.tools.log
 import com.mux.stats.sdk.muxstats.INetworkRequest
 import com.mux.android.http.beaconAuthority
 import com.mux.android.util.logTag

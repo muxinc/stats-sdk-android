@@ -1,7 +1,7 @@
-package com.mux.core_android.testdoubles
+package com.mux.core_android.test.tools.testdoubles
 
 import com.mux.android.util.logTag
-import com.mux.core_android.log
+import com.mux.core_android.test.tools.log
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter
 import com.mux.stats.sdk.muxstats.MuxStateCollector
 

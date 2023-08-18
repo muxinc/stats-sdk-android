@@ -6,10 +6,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import com.mux.android.util.allEqual
-import com.mux.core_android.testdoubles.mockActivity
-import com.mux.core_android.testdoubles.mockConnectivityManager16
-import com.mux.core_android.testdoubles.mockConnectivityManager23
-import com.mux.core_android.testdoubles.mockSharedPrefs
+import com.mux.core_android.test.tools.AbsRobolectricTest
+import com.mux.core_android.test.tools.testdoubles.mockActivity
+import com.mux.core_android.test.tools.testdoubles.mockConnectivityManager16
+import com.mux.core_android.test.tools.testdoubles.mockConnectivityManager23
+import com.mux.core_android.test.tools.testdoubles.mockSharedPrefs
 import com.mux.stats.sdk.muxstats.MuxDataSdk
 import org.junit.Assert.*
 import org.junit.Test
