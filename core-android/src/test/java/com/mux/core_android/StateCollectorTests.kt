@@ -1,6 +1,7 @@
 package com.mux.core_android
 
-import com.mux.core_android.testdoubles.FakeEventDispatcher
+import com.mux.core_android.test.tools.AbsRobolectricTest
+import com.mux.core_android.test.tools.testdoubles.FakeEventDispatcher
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.playback.*

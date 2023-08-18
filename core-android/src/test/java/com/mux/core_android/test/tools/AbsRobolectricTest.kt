@@ -1,6 +1,6 @@
-package com.mux.core_android
+package com.mux.core_android.test.tools
 
-import com.mux.core_android.testdoubles.FakeMuxDevice
+import com.mux.core_android.test.tools.testdoubles.FakeMuxDevice
 import com.mux.stats.sdk.muxstats.MuxStats
 import org.junit.Before
 import org.junit.runner.RunWith

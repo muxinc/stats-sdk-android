@@ -1,8 +1,9 @@
 package com.mux.core_android
 
 import android.view.View
-import com.mux.core_android.testdoubles.FakePlayerBinding
-import com.mux.core_android.testdoubles.mockView
+import com.mux.core_android.test.tools.AbsRobolectricTest
+import com.mux.core_android.test.tools.testdoubles.FakePlayerBinding
+import com.mux.core_android.test.tools.testdoubles.mockView
 import com.mux.stats.sdk.muxstats.MuxPlayerAdapter
 import com.mux.stats.sdk.muxstats.MuxStateCollector
 import com.mux.stats.sdk.muxstats.MuxUiDelegate
