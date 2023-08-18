@@ -1,4 +1,4 @@
-package com.mux.core_android.testdoubles
+package com.mux.core_android.test.tools.testdoubles
 
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher

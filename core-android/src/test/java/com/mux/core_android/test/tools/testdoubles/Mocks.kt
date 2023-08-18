@@ -1,4 +1,4 @@
-package com.mux.core_android.testdoubles
+package com.mux.core_android.test.tools.testdoubles
 
 import android.app.Activity
 import android.content.Context
