@@ -420,6 +420,9 @@ open class MuxStateCollector(
     muxStats.videoChange(customerVideoData)
   }
 
+  /**
+   * Call when the currently-playing rendition changes.
+   */
   @Suppress("unused")
   fun renditionChange(
     advertisedBitrate: Int,
@@ -440,8 +443,8 @@ open class MuxStateCollector(
    * playing. Data set by [CustomerVideoData] has precedence over this data
    */
   @Suppress("unused")
-  fun onDetectedMetadata(videoData: VideoData) {
-    muxStats.updateDetectedVideoData(videoData)
+  fun videoDataChange(videoData: VideoData) {
+    muxStats.videoDataChange(videoData)
   }
 
   /**
