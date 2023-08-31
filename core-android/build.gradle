@@ -53,7 +53,7 @@ muxDistribution {
 dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
 
-  api "com.mux:stats.muxcore:7.9.2"
+  api "com.mux:stats.muxcore:dev-expand-video-data-fb11fff"
   debugImplementation project(':mux-kt-utils')
   afterEvaluate { // The version isn't computed until after this file is finalized thanks to agp 8
     releaseImplementation "com.mux:utils-kt:${project.version}"
