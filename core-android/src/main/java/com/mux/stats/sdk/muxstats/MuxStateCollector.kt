@@ -11,6 +11,7 @@ import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.core.model.BandwidthMetricData
 import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.core.model.SessionTag
+import com.mux.stats.sdk.core.model.VideoData
 import com.mux.stats.sdk.core.util.MuxLogger
 import kotlinx.coroutines.*
 import java.util.*
@@ -419,6 +420,9 @@ open class MuxStateCollector(
     muxStats.videoChange(customerVideoData)
   }
 
+  /**
+   * Call when the currently-playing rendition changes.
+   */
   @Suppress("unused")
   fun renditionChange(
     advertisedBitrate: Int,
@@ -432,6 +436,15 @@ open class MuxStateCollector(
     this.sourceHeight = sourceHeight
 
     dispatch(RenditionChangeEvent(null))
+  }
+
+  /**
+   * Call when a player has automatically detected metadata related to the video that is currently
+   * playing. Data set by [CustomerVideoData] has precedence over this data
+   */
+  @Suppress("unused")
+  fun videoDataChange(videoData: VideoData) {
+    muxStats.videoDataChange(videoData)
   }
 
   /**
