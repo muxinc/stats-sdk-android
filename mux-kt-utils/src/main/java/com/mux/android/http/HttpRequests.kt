@@ -207,7 +207,9 @@ fun ByteArray.unGzip(): ByteArray {
  * @param domain The domain, prepended with a '.'
  */
 fun beaconAuthority(envKey: String, domain: String): String {
-  return if (Pattern.matches("^[a-z0-9]+$", envKey)) {
+  return if (!domain.startsWith(".")) {
+    domain
+  } else if (Pattern.matches("^[a-z0-9]+$", envKey)) {
     "$envKey$domain"
   } else {
     "img$domain"
