@@ -283,12 +283,11 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       customOptions
     )
     collector = makeStateCollector(muxStats, eventBus, trackFirstFrame)
+    eventBus.addListener(muxStats)
+    muxStats.customerData = customerData
     playerAdapter = makePlayerAdapter(
       player, uiDelegate, collector, playerBinding
     )
-
-    muxStats.customerData = customerData
-    eventBus.addListener(muxStats)
 
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
