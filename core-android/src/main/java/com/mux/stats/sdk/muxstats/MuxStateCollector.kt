@@ -262,13 +262,18 @@ open class MuxStateCollector(
    */
   @Suppress("unused")
   fun playing() {
-    // Negative Logic Version
     if (seekingInProgress) {
       // We will dispatch playing event after seeked event
       MuxLogger.d("MuxStats", "Ignoring playing event, seeking in progress !!!")
       return
     }
-    if (_playerState.oneOf(MuxPlayerState.PAUSED, MuxPlayerState.FINISHED_PLAYING_ADS)) {
+    if (
+      _playerState.oneOf(
+        MuxPlayerState.PAUSED,
+        MuxPlayerState.FINISHED_PLAYING_ADS,
+        MuxPlayerState.INIT,
+      )
+    ) {
       play()
     } else if (_playerState == MuxPlayerState.REBUFFERING) {
       rebufferingEnded()
