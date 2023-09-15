@@ -5,7 +5,6 @@ an android-specific SDK facade, code for ensuring that contracts around event or
 obeyed,and implementations of some objects that Core Java leaves to the integrator.
 
 This SDK is meant to be a base for other Mux Data SDKs for Android
-our [ExoPlayer SDK](https://github.com/muxinc/mux-stats-sdk-exoplayer).
 
 ## Usage
 
