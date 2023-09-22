@@ -466,6 +466,12 @@ open class MuxStateCollector(
   @Suppress("unused")
   fun finishedPlayingAds() {
     _playerState = MuxPlayerState.FINISHED_PLAYING_ADS
+
+    // players allow seeking out of ads.
+    // If playback follows, the data sdk also needs to call playing()
+    if (seekingInProgress) {
+      seeked()
+    }
   }
 
   @Suppress("unused")
