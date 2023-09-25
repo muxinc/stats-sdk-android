@@ -277,4 +277,20 @@ class StateCollectorTests : AbsRobolectricTest() {
     eventDispatcher.assertHasNoneOf(PlayingEvent(null))
     eventDispatcher.assertHasOneOf(SeekedEvent(null))
   }
+
+  @Test
+  fun testSeekOutOfAd() {
+    stateCollector.play()
+    stateCollector.playing()
+    stateCollector.playingAds()
+    stateCollector.seeking()
+    stateCollector.finishedPlayingAds()
+
+    eventDispatcher.assertHasOneOf(SeekedEvent(null))
+    assertEquals(
+      "plaingAds() -> seeking() -> finishedPlayingAds() => seeked",
+      MuxPlayerState.SEEKED,
+      stateCollector.muxPlayerState
+    )
+  }
 }
