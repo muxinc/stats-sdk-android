@@ -23,6 +23,8 @@ import com.mux.stats.sdk.core.events.IEventDispatcher
 import com.mux.stats.sdk.core.model.*
 import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.util.*
 
 /**
@@ -54,7 +56,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   playerBinding: MuxPlayerAdapter.PlayerBinding<Player>,
   customOptions: CustomOptions = CustomOptions(),
   trackFirstFrame: Boolean = false,
-  network: INetworkRequest = MuxNetwork(device),
   logLevel: LogcatLevel = LogcatLevel.NONE,
   makePlayerId: (context: Context, view: View?) -> String = Factory::generatePlayerId,
   makePlayerListener: (
@@ -82,6 +83,9 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     context: Context,
     view: PlayerView?
   ) -> MuxUiDelegate<PlayerView> = Factory::defaultUiDelegate,
+  makeNetworkRequest: (
+    device: IDevice,
+  ) -> INetworkRequest = Factory::defaultNetworkRequest,
 ) {
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -240,6 +244,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     override fun getVideoTargetDuration(): Long? = collector?.hlsTargetDuration
     override fun getPlayerViewWidth() =
       convertPxToDp(uiDelegate.getPlayerViewSize().x, uiDelegate.displayDensity())
+
     override fun getPlayerViewHeight() =
       convertPxToDp(uiDelegate.getPlayerViewSize().y, uiDelegate.displayDensity())
   }
@@ -249,7 +254,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     // These must be statically set before creating our MuxStats
     //  TODO em - eventually these should probably just be instance vars, that is likely to be safer
     MuxStats.setHostDevice(device)
-    MuxStats.setHostNetworkApi(network)
+    MuxStats.setHostNetworkApi(makeNetworkRequest(device))
 
     // CustomerData fields are non-nullable internally in Core
     customerData.apply {
@@ -333,6 +338,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       dispatcher: IEventDispatcher,
       trackFirstFrame: Boolean = false
     ) = MuxStateCollector(muxStats, dispatcher, trackFirstFrame)
+
+    fun defaultNetworkRequest(device: IDevice) = MuxNetwork(device, CoroutineScope(Dispatchers.IO))
 
   }
 
