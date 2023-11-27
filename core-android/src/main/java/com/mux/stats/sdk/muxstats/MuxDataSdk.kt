@@ -86,6 +86,13 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   makeNetworkRequest: (
     device: IDevice,
   ) -> INetworkRequest = Factory::defaultNetworkRequest,
+  makeDevice: (
+    ctx: Context,
+    playerVersion: String,
+    muxPluginName: String,
+    muxPluginVersion: String,
+    playerSoftware: String
+  ) -> AndroidDevice = Factory::defaultDevice
 ) {
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -340,6 +347,14 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     ) = MuxStateCollector(muxStats, dispatcher, trackFirstFrame)
 
     fun defaultNetworkRequest(device: IDevice) = MuxNetwork(device, CoroutineScope(Dispatchers.IO))
+
+    fun defaultDevice(
+      ctx: Context,
+      playerVersion: String,
+      muxPluginName: String,
+      muxPluginVersion: String,
+      playerSoftware: String
+    ) = AndroidDevice(ctx, playerVersion, muxPluginName, muxPluginVersion, playerSoftware)
 
   }
 
