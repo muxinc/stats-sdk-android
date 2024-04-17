@@ -11,7 +11,7 @@ This SDK is meant to be a base for other Mux Data SDKs for Android
 Add the dependency to your SDK.
 
 ```groovy
-api 'com.mux.stats.sdk.muxstats:android:0.7.2'
+api 'com.mux.stats.sdk.muxstats:android:1.2.0'
 ```
 
 Implement `PlayerBinding<>` to listen for changes from your Player
