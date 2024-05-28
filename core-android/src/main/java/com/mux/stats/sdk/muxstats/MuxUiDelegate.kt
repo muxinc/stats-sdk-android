@@ -48,7 +48,6 @@ private class AndroidUiDelegate<PlayerView : View>(context: Context?, view: Play
   MuxUiDelegate<PlayerView>(view) {
 
   private var _screenSize: Point = screenSizeFromContext(context)
-
   private var displayDensity = displayDensityFromContext(context)
 
   override var view: PlayerView?
@@ -56,9 +55,9 @@ private class AndroidUiDelegate<PlayerView : View>(context: Context?, view: Play
       return super.view
     }
     set(value) {
-      val ctx = value?.context
-      _screenSize = screenSizeFromContext(ctx)
-      displayDensity = displayDensityFromContext(ctx)
+//      val ctx = value?.context
+//      _screenSize = screenSizeFromContext(ctx)
+//      displayDensity = displayDensityFromContext(ctx)
       super.view = value
     }
 
