@@ -12,8 +12,9 @@ import com.mux.stats.sdk.core.util.MuxLogger
 
 /**
  * Allows implementers to supply data about the view and screen being used for playback
+ * @param PV An object that can be used to access view and screen metrics, like a [View]
  */
-abstract class MuxUiDelegate<PlayerView>(view: PlayerView?) {
+abstract class MuxUiDelegate<PV>(view: PV?) {
   open var view by weak(view)
 
   /**
