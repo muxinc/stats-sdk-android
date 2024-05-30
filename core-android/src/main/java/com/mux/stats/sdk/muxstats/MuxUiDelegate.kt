@@ -12,9 +12,10 @@ import com.mux.stats.sdk.core.util.MuxLogger
 
 /**
  * Allows implementers to supply data about the view and screen being used for playback
+ * @param PV An object that can be used to access view and screen metrics, like a [View]
  */
-abstract class MuxUiDelegate<PlayerView>(view: PlayerView?) {
-  var view by weak(view)
+abstract class MuxUiDelegate<PV>(view: PV?) {
+  open var view by weak(view)
 
   /**
    * Gets the size of the player view in px as a pair of (width, height)
@@ -47,9 +48,20 @@ abstract class MuxUiDelegate<PlayerView>(view: PlayerView?) {
 private class AndroidUiDelegate<PlayerView : View>(context: Context?, view: PlayerView?) :
   MuxUiDelegate<PlayerView>(view) {
 
-  private val _screenSize: Point =
-    context?.let { it as? Activity }?.let { screenSize(it) } ?: Point()
-  private val displayDensity = context?.resources?.displayMetrics?.density ?: 0F
+  private var _screenSize: Point = screenSizeFromContext(context)
+
+  private var displayDensity = displayDensityFromContext(context)
+
+  override var view: PlayerView?
+    get() {
+      return super.view
+    }
+    set(value) {
+      val ctx = value?.context
+      _screenSize = screenSizeFromContext(ctx)
+      displayDensity = displayDensityFromContext(ctx)
+      super.view = value
+    }
 
   override fun getPlayerViewSize(): Point = view?.let { view ->
     Point().apply {
@@ -59,6 +71,14 @@ private class AndroidUiDelegate<PlayerView : View>(context: Context?, view: Play
   } ?: Point()
 
   override fun getScreenSize(): Point = _screenSize
+
+  private fun displayDensityFromContext(context: Context?): Float {
+    return context?.resources?.displayMetrics?.density ?: 0F
+  }
+
+  private fun screenSizeFromContext(context: Context?): Point {
+    return context?.let { it as? Activity }?.let { screenSize(it) } ?: Point()
+  }
 
   private fun screenSize(activity: Activity): Point {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -110,7 +130,7 @@ private class AndroidUiDelegate<PlayerView : View>(context: Context?, view: Play
 @Suppress("unused")
 @JvmSynthetic
 internal fun <V : View> V.muxUiDelegate(context: Context)
-        : MuxUiDelegate<V> = AndroidUiDelegate(context as? Activity, this)
+    : MuxUiDelegate<V> = AndroidUiDelegate(context as? Activity, this)
 
 /**
  * Create a MuxUiDelegate for a view-less playback experience. Returns 0 for all sizes, as we are
@@ -118,4 +138,5 @@ internal fun <V : View> V.muxUiDelegate(context: Context)
  */
 @Suppress("unused")
 @JvmSynthetic
-internal fun <V : View> noUiDelegate(context: Context): MuxUiDelegate<V> = AndroidUiDelegate(context, null)
+internal fun <V : View> noUiDelegate(context: Context): MuxUiDelegate<V> =
+  AndroidUiDelegate(context, null)
