@@ -46,6 +46,9 @@ fun Int.clamp(min: Int, max: Int): Int {
  * Convert from a raw pixel dimension to a density-independent (dip) dimension
  */
 fun convertPxToDp(px: Int, displayDensity: Float): Int {
+  if (displayDensity < 0.75F) {
+    return ceil((px / 0.75F).toDouble()).toInt()
+  }
   return ceil((px / displayDensity).toDouble()).toInt()
 }
 
