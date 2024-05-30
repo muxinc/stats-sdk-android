@@ -63,7 +63,7 @@ dependencies {
 
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'androidx.test.ext:junit:1.1.5'
-  testImplementation "io.mockk:mockk:1.12.3"
+  testImplementation "io.mockk:mockk:1.13.9"
   // hm, seems like they got rid of API 16 at some point, so we'd have to handle that.
   //   Robolectric doesn't need updated for anything in particular tho, test deps aren't exported
   //noinspection GradleDependency
