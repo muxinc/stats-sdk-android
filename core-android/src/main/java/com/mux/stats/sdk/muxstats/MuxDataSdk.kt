@@ -188,11 +188,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    */
   open fun presentationChange(presentation: MuxSDKViewPresentation) =
     muxStats.presentationChange(presentation)
-
-  /**
-   * Disables event collection for this MuxDataSdk. The current view will be ended, and any pending
-   * events will be sent to the dashboard
-   */
+  
   open fun disable() = muxStats.disable()
 
   open fun enable(customerData: CustomerData) = muxStats.enable(customerData)
