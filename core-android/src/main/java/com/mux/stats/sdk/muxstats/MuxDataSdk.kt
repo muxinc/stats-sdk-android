@@ -190,9 +190,13 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     muxStats.presentationChange(presentation)
 
   /**
-   * Dispatch a raw event to the View. Please use this method with caution, as unexpected events can
-   * lead to broken views
+   * Disables event collection for this MuxDataSdk. The current view will be ended, and any pending
+   * events will be sent to the dashboard
    */
+  open fun disable() = muxStats.disable()
+
+  open fun enable(customerData: CustomerData) = muxStats.enable(customerData)
+
   open fun dispatch(event: IEvent?) = eventBus.dispatch(event)
 
   /**
