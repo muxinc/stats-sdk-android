@@ -409,6 +409,7 @@ open class MuxStateCollector(
    */
   @Suppress("unused")
   fun programChange(customerVideoData: CustomerVideoData) {
+    // keep current play state, since the actual stream should still be playing
     reset()
     muxStats.programChange(customerVideoData)
   }
@@ -420,9 +421,17 @@ open class MuxStateCollector(
    */
   @Suppress("unused")
   fun videoChange(customerVideoData: CustomerVideoData) {
+    resetState()
+    muxStats.videoChange(customerVideoData)
+  }
+
+  /**
+   * Returns the Collector to the state where it has processed no events.
+   */
+  @Suppress("MemberVisibilityCanBePrivate")
+  fun resetState() {
     _playerState = MuxPlayerState.INIT
     reset()
-    muxStats.videoChange(customerVideoData)
   }
 
   /**
