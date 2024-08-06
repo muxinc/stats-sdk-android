@@ -202,7 +202,10 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    * @param customerData [CustomerData] with metadata about the new view
    * @see CustomerData
    */
-  open fun enable(customerData: CustomerData) = muxStats.enable(customerData)
+  open fun enable(customerData: CustomerData) {
+    collector.resetState()
+    muxStats.enable(customerData)
+  }
 
   /**
    * Dispatch a raw event to the View. Please use this method with caution, as unexpected events can
