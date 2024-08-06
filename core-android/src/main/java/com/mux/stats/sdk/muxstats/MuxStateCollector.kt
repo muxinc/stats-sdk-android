@@ -535,6 +535,7 @@ open class MuxStateCollector(
     seekedEventsSent = 0
     firstFrameReceived = false
     firstFrameRenderedAtMillis = FIRST_FRAME_NOT_RENDERED
+    playbackPositionMills = TIME_UNKNOWN
     allowedHeaders.clear()
   }
 
