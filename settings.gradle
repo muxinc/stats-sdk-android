@@ -23,4 +23,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MuxCore Android"
 include ':core-android'
-include ':mux-kt-utils'
