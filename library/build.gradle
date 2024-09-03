@@ -40,6 +40,29 @@ muxDistribution {
   groupIds just("com.mux.stats.sdk.muxstats")
   publicReleaseIf releaseIfCmdFlag("publicRelease")
 
+  dokkaConfig {
+    moduleName = "Mux Data SDK for Media3, Base"
+    footer = "(c) " + new Date().format("yyyy") + " Mux, Inc. Have questions or need help?" +
+            " Contact support@mux.com"
+  }
+
+  pom {
+    description "Supporting library for Mux Data integrations"
+    inceptionYear = "2022"
+    url = "https://github.com/muxinc/stats-sdk-android"
+    organization {
+      name = "Mux, Inc"
+      url = "https://www.mux.com"
+    }
+    developers {
+      developer {
+        email = "support@mux.com"
+        name = "The player and sdks team @mux"
+        organization = "Mux, inc"
+      }
+    }
+  }
+
   // TODO: This is kinda clumsy, packageJavadocs should be a function not a property probably
   packageJavadocs = releaseOnTag().call()
   packageSources = true
