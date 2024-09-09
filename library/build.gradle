@@ -34,7 +34,7 @@ android {
 }
 
 muxDistribution {
-  devVersion versionFromCommitHash('dev-')
+  devVersion versionFromTag()
   releaseVersion versionFromTag()
   artifactIds just("android")
   groupIds just("com.mux.stats.sdk.muxstats")
