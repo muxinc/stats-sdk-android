@@ -540,7 +540,7 @@ open class MuxStateCollector(
   }
 
   @JvmSynthetic
-  internal fun dispatch(event: IEvent) {
+  fun dispatch(event: IEvent) {
     totalEventsSent++
     when (event.type) {
       PlayEvent.TYPE -> {
