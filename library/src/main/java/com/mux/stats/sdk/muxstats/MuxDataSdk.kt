@@ -316,6 +316,9 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
       logLevel == LogcatLevel.VERBOSE
     )
+    if (logLevel == LogcatLevel.VERBOSE) {
+      MuxLogger.enable("all", muxStats)
+    }
   }
 
   /**
