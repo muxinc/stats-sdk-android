@@ -596,8 +596,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         } else {
           getPackageInfoLegacy(ctx)
         }
-        appName = packageInfo.packageName
-        appVersion = packageInfo.versionName
+        appName = packageInfo.packageName ?: ""
+        appVersion = packageInfo.versionName ?: ""
       } catch (e: PackageManager.NameNotFoundException) {
         MuxLogger.d(TAG, "could not get package info")
       }
