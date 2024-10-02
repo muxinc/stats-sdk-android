@@ -5,14 +5,14 @@ plugins {
 }
 
 android {
-  compileSdk 34
+  compileSdk 35
 
   namespace "com.mux.core_android"
 
   defaultConfig {
     minSdk 16
     //noinspection EditedTargetSdkVersion
-    targetSdk 34
+    targetSdk 35
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles "consumer-rules.pro"
@@ -75,12 +75,12 @@ muxDistribution {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
   api "com.mux:stats.muxcore:8.1.1"
 
   testImplementation 'junit:junit:4.13.2'
-  testImplementation 'androidx.test.ext:junit:1.1.5'
+  testImplementation 'androidx.test.ext:junit:1.2.1'
   testImplementation "io.mockk:mockk:1.13.9"
   // hm, seems like they got rid of API 16 at some point, so we'd have to handle that.
   //   Robolectric doesn't need updated for anything in particular tho, test deps aren't exported
