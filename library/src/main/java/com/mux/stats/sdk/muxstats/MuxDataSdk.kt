@@ -596,6 +596,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         } else {
           getPackageInfoLegacy(ctx)
         }
+        @Suppress("USELESS_ELVIS")  // i dunno man i have a weird feeling about this one
         appName = packageInfo.packageName ?: ""
         appVersion = packageInfo.versionName ?: ""
       } catch (e: PackageManager.NameNotFoundException) {
