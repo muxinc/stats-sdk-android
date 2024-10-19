@@ -360,6 +360,7 @@ open class MuxStateCollector(
   @Suppress("unused")
   fun incrementDroppedFrames(droppedFrames: Int) {
     this.droppedFrames += droppedFrames
+    muxStats.setDroppedFramesCount(this.droppedFrames.toLong())
   }
 
   /**
@@ -537,6 +538,8 @@ open class MuxStateCollector(
     firstFrameRenderedAtMillis = FIRST_FRAME_NOT_RENDERED
     playbackPositionMills = TIME_UNKNOWN
     allowedHeaders.clear()
+    droppedFrames = 0
+    muxStats.setDroppedFramesCount(0)
   }
 
   @JvmSynthetic
