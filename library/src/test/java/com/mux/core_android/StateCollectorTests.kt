@@ -8,10 +8,10 @@ import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.muxstats.MuxPlayerState
 import com.mux.stats.sdk.muxstats.MuxStateCollector
 import com.mux.stats.sdk.muxstats.MuxStats
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.Assert.assertEquals
@@ -302,7 +302,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     val incrementSlot = slot<Long>()
     val mockMuxStats = mockk<MuxStats> {
       // MuxStats has its own test for this so we can just mock it here
-      every { setDroppedFramesCount(capture(incrementSlot)) } just Runs
+      every { setDroppedFramesCount(capture(incrementSlot)) } just runs
     }
     stateCollector = MuxStateCollector(
       muxStats = mockMuxStats,
@@ -330,7 +330,7 @@ class StateCollectorTests : AbsRobolectricTest() {
     val incrementSlot = slot<Long>()
     val mockMuxStats = mockk<MuxStats> {
       // MuxStats has its own test for this so we can just mock it here
-      every { setDroppedFramesCount(capture(incrementSlot)) } just Runs
+      every { setDroppedFramesCount(capture(incrementSlot)) } just runs
     }
     stateCollector = MuxStateCollector(
       muxStats = mockMuxStats,
