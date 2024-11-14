@@ -319,4 +319,27 @@ class StateCollectorTests : AbsRobolectricTest() {
       mockMuxStats.setDroppedFramesCount(randomFrames2 + randomFrames1.toLong())
     }
   }
+
+  @Test
+  fun testSetDroppedFrames() {
+    val incrementSlot = slot<Long>()
+    val mockMuxStats = mockk<MuxStats> {
+      // MuxStats has its own test for this so we can just mock it here
+      every { setDroppedFramesCount(capture(incrementSlot)) } just Runs
+    }
+    stateCollector = MuxStateCollector(
+      muxStats = mockMuxStats,
+      dispatcher = FakeEventDispatcher(),
+    )
+
+    val randomFrames1 = (0..100).random()
+    val randomFrames2 = (0..100).random()
+    stateCollector.droppedFrames = randomFrames1
+    stateCollector.droppedFrames = randomFrames2
+
+    verify {
+      mockMuxStats.setDroppedFramesCount(randomFrames1.toLong())
+      mockMuxStats.setDroppedFramesCount(randomFrames2.toLong())
+    }
+  }
 }
