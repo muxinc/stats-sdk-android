@@ -318,6 +318,11 @@ class StateCollectorTests : AbsRobolectricTest() {
       mockMuxStats.setDroppedFramesCount(randomFrames1.toLong())
       mockMuxStats.setDroppedFramesCount(randomFrames2 + randomFrames1.toLong())
     }
+    
+    stateCollector.resetState()
+    verify {
+      mockMuxStats.setDroppedFramesCount(0)
+    }
   }
 
   @Test
@@ -340,6 +345,11 @@ class StateCollectorTests : AbsRobolectricTest() {
     verify {
       mockMuxStats.setDroppedFramesCount(randomFrames1.toLong())
       mockMuxStats.setDroppedFramesCount(randomFrames2.toLong())
+    }
+
+    stateCollector.resetState()
+    verify {
+      mockMuxStats.setDroppedFramesCount(0)
     }
   }
 }
