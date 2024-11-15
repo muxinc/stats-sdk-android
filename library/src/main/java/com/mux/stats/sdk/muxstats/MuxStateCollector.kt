@@ -366,7 +366,6 @@ open class MuxStateCollector(
   @Suppress("unused")
   fun incrementDroppedFrames(droppedFrames: Int) {
     this.droppedFrames += droppedFrames
-    //muxStats.setDroppedFramesCount(this.droppedFrames.toLong())
     // note - in the current implementation, we rely on a subsequent playback event to send this.
     //  this is probably better, as we may not want to cause beacons while the device is struggling
   }
