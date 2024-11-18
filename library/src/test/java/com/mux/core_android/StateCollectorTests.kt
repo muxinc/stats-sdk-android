@@ -9,8 +9,11 @@ import com.mux.stats.sdk.muxstats.MuxPlayerState
 import com.mux.stats.sdk.muxstats.MuxStateCollector
 import com.mux.stats.sdk.muxstats.MuxStats
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
+import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
@@ -292,5 +295,61 @@ class StateCollectorTests : AbsRobolectricTest() {
       MuxPlayerState.SEEKED,
       stateCollector.muxPlayerState
     )
+  }
+
+  @Test
+  fun testIncrementDroppedFrames() {
+    val incrementSlot = slot<Long>()
+    val mockMuxStats = mockk<MuxStats> {
+      // MuxStats has its own test for this so we can just mock it here
+      every { setDroppedFramesCount(capture(incrementSlot)) } just runs
+    }
+    stateCollector = MuxStateCollector(
+      muxStats = mockMuxStats,
+      dispatcher = FakeEventDispatcher(),
+    )
+
+    val randomFrames1 = (0..100).random()
+    val randomFrames2 = (0..100).random()
+    stateCollector.incrementDroppedFrames(randomFrames1)
+    stateCollector.incrementDroppedFrames(randomFrames2)
+
+    verify {
+      mockMuxStats.setDroppedFramesCount(randomFrames1.toLong())
+      mockMuxStats.setDroppedFramesCount(randomFrames2 + randomFrames1.toLong())
+    }
+    
+    stateCollector.resetState()
+    verify {
+      mockMuxStats.setDroppedFramesCount(0)
+    }
+  }
+
+  @Test
+  fun testSetDroppedFrames() {
+    val incrementSlot = slot<Long>()
+    val mockMuxStats = mockk<MuxStats> {
+      // MuxStats has its own test for this so we can just mock it here
+      every { setDroppedFramesCount(capture(incrementSlot)) } just runs
+    }
+    stateCollector = MuxStateCollector(
+      muxStats = mockMuxStats,
+      dispatcher = FakeEventDispatcher(),
+    )
+
+    val randomFrames1 = (0..100).random()
+    val randomFrames2 = (0..100).random()
+    stateCollector.droppedFrames = randomFrames1
+    stateCollector.droppedFrames = randomFrames2
+
+    verify {
+      mockMuxStats.setDroppedFramesCount(randomFrames1.toLong())
+      mockMuxStats.setDroppedFramesCount(randomFrames2.toLong())
+    }
+
+    stateCollector.resetState()
+    verify {
+      mockMuxStats.setDroppedFramesCount(0)
+    }
   }
 }

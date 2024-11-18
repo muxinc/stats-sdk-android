@@ -17,7 +17,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 
 @Config(
-  sdk = [Build.VERSION_CODES.JELLY_BEAN, Build.VERSION_CODES.M]
+  sdk = [Build.VERSION_CODES.KITKAT, Build.VERSION_CODES.M]
 )
 class AndroidDeviceTests : AbsRobolectricTest() {
 

@@ -135,6 +135,12 @@ open class MuxStateCollector(
    */
   @Suppress("MemberVisibilityCanBePrivate")
   var droppedFrames = 0
+    set(value) {
+      field = value
+      muxStats.setDroppedFramesCount(field.toLong())
+      // note - in the current implementation, we rely on a subsequent playback event to send this.
+      //  this is probably better, as we may not want to cause beacons while the device is struggling
+    }
 
   /**
    * The list of renditions currently available as part of an HLS, DASH, etc stream
@@ -360,6 +366,8 @@ open class MuxStateCollector(
   @Suppress("unused")
   fun incrementDroppedFrames(droppedFrames: Int) {
     this.droppedFrames += droppedFrames
+    // note - in the current implementation, we rely on a subsequent playback event to send this.
+    //  this is probably better, as we may not want to cause beacons while the device is struggling
   }
 
   /**
@@ -537,6 +545,8 @@ open class MuxStateCollector(
     firstFrameRenderedAtMillis = FIRST_FRAME_NOT_RENDERED
     playbackPositionMills = TIME_UNKNOWN
     allowedHeaders.clear()
+    droppedFrames = 0
+    muxStats.setDroppedFramesCount(0)
   }
 
   @JvmSynthetic
