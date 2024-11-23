@@ -1,5 +1,6 @@
 package com.mux.stats.sdk.muxstats
 
+import android.util.Log
 import com.mux.android.util.logTag
 import com.mux.android.util.noneOf
 import com.mux.android.util.oneOf
@@ -462,17 +463,19 @@ open class MuxStateCollector(
     sourceWidth: Int,
     sourceHeight: Int
   ) {
-    if (_playerState == MuxPlayerState.PLAYING_ADS) {
-      // we have to save this one
-      contentRenditionDeferred = true
-      return
-    }
-
     sourceAdvertisedBitrate = advertisedBitrate
     sourceAdvertisedFrameRate = advertisedFrameRate
     this.sourceWidth = sourceWidth
     this.sourceHeight = sourceHeight
 
+    if (_playerState == MuxPlayerState.PLAYING_ADS) {
+      Log.w("RENDITIONCHANGE", "DEFERRING rendition change")
+      // we have to save this one for after the ad break
+      contentRenditionDeferred = true
+      return
+    }
+
+    Log.w("RENDITIONCHANGE", "SENDING rendition change")
     dispatch(RenditionChangeEvent(null))
   }
 
