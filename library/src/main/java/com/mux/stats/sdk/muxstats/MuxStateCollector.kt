@@ -11,6 +11,7 @@ import com.mux.stats.sdk.core.events.InternalErrorEvent
 import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.core.model.BandwidthMetricData
 import com.mux.stats.sdk.core.model.CustomerVideoData
+import com.mux.stats.sdk.core.model.PlayerData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.model.VideoData
 import com.mux.stats.sdk.core.util.MuxLogger
@@ -473,6 +474,11 @@ open class MuxStateCollector(
       Log.w("RENDITIONCHANGE", "DEFERRING rendition change to $sourceWidth x $sourceHeight @ $advertisedBitrate")
       // we have to save this one for after the ad break
       contentRenditionDeferred = true
+//      val ev = PlaybackEvent(PlayerData().apply {
+//        playerSour
+//      }
+//      )
+      dispatch(PlaybackEvent(null)) // just to get the dimensions where we want
       return
     }
 
