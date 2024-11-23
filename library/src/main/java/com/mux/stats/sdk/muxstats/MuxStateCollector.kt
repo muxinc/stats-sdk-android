@@ -470,12 +470,14 @@ open class MuxStateCollector(
 
     if (_playerState == MuxPlayerState.PLAYING_ADS) {
       Log.w("RENDITIONCHANGE", "DEFERRING rendition change")
+      Log.w("RENDITIONCHANGE", "DEFERRING rendition change to $sourceWidth x $sourceHeight @ $advertisedBitrate")
       // we have to save this one for after the ad break
       contentRenditionDeferred = true
       return
     }
 
     Log.w("RENDITIONCHANGE", "SENDING rendition change")
+    Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $advertisedBitrate")
     dispatch(RenditionChangeEvent(null))
   }
 
@@ -505,6 +507,7 @@ open class MuxStateCollector(
 
     if (contentRenditionDeferred) {
       Log.w("RENDITIONCHANGE", "SENDING rendition change after ad break")
+      Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $sourceAdvertisedBitrate")
       contentRenditionDeferred = false
       dispatch(RenditionChangeEvent(null))
     }
