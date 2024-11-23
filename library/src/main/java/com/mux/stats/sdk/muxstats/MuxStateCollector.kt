@@ -292,6 +292,13 @@ open class MuxStateCollector(
 
     _playerState = MuxPlayerState.PLAYING
     dispatch(PlayingEvent(null))
+
+    if (contentRenditionDeferred) {
+      Log.w("RENDITIONCHANGE", "SENDING rendition change after playing")
+      Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $sourceAdvertisedBitrate")
+      contentRenditionDeferred = false
+      dispatch(RenditionChangeEvent(null))
+    }
   }
 
   /**
@@ -511,12 +518,13 @@ open class MuxStateCollector(
   fun finishedPlayingAds() {
     _playerState = MuxPlayerState.FINISHED_PLAYING_ADS
 
-    if (contentRenditionDeferred) {
-      Log.w("RENDITIONCHANGE", "SENDING rendition change after ad break")
-      Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $sourceAdvertisedBitrate")
-      contentRenditionDeferred = false
-      dispatch(RenditionChangeEvent(null))
-    }
+    // todo - too early? try playing
+//    if (contentRenditionDeferred) {
+//      Log.w("RENDITIONCHANGE", "SENDING rendition change after ad break")
+//      Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $sourceAdvertisedBitrate")
+//      contentRenditionDeferred = false
+//      dispatch(RenditionChangeEvent(null))
+//    }
 
     // players allow seeking out of ads.
     // If playback follows, the data sdk also needs to call playing()
