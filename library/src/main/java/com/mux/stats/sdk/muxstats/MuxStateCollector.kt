@@ -504,6 +504,7 @@ open class MuxStateCollector(
     _playerState = MuxPlayerState.FINISHED_PLAYING_ADS
 
     if (contentRenditionDeferred) {
+      Log.w("RENDITIONCHANGE", "SENDING rendition change after ad break")
       contentRenditionDeferred = false
       dispatch(RenditionChangeEvent(null))
     }
