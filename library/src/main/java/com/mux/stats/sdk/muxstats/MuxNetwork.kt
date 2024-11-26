@@ -3,6 +3,10 @@ package com.mux.stats.sdk.muxstats
 import android.net.Uri
 import android.util.Log
 import com.mux.android.http.*
+import com.mux.android.util.oneOf
+import com.mux.stats.sdk.core.model.VideoData
+import com.mux.stats.sdk.core.model.ViewData
+import com.mux.stats.sdk.core.util.MuxLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -37,6 +41,13 @@ class MuxNetwork @JvmOverloads constructor(
       // By the standard, you can have multiple headers with the same key
       val headers = requestHeaders?.mapValues { listOf(it.value) } ?: mapOf()
       coroutineScope.launch {
+        body?.keys()?.forEach { key ->
+          if (key.oneOf(VideoData.VIDEO_SOURCE_WIDTH, VideoData.VIDEO_SOURCE_HEIGHT)) {
+            val value = body.get(key)
+            MuxLogger.d("RENDITIONCHANGE", "Reporting metadata key $key -> $value")
+          }
+        }
+
         httpClient.call(
           POST(
             url = url,
