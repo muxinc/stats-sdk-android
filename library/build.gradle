@@ -78,6 +78,7 @@ dependencies {
 
   api "com.mux:stats.muxcore:dev-master-9cd9f45"
 
+  testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'androidx.test.ext:junit:1.2.1'
   testImplementation "io.mockk:mockk:1.13.9"
