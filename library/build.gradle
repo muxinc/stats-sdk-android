@@ -76,7 +76,7 @@ muxDistribution {
 dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
-  api "com.mux:stats.muxcore:dev-master-9dd2b45"
+  api "com.mux:stats.muxcore:dev-master-9604bb8"
 
   testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
   testImplementation 'junit:junit:4.13.2'
