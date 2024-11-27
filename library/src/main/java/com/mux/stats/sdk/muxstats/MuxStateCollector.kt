@@ -292,13 +292,6 @@ open class MuxStateCollector(
 
     _playerState = MuxPlayerState.PLAYING
     dispatch(PlayingEvent(null))
-
-//    if (contentRenditionDeferred) {
-//      Log.w("RENDITIONCHANGE", "SENDING rendition change after playing")
-//      Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $sourceAdvertisedBitrate")
-//      contentRenditionDeferred = false
-//      dispatch(RenditionChangeEvent(null))
-//    }
   }
 
   /**
@@ -477,20 +470,11 @@ open class MuxStateCollector(
     this.sourceHeight = sourceHeight
 
     if (_playerState == MuxPlayerState.PLAYING_ADS) {
-      Log.w("RENDITIONCHANGE", "DEFERRING rendition change")
-      Log.w("RENDITIONCHANGE", "DEFERRING rendition change to $sourceWidth x $sourceHeight @ $advertisedBitrate")
       // we have to save this one for after the ad break
       contentRenditionDeferred = true
-//      val ev = PlaybackEvent(PlayerData().apply {
-//        playerSour
-//      }
-//      )
-      dispatch(PlaybackEvent(null)) // just to get the dimensions where we want
       return
     }
 
-    Log.w("RENDITIONCHANGE", "SENDING rendition change")
-    Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $advertisedBitrate")
     dispatch(RenditionChangeEvent(null))
   }
 
@@ -518,10 +502,8 @@ open class MuxStateCollector(
   fun finishedPlayingAds() {
     _playerState = MuxPlayerState.FINISHED_PLAYING_ADS
 
-    // todo - too early? try playing
     if (contentRenditionDeferred) {
-      Log.w("RENDITIONCHANGE", "SENDING rendition change after ad break")
-      Log.w("RENDITIONCHANGE", "SENDING change to $sourceWidth x $sourceHeight @ $sourceAdvertisedBitrate")
+      MuxLogger.d("MuxStateCollector", "sending deferred content 'renditionchange'")
       contentRenditionDeferred = false
       dispatch(RenditionChangeEvent(null))
     }
