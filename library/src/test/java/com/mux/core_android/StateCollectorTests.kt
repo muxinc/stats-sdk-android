@@ -352,4 +352,39 @@ class StateCollectorTests : AbsRobolectricTest() {
       mockMuxStats.setDroppedFramesCount(0)
     }
   }
+
+  @Test
+  fun testRenditionChangeDuringAd() {
+    eventDispatcher.dispatch(AdBreakStartEvent(null))
+    stateCollector.playingAds()
+    stateCollector.renditionChange(
+      advertisedBitrate = 1000,
+      advertisedFrameRate = 1000f,
+      sourceHeight = 1000,
+      sourceWidth = 1000
+    )
+    eventDispatcher.dispatch(AdBreakEndEvent(null))
+    stateCollector.finishedPlayingAds()
+
+    eventDispatcher.assertHasExactlyThese(listOf(
+      AdBreakStartEvent(null), AdBreakEndEvent(null), RenditionChangeEvent(null)
+    ))
+  }
+
+  @Test
+  fun testRenditionChangeNotDuringAd() {
+    stateCollector.play()
+    stateCollector.playing()
+    stateCollector.renditionChange(
+      advertisedBitrate = 1000,
+      advertisedFrameRate = 1000f,
+      sourceHeight = 1000,
+      sourceWidth = 1000
+    )
+    stateCollector.finishedPlayingAds()
+
+    eventDispatcher.assertHasExactlyThese(listOf(
+      PlayEvent(null), PlayingEvent(null), RenditionChangeEvent(null)
+    ))
+  }
 }
