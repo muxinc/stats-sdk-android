@@ -79,7 +79,8 @@ class FakeEventDispatcher : IEventDispatcher {
   }
 
   private fun failAssert(message: String, expected: List<IEvent>, actual: List<IEvent>) {
-    throw AssertionError("$message:\nActual: $actual\nExpected: $expected")
+    throw AssertionError("$message:\nActual: ${actual.map { it.type }}" +
+        "\nExpected: ${expected.map { it.type }}")
   }
 
   data class Record(val event: IEvent, val systemTime: Long)
