@@ -1,5 +1,6 @@
 package com.mux.stats.sdk.muxstats
 
+import android.util.Log
 import com.mux.android.util.logTag
 import com.mux.android.util.noneOf
 import com.mux.android.util.oneOf
@@ -10,6 +11,7 @@ import com.mux.stats.sdk.core.events.InternalErrorEvent
 import com.mux.stats.sdk.core.events.playback.*
 import com.mux.stats.sdk.core.model.BandwidthMetricData
 import com.mux.stats.sdk.core.model.CustomerVideoData
+import com.mux.stats.sdk.core.model.PlayerData
 import com.mux.stats.sdk.core.model.SessionTag
 import com.mux.stats.sdk.core.model.VideoData
 import com.mux.stats.sdk.core.util.MuxLogger
@@ -443,7 +445,17 @@ open class MuxStateCollector(
   }
 
   /**
+   * Set to true if we get a main-content format change during a period when we shouldn't be getting
+   * one (eg, during ad breaks). In this case, the rendition info will be sent after the ad break
+   * ends
+   */
+  private var contentRenditionDeferred: Boolean = false
+
+  /**
    * Call when the currently-playing rendition changes.
+   *
+   * Expects only to be called for changes to the rendition of the main content being played. Ad
+   * sizes should not be reported, even SSAI ads or segmented CSAI ads
    */
   @Suppress("unused")
   fun renditionChange(
@@ -456,6 +468,12 @@ open class MuxStateCollector(
     sourceAdvertisedFrameRate = advertisedFrameRate
     this.sourceWidth = sourceWidth
     this.sourceHeight = sourceHeight
+
+    if (_playerState == MuxPlayerState.PLAYING_ADS) {
+      // we have to save this one for after the ad break
+      contentRenditionDeferred = true
+      return
+    }
 
     dispatch(RenditionChangeEvent(null))
   }
@@ -483,6 +501,12 @@ open class MuxStateCollector(
   @Suppress("unused")
   fun finishedPlayingAds() {
     _playerState = MuxPlayerState.FINISHED_PLAYING_ADS
+
+    if (contentRenditionDeferred) {
+      MuxLogger.d("MuxStateCollector", "sending deferred content 'renditionchange'")
+      contentRenditionDeferred = false
+      dispatch(RenditionChangeEvent(null))
+    }
 
     // players allow seeking out of ads.
     // If playback follows, the data sdk also needs to call playing()
@@ -547,6 +571,7 @@ open class MuxStateCollector(
     allowedHeaders.clear()
     droppedFrames = 0
     muxStats.setDroppedFramesCount(0)
+    contentRenditionDeferred = false
   }
 
   @JvmSynthetic

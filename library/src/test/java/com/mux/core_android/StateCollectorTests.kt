@@ -18,6 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
+import kotlin.math.exp
 
 class StateCollectorTests : AbsRobolectricTest() {
 
@@ -351,5 +352,106 @@ class StateCollectorTests : AbsRobolectricTest() {
     verify {
       mockMuxStats.setDroppedFramesCount(0)
     }
+  }
+
+  @Test
+  fun testRenditionChangeDuringAd() {
+    val expected = 2000;
+
+    eventDispatcher.dispatch(AdBreakStartEvent(null))
+    stateCollector.playingAds()
+    stateCollector.renditionChange(
+      advertisedBitrate = 1000,
+      advertisedFrameRate = 1000f,
+      sourceHeight = 1000,
+      sourceWidth = 1000
+    )
+    stateCollector.renditionChange(
+      advertisedFrameRate = expected.toFloat(),
+      advertisedBitrate = expected,
+      sourceWidth = expected,
+      sourceHeight = expected,
+    )
+    eventDispatcher.dispatch(AdBreakEndEvent(null))
+    stateCollector.finishedPlayingAds()
+
+    eventDispatcher.assertHasExactlyThese(listOf(
+      AdBreakStartEvent(null), AdBreakEndEvent(null), RenditionChangeEvent(null)
+    ))
+
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      expected, stateCollector.sourceAdvertisedBitrate
+    )
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      expected.toFloat(), stateCollector.sourceAdvertisedFrameRate.toFloat()
+    )
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      expected, stateCollector.sourceWidth
+    )
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      expected, stateCollector.sourceHeight
+    )
+  }
+
+  @Test
+  fun testRenditionChangeNotDuringAd() {
+    val finalExpectedValue = 2000;
+
+    stateCollector.play()
+    stateCollector.playing()
+    // this method under test and should emit one 'renditionchange'
+    stateCollector.renditionChange(
+      advertisedBitrate = 1000,
+      advertisedFrameRate = 1000f,
+      sourceHeight = 1000,
+      sourceWidth = 1000
+    )
+    // this method under test and should emit no events
+    stateCollector.finishedPlayingAds()
+
+    stateCollector.pause();
+    stateCollector.playing();
+
+    // this method under test and should emit one 'renditionchange'
+    stateCollector.renditionChange(
+      advertisedBitrate = 3000,
+      advertisedFrameRate =  3000f,
+      sourceHeight = 3000,
+      sourceWidth = 3000,
+    )
+    // this method under test and should emit one 'renditionchange'
+    stateCollector.renditionChange(
+      advertisedBitrate = finalExpectedValue,
+      advertisedFrameRate =  finalExpectedValue.toFloat(),
+      sourceHeight = finalExpectedValue,
+      sourceWidth = finalExpectedValue,
+    )
+
+    eventDispatcher.assertHasExactlyThese(listOf(
+      PlayEvent(null), PlayingEvent(null), RenditionChangeEvent(null),
+      PauseEvent(null), PlayEvent(null), PlayingEvent(null),
+      RenditionChangeEvent(null), RenditionChangeEvent(null)
+    ))
+
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      finalExpectedValue, stateCollector.sourceAdvertisedBitrate
+    )
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      finalExpectedValue.toFloat(), stateCollector.sourceAdvertisedFrameRate.toFloat()
+    )
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      finalExpectedValue, stateCollector.sourceWidth
+    )
+    assertEquals(
+      "Values from intermediate rendition changes should be skipped",
+      finalExpectedValue, stateCollector.sourceHeight
+    )
   }
 }
