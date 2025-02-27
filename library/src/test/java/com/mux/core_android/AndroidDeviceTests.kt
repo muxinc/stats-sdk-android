@@ -115,7 +115,7 @@ class AndroidDeviceTests : AbsRobolectricTest() {
       incorrectNetworks.onEach { incorrectNet ->
         connMgrReturns23.onEach { connType ->
           testConnectionType23(
-            assertMsg = "API 23: network type should not be $correctNetwork",
+            assertMsg = "API 23: network type should be $correctNetwork",
             mockTypeFromConnMgr = connType,
             expectedType = incorrectNet,
             onThisNetwork = false
@@ -136,7 +136,7 @@ class AndroidDeviceTests : AbsRobolectricTest() {
       incorrectNetworks.onEach { incorrectNet ->
         connMgrReturns16.onEach { connType ->
           testConnectionType16(
-            assertMsg = "API 16: network type should not be $correctNetwork",
+            assertMsg = "API 16: network type should be $correctNetwork",
             mockTypeFromConnMgr = connType,
             expectedType = incorrectNet,
             onThisNetwork = false
