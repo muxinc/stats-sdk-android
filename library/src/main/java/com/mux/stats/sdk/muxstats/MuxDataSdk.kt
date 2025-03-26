@@ -26,6 +26,7 @@ import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Base class for Mux Data SDK facades for Android. This class provides some structure to hold a
@@ -327,12 +328,16 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   enum class LogcatLevel { NONE, DEBUG, VERBOSE }
 
   protected companion object Factory {
+
+    private val nextPlayerId = AtomicInteger(0)
+
     /**
      * Generates a player ID based off the containing context and the ID of the View being used for
      * playback
      */
     fun generatePlayerId(context: Context, view: View?) =
-      context.javaClass.canonicalName!! + (view?.id ?: "audio")
+      context.javaClass.canonicalName!! + (view?.id ?: "no_id") +
+          " " + nextPlayerId.getAndIncrement()
 
     fun defaultPlayerListener(outerSdk: MuxDataSdk<*, *>): IPlayerListener =
       outerSdk.PlayerListenerBase()
