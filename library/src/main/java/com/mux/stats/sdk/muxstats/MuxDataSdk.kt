@@ -336,8 +336,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
      * playback
      */
     fun generatePlayerId(context: Context, view: View?) =
-      context.javaClass.canonicalName!! + (view?.id ?: "no_id") +
-          " " + nextPlayerId.getAndIncrement()
+      context.javaClass.canonicalName!! + "-" + (view?.id ?: "no-view") +
+          "-" + nextPlayerId.getAndIncrement()
 
     fun defaultPlayerListener(outerSdk: MuxDataSdk<*, *>): IPlayerListener =
       outerSdk.PlayerListenerBase()
