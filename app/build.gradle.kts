@@ -35,6 +35,9 @@ android {
 dependencies {
 
   project(":library")
+  // dynamic version so the player SDKs on top of this can update core independently
+  //noinspection GradleDynamicVersion
+  implementation("com.mux:stats.muxcore:8.+")
 
   implementation("androidx.core:core-ktx:1.15.0")
   implementation("androidx.appcompat:appcompat:1.7.0")

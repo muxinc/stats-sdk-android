@@ -8,10 +8,13 @@ This SDK is meant to be a base for other Mux Data SDKs for Android
 
 ## Usage
 
-Add the dependency to your SDK.
+Add this library and the Java Core to your SDK
 
 ```groovy
+// this library
 api 'com.mux.stats.sdk.muxstats:android:1.2.0'
+// You *must* specify an exact version of MuxCore in your player integration
+api 'com.mux:stats.muxcore:8.4.2'
 ```
 
 Implement `PlayerBinding<>` to listen for changes from your Player
