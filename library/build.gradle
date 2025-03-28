@@ -79,6 +79,8 @@ dependencies {
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently
   //noinspection GradleDynamicVersion
   compileOnly "com.mux:stats.muxcore:8.+"
+  //noinspection GradleDynamicVersion
+  testImplementation "com.mux:stats.muxcore:8.+"
 
   testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
   testImplementation 'junit:junit:4.13.2'
