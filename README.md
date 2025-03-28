@@ -14,7 +14,7 @@ Add this library and the Java Core to your SDK
 // this library
 api 'com.mux.stats.sdk.muxstats:android:1.2.0'
 // You *must* specify an exact version of MuxCore in your player integration
-api 'com.mux:stats.muxcore:8.4.2'
+api 'com.mux:stats.muxcore:8.4.1'
 ```
 
 Implement `PlayerBinding<>` to listen for changes from your Player
