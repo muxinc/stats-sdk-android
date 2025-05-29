@@ -246,6 +246,10 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun pxToDp(px: Int): Int = convertPxToDp(px, uiDelegate.displayDensity())
 
+    override fun getSourceCodec(): String? {
+      // Mux's SDKs use this only during renditionchange
+      return null
+    }
     override fun getCurrentPosition(): Long = collector?.playbackPositionMills ?: 0L
     override fun getMimeType() = collector?.mimeType
     override fun getSourceWidth(): Int? = collector?.sourceWidth
