@@ -25,17 +25,12 @@ fun <T> weak(): ReadWriteProperty<Any, T?> = Weak(null)
  */
 private class Weak<T>(referent: T?) : ReadWriteProperty<Any, T?> {
   private var weakT = WeakReference(referent)
-  private var onSet: ((T?) -> Unit)? = null
 
-  fun onSet(block: (T?) -> Unit): Weak<T> {
-    onSet = block
-    return this
+  override fun getValue(thisRef: Any, property: KProperty<*>): T? {
+    return weakT.get()
   }
 
-  override fun getValue(thisRef: Any, property: KProperty<*>): T? = weakT.get()
-
   override fun setValue(thisRef: Any, property: KProperty<*>, value: T?) {
-    onSet?.invoke(value)
     weakT = WeakReference(value)
   }
 }
