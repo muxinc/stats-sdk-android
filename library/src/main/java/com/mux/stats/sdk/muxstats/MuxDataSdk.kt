@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import androidx.annotation.RequiresApi
 import com.mux.android.util.convertPxToDp
 import com.mux.android.util.oneOf
 import com.mux.android.util.weak
@@ -459,47 +460,43 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         connectionTypeApi16()
       }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun connectionTypeApi23(): String? {
-      contextRef?.let { context ->
+      // use let{} so we get both a null-check and a hard ref
+      return contextRef?.let { context ->
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
-        return when {
+        when {
           nc == null -> {
             MuxLogger.w(TAG, "Could not get network capabilities")
             null
           }
 
-          nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+          nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ->
             CONNECTION_TYPE_WIRED
-          }
 
-          nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+          nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
             CONNECTION_TYPE_WIFI
-          }
 
-          nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+          nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ->
             CONNECTION_TYPE_CELLULAR
-          }
 
-          else -> {
-            CONNECTION_TYPE_OTHER
-          }
+          else -> CONNECTION_TYPE_OTHER
         }
-      } ?: return null
+      }
     }
 
     @Suppress("DEPRECATION") // Uses deprecated APIs for backward compat
     private fun connectionTypeApi16(): String? {
-      // use let{} so we get both a null-check and a hard ref for the check
-      contextRef?.let { context ->
+      // use let{} so we get both a null-check and a hard ref
+      return contextRef?.let { context ->
         val connectivityMgr = context
           .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork: NetworkInfo? = connectivityMgr.activeNetworkInfo
 
-        return if (activeNetwork == null) {
+        if (activeNetwork == null) {
           MuxLogger.w(TAG, "Couldn't obtain network info")
           null
         } else {
@@ -526,7 +523,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
             }
           }
         }
-      } ?: return null // contextRef?.let {...
+      } // contextRef?.let {...
     }
 
     override fun getElapsedRealtime(): Long {
