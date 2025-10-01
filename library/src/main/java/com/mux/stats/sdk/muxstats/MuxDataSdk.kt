@@ -238,14 +238,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   /**
    * Call when the presentation of the video changes, ie Fullscreen vs Normal, etc
    */
-  @Deprecated(
-    message = "presentationChange is deprecated. Use playbackModeChange for more options",
-    replaceWith = ReplaceWith(
-      "playbackModeChange(PlaybackMode./*your playback mode*/)",
-      imports = arrayOf("com.mux.stats.sdk.core.model.PlaybackMode")
-    ),
-    level = DeprecationLevel.WARNING
-  )
   open fun presentationChange(presentation: MuxSDKViewPresentation) =
     muxStats.presentationChange(presentation)
 
