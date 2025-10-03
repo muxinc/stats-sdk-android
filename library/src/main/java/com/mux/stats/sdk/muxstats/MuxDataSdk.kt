@@ -26,6 +26,7 @@ import com.mux.stats.sdk.core.util.MuxLogger
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -184,6 +185,56 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    */
   open fun orientationChange(orientation: MuxSDKViewOrientation) =
     muxStats.orientationChange(orientation)
+
+  /**
+   * Call when the video is presented in a particular way, eg, fullscreen, or picture-in-picture
+   *
+   * You can call this method immediately after starting a view, or wait until a relevant change.
+   * If you do the latter, the mode will be [PlaybackMode.STANDARD] until you change it.
+   *
+   * @param mode The playback mode being entered
+   */
+  open fun playbackModeChange(mode: PlaybackMode) {
+    muxStats.playbackModeChange(mode, null as JSONObject?)
+  }
+
+  /**
+   * Call when the video is presented in a particular way, eg, fullscreen, or picture-in-picture
+   *
+   * You can call this method immediately after starting a view, or wait until a relevant change.
+   * If you do the latter, the mode will be [PlaybackMode.STANDARD] until you change it.
+   *
+   * @param mode The playback mode being entered
+   * @param extraData Extra data to accompany this event. Will appear in the event timeline for your view
+   */
+  open fun playbackModeChange(mode: PlaybackMode, extraData: JSONObject) {
+    muxStats.playbackModeChange(mode, extraData)
+  }
+
+  /**
+   * Call when the video is presented in a particular way, eg, fullscreen, or picture-in-picture
+   *
+   * You can call this method immediately after starting a view, or wait until a relevant change.
+   * If you do the latter, the mode will be [PlaybackMode.STANDARD] until you change it.
+   *
+   * @param customMode The playback mode being entered
+   */
+  open fun playbackModeChange(customMode: String) {
+    muxStats.playbackModeChange(customMode, null as JSONObject?)
+  }
+
+  /**
+   * Call when the video is presented in a particular way, eg, fullscreen, or picture-in-picture
+   *
+   * You can call this method immediately after starting a view, or wait until a relevant change.
+   * If you do the latter, the mode will be [PlaybackMode.STANDARD] until you change it.
+   *
+   * @param customMode The playback mode being entered
+   * @param extraData Extra data to accompany this event. Will appear in the event timeline for your view
+   */
+  open fun playbackModeChange(customMode: String, extraData: JSONObject) {
+    muxStats.playbackModeChange(customMode, extraData)
+  }
 
   /**
    * Call when the presentation of the video changes, ie Fullscreen vs Normal, etc
