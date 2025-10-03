@@ -5,14 +5,12 @@ plugins {
 }
 
 android {
-  compileSdk 35
+  compileSdk 36
 
   namespace "com.mux.core_android"
 
   defaultConfig {
     minSdk 16
-    //noinspection EditedTargetSdkVersion
-    targetSdk 35
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles "consumer-rules.pro"
@@ -75,6 +73,7 @@ muxDistribution {
 
 dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+  implementation 'androidx.annotation:annotation-jvm:1.9.1'
 
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently
   //noinspection GradleDynamicVersion
