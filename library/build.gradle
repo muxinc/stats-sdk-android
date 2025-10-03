@@ -78,8 +78,7 @@ dependencies {
 
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently
   //noinspection GradleDynamicVersion
-//  compileOnly "com.mux:stats.muxcore:8.+"
-  compileOnly "com.mux:stats.muxcore:dev-releases-v8.6.0-5833964"
+  compileOnly "com.mux:stats.muxcore:8.+"
   //noinspection GradleDynamicVersion
   testImplementation "com.mux:stats.muxcore:8.+"
 
