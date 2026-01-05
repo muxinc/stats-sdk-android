@@ -72,7 +72,7 @@ muxDistribution {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
   implementation 'androidx.annotation:annotation-jvm:1.9.1'
 
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently

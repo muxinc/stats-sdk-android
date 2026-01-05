@@ -21,9 +21,10 @@ import com.mux.stats.sdk.core.MuxSDKViewOrientation
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.IEventDispatcher
+import com.mux.stats.sdk.core.events.playback.ErrorEvent
+import com.mux.stats.sdk.core.events.playback.ErrorEvent.ErrorSeverity
 import com.mux.stats.sdk.core.model.*
 import com.mux.stats.sdk.core.util.MuxLogger
-import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
@@ -136,6 +137,39 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    * but if you are reporting errors yourself, you can do so with this method
    */
   open fun error(exception: MuxErrorException) = muxStats.error(exception)
+
+  /**
+   * Report an error to the dashboard for this view. If the error is recoverable, you can set its
+   * severity to [ErrorEvent.ErrorSeverity.WARNING]. If it's related to your application logic
+   * and not playback, you can flag that as well
+   *
+   * @param code An error code from your player.
+   * @param message a message describing the error
+   * @param errorContext additional context, such as a stack trace, related to this error
+   */
+  open fun error(code: String,
+                 message: String?,
+                 errorContext: String) =
+    muxStats.error(code, message , errorContext)
+
+  /**
+   * Report an error to the dashboard for this view. If the error is recoverable, you can set its
+   * severity to [ErrorEvent.ErrorSeverity.WARNING]. If it's related to your application logic
+   * and not playback, you can flag that as well
+   *
+   * @param code An error code from your player.
+   * @param message a message describing the error
+   * @param errorContext additional context, such as a stack trace, related to this error
+   * @param errorSeverity The severity of the error. Errors can be fatal or warnings
+   * @param isBusinessException True if the error is related to app logic (eg, expired subscription)
+   */
+  
+  open fun error(code: String,
+                 message: String?,
+                 errorContext: String,
+                 errorSeverity: ErrorSeverity,
+                 isBusinessException: Boolean) =
+    muxStats.error(code, message , errorContext, errorSeverity, isBusinessException)
 
   /**
    * Change the player [View] this object observes.
