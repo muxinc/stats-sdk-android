@@ -151,6 +151,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
                  message: String?,
                  errorContext: String) =
     muxStats.error(code, message , errorContext)
+
   /**
    * Report an error to the dashboard for this view. If the error is recoverable, you can set its
    * severity to [ErrorEvent.ErrorSeverity.WARNING]. If it's related to your application logic
@@ -162,11 +163,12 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    * @param errorSeverity The severity of the error. Errors can be fatal or warnings
    * @param isBusinessException True if the error is related to app logic (eg, expired subscription)
    */
+  
   open fun error(code: String,
                  message: String?,
                  errorContext: String,
-                 errorSeverity: ErrorSeverity = ErrorSeverity.FATAL,
-                 isBusinessException: Boolean = false) =
+                 errorSeverity: ErrorSeverity,
+                 isBusinessException: Boolean) =
     muxStats.error(code, message , errorContext, errorSeverity, isBusinessException)
 
   /**
