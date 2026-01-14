@@ -18,6 +18,11 @@ internal interface MuxNetworkMonitor {
 
   // TODO: Method for synchronously getting the network info (call on init)
 
+  /**
+   * Synchronously asks the ConnectivityManager what the type the active network is
+   */
+  fun currentConnectionType(): NetworkConnectionType?
+
   fun release()
 
   interface NetworkChangedListener {
@@ -81,6 +86,10 @@ internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
 private class NetworkMonitorApi16(
   appContext: Context
 ) : MuxNetworkMonitor {
+  override fun currentConnectionType(): NetworkConnectionType? {
+    TODO("Not yet implemented")
+  }
+
   override fun release() {
     TODO("Not yet implemented")
   }
@@ -123,6 +132,14 @@ private class NetworkMonitorApi26(
 
   // todo - maybe we use the enum from muxcore?
   private var lastSeenNetworkType: String? = null
+
+  override fun currentConnectionType(): NetworkConnectionType? {
+    val connMgr = getConnectivityManager(appContext)
+    val currentNetwork = connMgr.activeNetwork
+    return currentNetwork
+      ?.let { connMgr.getNetworkCapabilities(it) }
+      ?.toMuxConnectionType()
+  }
 
   override fun release() {
     val connectivityManager = getConnectivityManager(appContext)
