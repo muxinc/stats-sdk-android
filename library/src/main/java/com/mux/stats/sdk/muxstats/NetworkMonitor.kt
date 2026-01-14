@@ -1,6 +1,8 @@
 package com.mux.stats.sdk.muxstats
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -84,16 +86,25 @@ internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
 }
 
 private class NetworkMonitorApi16(
-  appContext: Context
+  val appContext: Context
 ) : MuxNetworkMonitor {
+
+  private var connectivityReceiver: ConnectivityReceiver? = null
+
   override fun currentConnectionType(): NetworkConnectionType? {
     TODO("Not yet implemented")
   }
 
   override fun release() {
-    TODO("Not yet implemented")
+    connectivityReceiver?.let { appContext.unregisterReceiver(it) }
+    connectivityReceiver = null
   }
 
+  inner class ConnectivityReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+      TODO("Not yet implemented")
+    }
+  }
 }
 
 /*
@@ -128,7 +139,7 @@ private class NetworkMonitorApi26(
   // todo - Handler so we can report on the main thread (required)
 ) : MuxNetworkMonitor {
 
-  private val defaultNetworkCallback: ConnectivityManager.NetworkCallback
+  private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
 
   // todo - maybe we use the enum from muxcore?
   private var lastSeenNetworkType: String? = null
@@ -142,8 +153,11 @@ private class NetworkMonitorApi26(
   }
 
   override fun release() {
-    val connectivityManager = getConnectivityManager(appContext)
-    connectivityManager.unregisterNetworkCallback(defaultNetworkCallback)
+    defaultNetworkCallback?.let {
+      val connectivityManager = getConnectivityManager(appContext)
+      connectivityManager.unregisterNetworkCallback(it)
+    }
+    defaultNetworkCallback = null
   }
 
   private fun getConnectivityManager(context: Context): ConnectivityManager {
@@ -151,8 +165,6 @@ private class NetworkMonitorApi26(
   }
 
   init {
-    val connectivityManager = getConnectivityManager(appContext)
-
     val networkCallback = object : ConnectivityManager.NetworkCallback() {
       override fun onCapabilitiesChanged(
         network: Network,
@@ -174,8 +186,7 @@ private class NetworkMonitorApi26(
       }
     }
 
-    connectivityManager.registerDefaultNetworkCallback(networkCallback)
-
+    getConnectivityManager(appContext).registerDefaultNetworkCallback(networkCallback)
     this.defaultNetworkCallback = networkCallback
   }
 }
