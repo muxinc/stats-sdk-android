@@ -3,6 +3,7 @@ package com.mux.stats.sdk.muxstats
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -16,9 +17,7 @@ import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_WIFI
 import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_WIRED
 
-internal interface MuxNetworkMonitor {
-
-  // TODO: Method for synchronously getting the network info (call on init)
+interface MuxNetworkMonitor {
 
   /**
    * Synchronously asks the ConnectivityManager what the type the active network is
@@ -40,9 +39,10 @@ internal fun MuxNetworkMonitor(
   return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
     NetworkMonitorApi26(context.applicationContext, listener)
   } else {
-    NetworkMonitorApi16(context.applicationContext)
+    NetworkMonitorApi16(context.applicationContext, listener)
   }
 }
+
 @JvmSynthetic
 @RequiresApi(Build.VERSION_CODES.M)
 internal fun NetworkCapabilities.toMuxConnectionType(): NetworkConnectionType {
@@ -50,7 +50,7 @@ internal fun NetworkCapabilities.toMuxConnectionType(): NetworkConnectionType {
     hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
       -> NetworkConnectionType.WIRED
     hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-      -> NetworkConnectionType.WIRED
+      -> NetworkConnectionType.WIFI
     hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
       -> NetworkConnectionType.CELLULAR
 
@@ -85,14 +85,29 @@ internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
   }
 }
 
+/**
+ * Detects changes to network status using the old BroadcastReceiver method
+ *
+ * We use this all the way up to O, because NetworkCallback was not reliable before then
+ */
+@Suppress("DEPRECATION")
 private class NetworkMonitorApi16(
-  val appContext: Context
+  val appContext: Context,
+  val outsideListener: MuxNetworkMonitor.NetworkChangedListener
 ) : MuxNetworkMonitor {
 
   private var connectivityReceiver: ConnectivityReceiver? = null
+  private var lastSeenConnectionType: NetworkConnectionType? = null
+
+
+  private fun getConnectivityManager(context: Context): ConnectivityManager {
+    return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+  }
 
   override fun currentConnectionType(): NetworkConnectionType? {
-    TODO("Not yet implemented")
+    val networkInfo = getConnectivityManager(appContext).activeNetworkInfo
+    val connType = networkInfo?.toMuxConnectionType()
+    return connType
   }
 
   override fun release() {
@@ -100,30 +115,24 @@ private class NetworkMonitorApi16(
     connectivityReceiver = null
   }
 
+  init {
+    this.connectivityReceiver = ConnectivityReceiver()
+    val intentFilter = IntentFilter()
+    intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
+    appContext.registerReceiver(this.connectivityReceiver, intentFilter)
+  }
+
   inner class ConnectivityReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-      TODO("Not yet implemented")
+      // when using the system broadcasts, we can safely query ConnectivityManager synchronously
+      val currentType = currentConnectionType()
+      if (currentType != lastSeenConnectionType) {
+        outsideListener.onNetworkChanged(currentType, false)
+        lastSeenConnectionType = currentType
+      }
     }
   }
 }
-
-/*
- * Version Considerations:
- * * On Oreo and up: onCapabilitiesChanged is guaranteed to be called after onAvailable
- *    before this, we can't assume either way.
- *    How do we handle this? Keep the last-known network type and only call the listener when diff.
- *     .. and implement both onCapChanged and onAvailable
- * * On N and up, we can listen for the default network instead. Should we even do this?
- *   If so, we don't care if we go from eg, cellular to cellular due to dual-sim switches or '
- *    whatever (right?).. but our logic from the above point will take care of that
- *   I think we *do* want to listen for the default network tho, since that's almost definitely what
- *    the caller will be using.
- *   This case: Both wifi and cellular available. On N+, we can assume the default network is used
- *    so this case is covered by using the default network callback whatever guy
- *    On L and M, things are not as simple. We don't know which network is the default and can't
- *      ask ConnectivityManager from the callback. So I guess we can rely on the broadcast reciever
- *      there as well
- */
 
 /**
  * Detects Network changes using [ConnectivityManager.NetworkCallback]. The API is available way
@@ -140,9 +149,7 @@ private class NetworkMonitorApi26(
 ) : MuxNetworkMonitor {
 
   private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
-
-  // todo - maybe we use the enum from muxcore?
-  private var lastSeenNetworkType: String? = null
+  private var lastSeenNetworkType: NetworkConnectionType? = null
 
   override fun currentConnectionType(): NetworkConnectionType? {
     val connMgr = getConnectivityManager(appContext)
@@ -178,10 +185,14 @@ private class NetworkMonitorApi26(
         } else {
           false
         }
-        outsideListener.onNetworkChanged(connType, lowBandwidth)
+        if (connType != lastSeenNetworkType) {
+          lastSeenNetworkType = connType
+          outsideListener.onNetworkChanged(connType, lowBandwidth)
+        }
       }
 
       override fun onLost(network: Network) {
+        lastSeenNetworkType = null
         outsideListener.onNetworkChanged(null, false)
       }
     }
