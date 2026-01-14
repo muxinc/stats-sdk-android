@@ -4,9 +4,15 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.mux.android.util.weak
+import com.mux.stats.sdk.core.model.NetworkConnectionType
+import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_CELLULAR
+import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_OTHER
+import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_WIFI
+import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_WIRED
 
 internal interface MuxNetworkMonitor {
 
@@ -15,7 +21,7 @@ internal interface MuxNetworkMonitor {
   fun release()
 
   interface NetworkChangedListener {
-    fun onNetworkChanged(networkType: String?, restrictedData: Boolean)
+    fun onNetworkChanged(networkType: NetworkConnectionType?, restrictedData: Boolean)
   }
 }
 
@@ -28,6 +34,47 @@ internal fun MuxNetworkMonitor(
     NetworkMonitorApi26(context.applicationContext, listener)
   } else {
     NetworkMonitorApi16(context.applicationContext)
+  }
+}
+@JvmSynthetic
+@RequiresApi(Build.VERSION_CODES.M)
+internal fun NetworkCapabilities.toMuxConnectionType(): NetworkConnectionType {
+  return when {
+    hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+      -> NetworkConnectionType.WIRED
+    hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+      -> NetworkConnectionType.WIRED
+    hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+      -> NetworkConnectionType.CELLULAR
+
+    else -> NetworkConnectionType.OTHER
+  }
+}
+
+@Suppress("DEPRECATION")
+@JvmSynthetic
+internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
+  return when (type) {
+    ConnectivityManager.TYPE_ETHERNET -> {
+      NetworkConnectionType.WIRED
+    }
+
+    ConnectivityManager.TYPE_WIFI -> {
+      NetworkConnectionType.WIRED
+    }
+
+    ConnectivityManager.TYPE_MOBILE,
+    ConnectivityManager.TYPE_MOBILE_DUN,
+    ConnectivityManager.TYPE_MOBILE_HIPRI,
+    ConnectivityManager.TYPE_MOBILE_SUPL,
+    ConnectivityManager.TYPE_WIMAX,
+    ConnectivityManager.TYPE_MOBILE_MMS -> {
+      NetworkConnectionType.CELLULAR
+    }
+
+    else -> {
+      NetworkConnectionType.OTHER
+    }
   }
 }
 
@@ -60,16 +107,17 @@ private class NetworkMonitorApi16(
 
 /**
  * Detects Network changes using [ConnectivityManager.NetworkCallback]. The API is available way
- * before API 26, but isn't generally considered reliable before then. The callback method we need
- * (onCapabilitiesChanged) isn't guaranteed to be called, and the callbacks may fire before
- * ConnectivityManager has updated capabilities info (so we can't ask it for info synchronously)
+ * before O, but isn't generally considered reliable before then. The callback method we need
+ * (onCapabilitiesChanged) isn't guaranteed to be called, and asking for net capabilities
+ * synchronously from onActive is a no-no because it is a source of data races. So we fall back to
+ * the intent broadcasts L, M, and N still
  */
 @RequiresApi(Build.VERSION_CODES.O)
 private class NetworkMonitorApi26(
   val appContext: Context,
   val outsideListener: MuxNetworkMonitor.NetworkChangedListener
   // todo - Handler so we can report on the main thread (required)
-): MuxNetworkMonitor {
+) : MuxNetworkMonitor {
 
   private val defaultNetworkCallback: ConnectivityManager.NetworkCallback
 
@@ -88,16 +136,24 @@ private class NetworkMonitorApi26(
   init {
     val connectivityManager = getConnectivityManager(appContext)
 
-    val networkCallback = object: ConnectivityManager.NetworkCallback() {
+    val networkCallback = object : ConnectivityManager.NetworkCallback() {
       override fun onCapabilitiesChanged(
         network: Network,
         networkCapabilities: NetworkCapabilities
       ) {
-        // TODO - Get connection type and report change if different
+        val connType = networkCapabilities.toMuxConnectionType()
+        val lowBandwidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+          !networkCapabilities.hasCapability(
+            NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
+          )
+        } else {
+          false
+        }
+        outsideListener.onNetworkChanged(connType, lowBandwidth)
       }
 
       override fun onLost(network: Network) {
-        // todo - network lost, report null network
+        outsideListener.onNetworkChanged(null, false)
       }
     }
 
