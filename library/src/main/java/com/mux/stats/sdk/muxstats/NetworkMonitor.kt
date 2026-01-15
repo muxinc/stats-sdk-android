@@ -9,13 +9,10 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
-import com.mux.android.util.weak
 import com.mux.stats.sdk.core.model.NetworkConnectionType
-import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_CELLULAR
-import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_OTHER
-import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_WIFI
-import com.mux.stats.sdk.muxstats.MuxDataSdk.AndroidDevice.Companion.CONNECTION_TYPE_WIRED
 
 interface MuxNetworkMonitor {
 
@@ -62,13 +59,9 @@ internal fun NetworkCapabilities.toMuxConnectionType(): NetworkConnectionType {
 @JvmSynthetic
 internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
   return when (type) {
-    ConnectivityManager.TYPE_ETHERNET -> {
-      NetworkConnectionType.WIRED
-    }
+    ConnectivityManager.TYPE_ETHERNET -> NetworkConnectionType.WIRED
 
-    ConnectivityManager.TYPE_WIFI -> {
-      NetworkConnectionType.WIRED
-    }
+    ConnectivityManager.TYPE_WIFI -> NetworkConnectionType.WIFI
 
     ConnectivityManager.TYPE_MOBILE,
     ConnectivityManager.TYPE_MOBILE_DUN,
@@ -79,9 +72,8 @@ internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
       NetworkConnectionType.CELLULAR
     }
 
-    else -> {
-      NetworkConnectionType.OTHER
-    }
+    else -> NetworkConnectionType.OTHER
+
   }
 }
 
@@ -145,8 +137,10 @@ private class NetworkMonitorApi16(
 private class NetworkMonitorApi26(
   val appContext: Context,
   val outsideListener: MuxNetworkMonitor.NetworkChangedListener
-  // todo - Handler so we can report on the main thread (required)
 ) : MuxNetworkMonitor {
+
+  // todo - use me
+  private val callbackHandler = Handler(Looper.getMainLooper())
 
   private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
   private var lastSeenNetworkType: NetworkConnectionType? = null
