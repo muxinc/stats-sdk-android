@@ -11,6 +11,7 @@ import android.net.NetworkInfo
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.RequiresApi
 
 interface NetworkChangeMonitor {
@@ -188,12 +189,14 @@ private class NetworkChangeMonitorApi26(
         network: Network,
         networkCapabilities: NetworkCapabilities
       ) {
+        Log.d("NetworkMonitor", "onCapChanged: Current Thread: ${Thread.currentThread().name}")
         handleNetworkCapabilities(networkCapabilities)
       }
 
       override fun onLost(network: Network) {
+        Log.d("NetworkMonitor", "onLost: Current Thread: ${Thread.currentThread().name}")
         lastSeenNetworkType = null
-        outsideListener?.onNetworkChanged(null, false)
+        outsideListener?.onNetworkChanged(null, null)
       }
     }
 
