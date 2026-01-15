@@ -629,7 +629,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     private fun getPackageInfoLegacy(ctx: Context): PackageInfo =
       ctx.packageManager.getPackageInfo(ctx.packageName, 0)
 
-    @TargetApi(Build.VERSION_CODES.TIRAMISU)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun getPackageInfoApi33(ctx: Context): PackageInfo =
       ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.PackageInfoFlags.of(0))
 
