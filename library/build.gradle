@@ -76,7 +76,7 @@ dependencies {
   implementation 'androidx.annotation:annotation-jvm:1.9.1'
 
 //  def muxCoreVersion = '8.+'
-  def muxCoreVersion = 'dev-network-change-events-22cbee8'
+  def muxCoreVersion = 'dev-network-change-events-29a7090'
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently
   //noinspection GradleDynamicVersion
   compileOnly "com.mux:stats.muxcore:$muxCoreVersion"

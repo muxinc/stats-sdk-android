@@ -20,22 +20,24 @@ interface NetworkChangeMonitor {
     const val CONNECTION_TYPE_WIRED = "wired"
     const val CONNECTION_TYPE_OTHER = "other"
   }
+
+  fun setListener(listener: NetworkChangedListener?)
+
   fun release()
 
   interface NetworkChangedListener {
-    fun onNetworkChanged(networkType: String?, restrictedData: Boolean)
+    fun onNetworkChanged(networkType: String?, restrictedData: Boolean?)
   }
 }
 
 @JvmSynthetic
 internal fun NetworkChangeMonitor(
   context: Context,
-  listener: NetworkChangeMonitor.NetworkChangedListener
 ): NetworkChangeMonitor {
   return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    NetworkChangeMonitorApi26(context.applicationContext, listener)
+    NetworkChangeMonitorApi26(context.applicationContext)
   } else {
-    NetworkChangeMonitorApi16(context.applicationContext, listener)
+    NetworkChangeMonitorApi16(context.applicationContext)
   }
 }
 
@@ -84,11 +86,11 @@ internal fun NetworkInfo.toMuxConnectionType(): String {
 @Suppress("DEPRECATION")
 private class NetworkChangeMonitorApi16(
   val appContext: Context,
-  val outsideListener: NetworkChangeMonitor.NetworkChangedListener
 ) : NetworkChangeMonitor {
 
   private var connectivityReceiver: ConnectivityReceiver? = null
   private var lastSeenConnectionType: String? = null
+  private var outsideListener: NetworkChangeMonitor.NetworkChangedListener? = null
 
 
   private fun getConnectivityManager(context: Context): ConnectivityManager {
@@ -99,6 +101,10 @@ private class NetworkChangeMonitorApi16(
     val networkInfo = getConnectivityManager(appContext).activeNetworkInfo
     val connType = networkInfo?.toMuxConnectionType()
     return connType
+  }
+
+  override fun setListener(listener: NetworkChangeMonitor.NetworkChangedListener?) {
+    this.outsideListener = listener
   }
 
   override fun release() {
@@ -118,7 +124,7 @@ private class NetworkChangeMonitorApi16(
       // when using the system broadcasts, we can safely query ConnectivityManager synchronously
       val currentType = currentConnectionType()
       if (currentType != lastSeenConnectionType) {
-        outsideListener.onNetworkChanged(currentType, false)
+        outsideListener?.onNetworkChanged(currentType, false)
         lastSeenConnectionType = currentType
       }
     }
@@ -135,14 +141,18 @@ private class NetworkChangeMonitorApi16(
 @RequiresApi(Build.VERSION_CODES.O)
 private class NetworkChangeMonitorApi26(
   val appContext: Context,
-  val outsideListener: NetworkChangeMonitor.NetworkChangedListener
 ) : NetworkChangeMonitor {
 
   // todo - use me
   private val callbackHandler = Handler(Looper.getMainLooper())
 
+  private var outsideListener: NetworkChangeMonitor.NetworkChangedListener? = null
   private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
   private var lastSeenNetworkType: String? = null
+
+  override fun setListener(listener: NetworkChangeMonitor.NetworkChangedListener?) {
+    this.outsideListener = listener
+  }
 
   override fun release() {
     defaultNetworkCallback?.let {
@@ -164,11 +174,11 @@ private class NetworkChangeMonitorApi26(
           NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
         )
       } else {
-        false
+        null
       }
 
       lastSeenNetworkType = connType
-      outsideListener.onNetworkChanged(connType, lowBandwidth)
+      outsideListener?.onNetworkChanged(connType, lowBandwidth)
     }
   }
 
@@ -183,7 +193,7 @@ private class NetworkChangeMonitorApi26(
 
       override fun onLost(network: Network) {
         lastSeenNetworkType = null
-        outsideListener.onNetworkChanged(null, false)
+        outsideListener?.onNetworkChanged(null, false)
       }
     }
 
