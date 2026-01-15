@@ -16,11 +16,6 @@ import com.mux.stats.sdk.core.model.NetworkConnectionType
 
 interface MuxNetworkMonitor {
 
-  /**
-   * Synchronously asks the ConnectivityManager what the type the active network is
-   */
-  fun currentConnectionType(): NetworkConnectionType?
-
   fun release()
 
   interface NetworkChangedListener {
@@ -96,7 +91,7 @@ private class NetworkMonitorApi16(
     return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   }
 
-  override fun currentConnectionType(): NetworkConnectionType? {
+  private fun currentConnectionType(): NetworkConnectionType? {
     val networkInfo = getConnectivityManager(appContext).activeNetworkInfo
     val connType = networkInfo?.toMuxConnectionType()
     return connType
@@ -145,14 +140,6 @@ private class NetworkMonitorApi26(
   private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
   private var lastSeenNetworkType: NetworkConnectionType? = null
 
-  override fun currentConnectionType(): NetworkConnectionType? {
-    val connMgr = getConnectivityManager(appContext)
-    val currentNetwork = connMgr.activeNetwork
-    return currentNetwork
-      ?.let { connMgr.getNetworkCapabilities(it) }
-      ?.toMuxConnectionType()
-  }
-
   override fun release() {
     defaultNetworkCallback?.let {
       val connectivityManager = getConnectivityManager(appContext)
@@ -165,24 +152,29 @@ private class NetworkMonitorApi26(
     return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   }
 
+  private fun handleNetworkCapabilities(networkCapabilities: NetworkCapabilities) {
+    val connType = networkCapabilities.toMuxConnectionType()
+    if (connType != lastSeenNetworkType) {
+      val lowBandwidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+        !networkCapabilities.hasCapability(
+          NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
+        )
+      } else {
+        false
+      }
+
+      lastSeenNetworkType = connType
+      outsideListener.onNetworkChanged(connType, lowBandwidth)
+    }
+  }
+
   init {
     val networkCallback = object : ConnectivityManager.NetworkCallback() {
       override fun onCapabilitiesChanged(
         network: Network,
         networkCapabilities: NetworkCapabilities
       ) {
-        val connType = networkCapabilities.toMuxConnectionType()
-        val lowBandwidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-          !networkCapabilities.hasCapability(
-            NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
-          )
-        } else {
-          false
-        }
-        if (connType != lastSeenNetworkType) {
-          lastSeenNetworkType = connType
-          outsideListener.onNetworkChanged(connType, lowBandwidth)
-        }
+        handleNetworkCapabilities(networkCapabilities)
       }
 
       override fun onLost(network: Network) {
