@@ -545,6 +545,21 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         connectionTypeApi16()
       }
 
+    override fun getIsNetworkInLowDataMode(): Boolean? {
+      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.BAKLAVA) {
+        return contextRef?.let { context ->
+          val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+          val nc: NetworkCapabilities? =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+          return nc
+            ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED)
+            ?.not()
+        }
+      } else {
+        return null
+      }
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     private fun connectionTypeApi23(): String? {
       // use let{} so we get both a null-check and a hard ref
