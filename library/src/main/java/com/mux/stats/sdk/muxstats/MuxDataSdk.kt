@@ -552,7 +552,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-        nc?.toMuxConnectionType()?.typeString
+        nc?.toMuxConnectionType()
       }
     }
 
@@ -563,7 +563,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         val connectivityMgr = context
           .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork: NetworkInfo? = connectivityMgr.activeNetworkInfo
-        activeNetwork?.toMuxConnectionType()?.typeString
+        activeNetwork?.toMuxConnectionType()
       } // contextRef?.let {...
     }
 
@@ -619,11 +619,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.PackageInfoFlags.of(0))
 
     companion object {
-      const val CONNECTION_TYPE_CELLULAR = "cellular"
-      const val CONNECTION_TYPE_WIFI = "wifi"
-      const val CONNECTION_TYPE_WIRED = "wired"
-      const val CONNECTION_TYPE_OTHER = "other"
-
       private const val TAG = "MuxDevice"
       private const val MUX_DEVICE_ID = "MUX_DEVICE_ID"
 

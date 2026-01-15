@@ -12,14 +12,18 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.RequiresApi
-import com.mux.stats.sdk.core.model.NetworkConnectionType
 
 interface MuxNetworkMonitor {
-
+  companion object {
+    const val CONNECTION_TYPE_CELLULAR = "cellular"
+    const val CONNECTION_TYPE_WIFI = "wifi"
+    const val CONNECTION_TYPE_WIRED = "wired"
+    const val CONNECTION_TYPE_OTHER = "other"
+  }
   fun release()
 
   interface NetworkChangedListener {
-    fun onNetworkChanged(networkType: NetworkConnectionType?, restrictedData: Boolean)
+    fun onNetworkChanged(networkType: String?, restrictedData: Boolean)
   }
 }
 
@@ -37,26 +41,26 @@ internal fun MuxNetworkMonitor(
 
 @JvmSynthetic
 @RequiresApi(Build.VERSION_CODES.M)
-internal fun NetworkCapabilities.toMuxConnectionType(): NetworkConnectionType {
+internal fun NetworkCapabilities.toMuxConnectionType(): String {
   return when {
     hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-      -> NetworkConnectionType.WIRED
+      -> MuxNetworkMonitor.CONNECTION_TYPE_WIRED
     hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-      -> NetworkConnectionType.WIFI
+      -> MuxNetworkMonitor.CONNECTION_TYPE_WIFI
     hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-      -> NetworkConnectionType.CELLULAR
+      -> MuxNetworkMonitor.CONNECTION_TYPE_CELLULAR
 
-    else -> NetworkConnectionType.OTHER
+    else -> MuxNetworkMonitor.CONNECTION_TYPE_OTHER
   }
 }
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
-internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
+internal fun NetworkInfo.toMuxConnectionType(): String {
   return when (type) {
-    ConnectivityManager.TYPE_ETHERNET -> NetworkConnectionType.WIRED
+    ConnectivityManager.TYPE_ETHERNET -> MuxNetworkMonitor.CONNECTION_TYPE_WIRED
 
-    ConnectivityManager.TYPE_WIFI -> NetworkConnectionType.WIFI
+    ConnectivityManager.TYPE_WIFI -> MuxNetworkMonitor.CONNECTION_TYPE_WIFI
 
     ConnectivityManager.TYPE_MOBILE,
     ConnectivityManager.TYPE_MOBILE_DUN,
@@ -64,10 +68,10 @@ internal fun NetworkInfo.toMuxConnectionType(): NetworkConnectionType {
     ConnectivityManager.TYPE_MOBILE_SUPL,
     ConnectivityManager.TYPE_WIMAX,
     ConnectivityManager.TYPE_MOBILE_MMS -> {
-      NetworkConnectionType.CELLULAR
+      MuxNetworkMonitor.CONNECTION_TYPE_CELLULAR
     }
 
-    else -> NetworkConnectionType.OTHER
+    else -> MuxNetworkMonitor.CONNECTION_TYPE_OTHER
 
   }
 }
@@ -84,14 +88,14 @@ private class NetworkMonitorApi16(
 ) : MuxNetworkMonitor {
 
   private var connectivityReceiver: ConnectivityReceiver? = null
-  private var lastSeenConnectionType: NetworkConnectionType? = null
+  private var lastSeenConnectionType: String? = null
 
 
   private fun getConnectivityManager(context: Context): ConnectivityManager {
     return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   }
 
-  private fun currentConnectionType(): NetworkConnectionType? {
+  private fun currentConnectionType(): String? {
     val networkInfo = getConnectivityManager(appContext).activeNetworkInfo
     val connType = networkInfo?.toMuxConnectionType()
     return connType
@@ -138,7 +142,7 @@ private class NetworkMonitorApi26(
   private val callbackHandler = Handler(Looper.getMainLooper())
 
   private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
-  private var lastSeenNetworkType: NetworkConnectionType? = null
+  private var lastSeenNetworkType: String? = null
 
   override fun release() {
     defaultNetworkCallback?.let {
