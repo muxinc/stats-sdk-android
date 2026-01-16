@@ -14,6 +14,11 @@ import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 
+/**
+ * Listens for changes to network connection status from the system.
+ *
+ * The implementation may differ depending on android version
+ */
 interface NetworkChangeMonitor {
   companion object {
     const val CONNECTION_TYPE_CELLULAR = "cellular"
@@ -26,7 +31,7 @@ interface NetworkChangeMonitor {
 
   fun release()
 
-  interface NetworkChangedListener {
+  fun interface NetworkChangedListener {
     fun onNetworkChanged(networkType: String?, restrictedData: Boolean?)
   }
 }
@@ -109,6 +114,7 @@ private class NetworkChangeMonitorApi16(
   }
 
   override fun release() {
+    outsideListener = null
     connectivityReceiver?.let { appContext.unregisterReceiver(it) }
     connectivityReceiver = null
   }
@@ -156,6 +162,7 @@ private class NetworkChangeMonitorApi26(
   }
 
   override fun release() {
+    outsideListener = null
     defaultNetworkCallback?.let {
       val connectivityManager = getConnectivityManager(appContext)
       connectivityManager.unregisterNetworkCallback(it)
@@ -190,6 +197,7 @@ private class NetworkChangeMonitorApi26(
         networkCapabilities: NetworkCapabilities
       ) {
         Log.d("NetworkMonitor", "onCapChanged: Current Thread: ${Thread.currentThread().name}")
+        // todo - do we need a new thing
         handleNetworkCapabilities(networkCapabilities)
       }
 

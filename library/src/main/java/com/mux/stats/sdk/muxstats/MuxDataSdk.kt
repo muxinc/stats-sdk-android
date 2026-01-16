@@ -61,6 +61,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   customOptions: CustomOptions = CustomOptions(),
   trackFirstFrame: Boolean = false,
   logLevel: LogcatLevel = LogcatLevel.NONE,
+  networkChangeMonitor: NetworkChangeMonitor = NetworkChangeMonitor(context),
   makePlayerId: (context: Context, view: View?) -> String = Factory::generatePlayerId,
   makePlayerListener: (
     of: MuxDataSdk<Player, PlayerView>
@@ -107,6 +108,9 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val collector: MuxStateCollector
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val networkChangeMonitor: NetworkChangeMonitor
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val displayDensity: Float get() = uiDelegate.displayDensity()
@@ -313,6 +317,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    */
   open fun release() {
     // NOTE: If you override this, you must call super()
+    networkChangeMonitor.release()
     playerAdapter.unbindEverything()
     muxStats.release()
   }
@@ -400,6 +405,10 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     playerAdapter = makePlayerAdapter(
       player, uiDelegate, collector, playerBinding
     )
+    networkChangeMonitor.setListener { networkType, lowData ->
+      muxStats.networkChange(networkType, lowData)
+    }
+    this.networkChangeMonitor = networkChangeMonitor
 
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
