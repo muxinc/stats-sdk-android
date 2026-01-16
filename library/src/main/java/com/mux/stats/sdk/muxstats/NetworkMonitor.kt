@@ -155,7 +155,6 @@ private class NetworkChangeMonitorApi26(
 
   private var outsideListener: NetworkChangeMonitor.NetworkChangedListener? = null
   private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
-  private var lastSeenNetworkType: String? = null
 
   override fun setListener(listener: NetworkChangeMonitor.NetworkChangedListener?) {
     this.outsideListener = listener
@@ -176,18 +175,15 @@ private class NetworkChangeMonitorApi26(
 
   private fun handleNetworkCapabilities(networkCapabilities: NetworkCapabilities) {
     val connType = networkCapabilities.toMuxConnectionType()
-    if (connType != lastSeenNetworkType) {
-      val lowBandwidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-        !networkCapabilities.hasCapability(
-          NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
-        )
-      } else {
-        null
-      }
-
-      lastSeenNetworkType = connType
-      outsideListener?.onNetworkChanged(connType, lowBandwidth)
+    val lowBandwidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+      !networkCapabilities.hasCapability(
+        NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED
+      )
+    } else {
+      null
     }
+
+    outsideListener?.onNetworkChanged(connType, lowBandwidth)
   }
 
   init {
@@ -202,7 +198,6 @@ private class NetworkChangeMonitorApi26(
 
       override fun onLost(network: Network) {
         Log.d("NetworkMonitor", "onLost: Current Thread: ${Thread.currentThread().name}")
-        lastSeenNetworkType = null
         callbackHandler.post { outsideListener?.onNetworkChanged(null, null) }
       }
     }
