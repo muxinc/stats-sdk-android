@@ -131,7 +131,7 @@ private class NetworkChangeMonitorApi16(
       // when using the system broadcasts, we can safely query ConnectivityManager synchronously
       val currentType = currentConnectionType()
       if (currentType != lastSeenConnectionType) {
-        outsideListener?.onNetworkChanged(currentType, false)
+        outsideListener?.onNetworkChanged(currentType, null)
         lastSeenConnectionType = currentType
       }
     }
