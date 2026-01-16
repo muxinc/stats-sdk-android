@@ -197,14 +197,13 @@ private class NetworkChangeMonitorApi26(
         networkCapabilities: NetworkCapabilities
       ) {
         Log.d("NetworkMonitor", "onCapChanged: Current Thread: ${Thread.currentThread().name}")
-        // todo - do we need a new thing
-        handleNetworkCapabilities(networkCapabilities)
+        callbackHandler.post { handleNetworkCapabilities(networkCapabilities) }
       }
 
       override fun onLost(network: Network) {
         Log.d("NetworkMonitor", "onLost: Current Thread: ${Thread.currentThread().name}")
         lastSeenNetworkType = null
-        outsideListener?.onNetworkChanged(null, null)
+        callbackHandler.post { outsideListener?.onNetworkChanged(null, null) }
       }
     }
 
