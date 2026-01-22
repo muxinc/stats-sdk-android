@@ -11,7 +11,6 @@ import android.net.NetworkInfo
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.annotation.RequiresApi
 
 /**
@@ -53,8 +52,10 @@ internal fun NetworkCapabilities.toMuxConnectionType(): String {
   return when {
     hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
       -> NetworkChangeMonitor.CONNECTION_TYPE_WIRED
+
     hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
       -> NetworkChangeMonitor.CONNECTION_TYPE_WIFI
+
     hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
       -> NetworkChangeMonitor.CONNECTION_TYPE_CELLULAR
 
@@ -97,7 +98,6 @@ private class NetworkChangeMonitorApi16(
   private var connectivityReceiver: ConnectivityReceiver? = null
   private var lastSeenConnectionType: String? = null
   private var outsideListener: NetworkChangeMonitor.NetworkChangedListener? = null
-
 
   private fun getConnectivityManager(context: Context): ConnectivityManager {
     return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
