@@ -150,7 +150,6 @@ private class NetworkChangeMonitorApi26(
   val appContext: Context,
 ) : NetworkChangeMonitor {
 
-  // todo - use me
   private val callbackHandler = Handler(Looper.getMainLooper())
 
   private var outsideListener: NetworkChangeMonitor.NetworkChangedListener? = null
@@ -192,12 +191,10 @@ private class NetworkChangeMonitorApi26(
         network: Network,
         networkCapabilities: NetworkCapabilities
       ) {
-        Log.d("NetworkMonitor", "onCapChanged: Current Thread: ${Thread.currentThread().name}")
         callbackHandler.post { handleNetworkCapabilities(networkCapabilities) }
       }
 
       override fun onLost(network: Network) {
-        Log.d("NetworkMonitor", "onLost: Current Thread: ${Thread.currentThread().name}")
         callbackHandler.post { outsideListener?.onNetworkChanged(null, null) }
       }
     }
