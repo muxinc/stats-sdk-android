@@ -61,6 +61,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
   customOptions: CustomOptions = CustomOptions(),
   trackFirstFrame: Boolean = false,
   logLevel: LogcatLevel = LogcatLevel.NONE,
+  networkChangeMonitor: NetworkChangeMonitor = NetworkChangeMonitor(context),
   makePlayerId: (context: Context, view: View?) -> String = Factory::generatePlayerId,
   makePlayerListener: (
     of: MuxDataSdk<Player, PlayerView>
@@ -107,6 +108,9 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val collector: MuxStateCollector
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val networkChangeMonitor: NetworkChangeMonitor
 
   @Suppress("MemberVisibilityCanBePrivate")
   protected val displayDensity: Float get() = uiDelegate.displayDensity()
@@ -313,6 +317,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
    */
   open fun release() {
     // NOTE: If you override this, you must call super()
+    networkChangeMonitor.release()
     playerAdapter.unbindEverything()
     muxStats.release()
   }
@@ -400,6 +405,10 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     playerAdapter = makePlayerAdapter(
       player, uiDelegate, collector, playerBinding
     )
+    networkChangeMonitor.setListener { networkType, lowData ->
+      muxStats.networkChange(networkType, lowData)
+    }
+    this.networkChangeMonitor = networkChangeMonitor
 
     muxStats.allowLogcatOutput(
       logLevel.oneOf(LogcatLevel.DEBUG, LogcatLevel.VERBOSE),
@@ -545,6 +554,21 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         connectionTypeApi16()
       }
 
+    override fun getIsNetworkInLowDataMode(): Boolean? {
+      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.BAKLAVA) {
+        return contextRef?.let { context ->
+          val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+          val nc: NetworkCapabilities? =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+          return nc
+            ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED)
+            ?.not()
+        }
+      } else {
+        return null
+      }
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     private fun connectionTypeApi23(): String? {
       // use let{} so we get both a null-check and a hard ref
@@ -552,24 +576,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-
-        when {
-          nc == null -> {
-            MuxLogger.w(TAG, "Could not get network capabilities")
-            null
-          }
-
-          nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ->
-            CONNECTION_TYPE_WIRED
-
-          nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
-            CONNECTION_TYPE_WIFI
-
-          nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ->
-            CONNECTION_TYPE_CELLULAR
-
-          else -> CONNECTION_TYPE_OTHER
-        }
+        nc?.toMuxConnectionType()
       }
     }
 
@@ -580,34 +587,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         val connectivityMgr = context
           .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork: NetworkInfo? = connectivityMgr.activeNetworkInfo
-
-        if (activeNetwork == null) {
-          MuxLogger.w(TAG, "Couldn't obtain network info")
-          null
-        } else {
-          when (activeNetwork.type) {
-            ConnectivityManager.TYPE_ETHERNET -> {
-              CONNECTION_TYPE_WIRED
-            }
-
-            ConnectivityManager.TYPE_WIFI -> {
-              CONNECTION_TYPE_WIFI
-            }
-
-            ConnectivityManager.TYPE_MOBILE,
-            ConnectivityManager.TYPE_MOBILE_DUN,
-            ConnectivityManager.TYPE_MOBILE_HIPRI,
-            ConnectivityManager.TYPE_MOBILE_SUPL,
-            ConnectivityManager.TYPE_WIMAX,
-            ConnectivityManager.TYPE_MOBILE_MMS -> {
-              CONNECTION_TYPE_CELLULAR
-            }
-
-            else -> {
-              CONNECTION_TYPE_OTHER
-            }
-          }
-        }
+        activeNetwork?.toMuxConnectionType()
       } // contextRef?.let {...
     }
 
@@ -658,16 +638,11 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     private fun getPackageInfoLegacy(ctx: Context): PackageInfo =
       ctx.packageManager.getPackageInfo(ctx.packageName, 0)
 
-    @TargetApi(Build.VERSION_CODES.TIRAMISU)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun getPackageInfoApi33(ctx: Context): PackageInfo =
       ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.PackageInfoFlags.of(0))
 
     companion object {
-      const val CONNECTION_TYPE_CELLULAR = "cellular"
-      const val CONNECTION_TYPE_WIFI = "wifi"
-      const val CONNECTION_TYPE_WIRED = "wired"
-      const val CONNECTION_TYPE_OTHER = "other"
-
       private const val TAG = "MuxDevice"
       private const val MUX_DEVICE_ID = "MUX_DEVICE_ID"
 
