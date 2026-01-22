@@ -12,6 +12,7 @@ import com.mux.core_android.test.tools.testdoubles.mockConnectivityManager16
 import com.mux.core_android.test.tools.testdoubles.mockConnectivityManager23
 import com.mux.core_android.test.tools.testdoubles.mockSharedPrefs
 import com.mux.stats.sdk.muxstats.MuxDataSdk
+import com.mux.stats.sdk.muxstats.NetworkChangeMonitor
 import org.junit.Assert.*
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -44,33 +45,33 @@ class AndroidDeviceTests : AbsRobolectricTest() {
     testConnectivityCase(
       connMgrReturns16 = listOf(ConnectivityManager.TYPE_MOBILE),
       connMgrReturns23 = listOf(NetworkCapabilities.TRANSPORT_CELLULAR),
-      correctNetwork = MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
+      correctNetwork = NetworkChangeMonitor.CONNECTION_TYPE_CELLULAR,
       incorrectNetworks = listOf(
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIFI,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIRED,
+        NetworkChangeMonitor.CONNECTION_TYPE_OTHER,
+        NetworkChangeMonitor.CONNECTION_TYPE_WIFI,
+        NetworkChangeMonitor.CONNECTION_TYPE_WIRED,
       )
     )
     // WiFi Networks
     testConnectivityCase(
       connMgrReturns16 = listOf(ConnectivityManager.TYPE_WIFI),
       connMgrReturns23 = listOf(NetworkCapabilities.TRANSPORT_WIFI),
-      correctNetwork = MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIFI,
+      correctNetwork = NetworkChangeMonitor.CONNECTION_TYPE_WIFI,
       incorrectNetworks = listOf(
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIRED,
+        NetworkChangeMonitor.CONNECTION_TYPE_OTHER,
+        NetworkChangeMonitor.CONNECTION_TYPE_CELLULAR,
+        NetworkChangeMonitor.CONNECTION_TYPE_WIRED,
       )
     )
     // Wired Networks
     testConnectivityCase(
       connMgrReturns16 = listOf(ConnectivityManager.TYPE_ETHERNET),
       connMgrReturns23 = listOf(NetworkCapabilities.TRANSPORT_ETHERNET),
-      correctNetwork = MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIRED,
+      correctNetwork = NetworkChangeMonitor.CONNECTION_TYPE_WIRED,
       incorrectNetworks = listOf(
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIFI,
+        NetworkChangeMonitor.CONNECTION_TYPE_OTHER,
+        NetworkChangeMonitor.CONNECTION_TYPE_CELLULAR,
+        NetworkChangeMonitor.CONNECTION_TYPE_WIFI,
       )
     )
     // Misc Networks
@@ -86,11 +87,11 @@ class AndroidDeviceTests : AbsRobolectricTest() {
         5, /*not in api23, NetworkCapabilities.TRANSPORT_WIFI_AWARE*/
         NetworkCapabilities.TRANSPORT_VPN,
       ),
-      correctNetwork = MuxDataSdk.AndroidDevice.CONNECTION_TYPE_OTHER,
+      correctNetwork = NetworkChangeMonitor.CONNECTION_TYPE_OTHER,
       incorrectNetworks = listOf(
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIRED,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_CELLULAR,
-        MuxDataSdk.AndroidDevice.CONNECTION_TYPE_WIFI,
+        NetworkChangeMonitor.CONNECTION_TYPE_WIRED,
+        NetworkChangeMonitor.CONNECTION_TYPE_CELLULAR,
+        NetworkChangeMonitor.CONNECTION_TYPE_WIFI,
       )
     )
   }
