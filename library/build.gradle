@@ -75,8 +75,7 @@ dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
   implementation 'androidx.annotation:annotation-jvm:1.9.1'
 
-//  def muxCoreVersion = '8.+'
-  def muxCoreVersion = 'dev-network-change-events-e7646a8'
+  def muxCoreVersion = '8.+'
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently
   //noinspection GradleDynamicVersion
   compileOnly "com.mux:stats.muxcore:$muxCoreVersion"

@@ -406,7 +406,6 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       player, uiDelegate, collector, playerBinding
     )
     networkChangeMonitor.setListener { networkType, lowData ->
-      Log.d("NetworkMonitor", "networkChange: type: $networkType lowData: $lowData")
       muxStats.networkChange(networkType, lowData)
     }
     this.networkChangeMonitor = networkChangeMonitor
