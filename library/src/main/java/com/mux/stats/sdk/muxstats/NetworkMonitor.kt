@@ -24,6 +24,7 @@ interface NetworkChangeMonitor {
     const val CONNECTION_TYPE_WIFI = "wifi"
     const val CONNECTION_TYPE_WIRED = "wired"
     const val CONNECTION_TYPE_OTHER = "other"
+    const val CONNECTION_TYPE_NONE = "no_connection"
   }
 
   fun setListener(listener: NetworkChangedListener?)
@@ -103,10 +104,10 @@ private class NetworkChangeMonitorApi16(
     return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   }
 
-  private fun currentConnectionType(): String? {
+  private fun currentConnectionType(): String {
     val networkInfo = getConnectivityManager(appContext).activeNetworkInfo
     val connType = networkInfo?.toMuxConnectionType()
-    return connType
+    return connType ?: NetworkChangeMonitor.CONNECTION_TYPE_NONE
   }
 
   override fun setListener(listener: NetworkChangeMonitor.NetworkChangedListener?) {

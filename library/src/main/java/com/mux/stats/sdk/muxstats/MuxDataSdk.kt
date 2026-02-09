@@ -576,7 +576,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-        nc?.toMuxConnectionType()
+
+        /*return*/ nc?.toMuxConnectionType() ?: NetworkChangeMonitor.CONNECTION_TYPE_NONE
       }
     }
 
