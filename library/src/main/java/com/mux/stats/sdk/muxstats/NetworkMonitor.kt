@@ -196,7 +196,12 @@ private class NetworkChangeMonitorApi26(
       }
 
       override fun onLost(network: Network) {
-        callbackHandler.post { outsideListener?.onNetworkChanged(null, null) }
+        callbackHandler.post {
+          outsideListener?.onNetworkChanged(
+            networkType = NetworkChangeMonitor.CONNECTION_TYPE_NONE,
+            restrictedData = null
+          )
+        }
       }
     }
 
