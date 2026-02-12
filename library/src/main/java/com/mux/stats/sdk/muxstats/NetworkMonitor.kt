@@ -32,7 +32,7 @@ interface NetworkChangeMonitor {
   fun release()
 
   fun interface NetworkChangedListener {
-    fun onNetworkChanged(networkType: String?, restrictedData: Boolean?)
+    fun onNetworkChanged(networkType: String, restrictedData: Boolean?)
   }
 }
 
