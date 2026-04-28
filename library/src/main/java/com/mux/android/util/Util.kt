@@ -3,14 +3,14 @@ package com.mux.android.util
 import kotlin.math.ceil
 
 /**
- * Returns true if the receiver is not in the given objects.
+ * Returns true if the receiver is in the given objects.
  *
  * For example `"blue".oneOf("red", "green") == false` and `3.oneOf(3,5,6) == true`
  */
 fun <Any> Any.oneOf(vararg these: Any) = these.contains(this)
 
 /**
- * Returns true if the receiver is not in the given objects.
+ * Returns true if the receiver is in the given objects.
  *
  * For example `"blue".oneOf("red", "green") == false` and `3.oneOf(3,5,6) == true`
  */
