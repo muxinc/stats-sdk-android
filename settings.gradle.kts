@@ -5,8 +5,8 @@ pluginManagement {
     gradlePluginPortal()
     google()
     mavenCentral()
-    maven { url 'https://muxinc.jfrog.io/artifactory/default-maven-release-local' }
-    maven { url 'https://muxinc.jfrog.io/artifactory/default-maven-local' }
+    maven { url = uri("https://muxinc.jfrog.io/artifactory/default-maven-release-local") }
+    maven { url = uri("https://muxinc.jfrog.io/artifactory/default-maven-local") }
     mavenLocal()
   }
 }
@@ -16,11 +16,11 @@ dependencyResolutionManagement {
   repositories {
     google()
     mavenCentral()
-    maven { url 'https://muxinc.jfrog.io/artifactory/default-maven-release-local' }
-    maven { url 'https://muxinc.jfrog.io/artifactory/default-maven-local' }
+    maven { url = uri("https://muxinc.jfrog.io/artifactory/default-maven-release-local") }
+    maven { url = uri("https://muxinc.jfrog.io/artifactory/default-maven-local") }
     mavenLocal()
   }
 }
 rootProject.name = "MuxCore Android"
-include ':library'
-include ':app'
+include(":library")
+include(":app")
