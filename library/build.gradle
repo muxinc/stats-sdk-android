@@ -1,7 +1,7 @@
 plugins {
-  id 'com.android.library'
-  id 'org.jetbrains.kotlin.android'
-  id 'com.mux.gradle.android.mux-android-distribution'
+  alias(libs.plugins.android.library)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.mux.android.distribution)
 }
 
 android {
@@ -72,19 +72,18 @@ muxDistribution {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
-  implementation 'androidx.annotation:annotation-jvm:1.9.1'
+  implementation libs.kotlinx.coroutines.android
+  implementation libs.androidx.annotation.jvm
 
-  def muxCoreVersion = '8.+'
   // dynamic version/compileOnly so the player SDKs on top of this can update core independently
   //noinspection GradleDynamicVersion
-  compileOnly "com.mux:stats.muxcore:$muxCoreVersion"
+  compileOnly libs.mux.core
   //noinspection GradleDynamicVersion
-  testImplementation "com.mux:stats.muxcore:$muxCoreVersion"
+  testImplementation libs.mux.core
 
-  testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
-  testImplementation 'junit:junit:4.13.2'
-  testImplementation 'androidx.test.ext:junit:1.2.1'
-  testImplementation "io.mockk:mockk:1.13.9"
-  testImplementation 'org.robolectric:robolectric:4.11.1'
+  testImplementation libs.androidx.test.ext.junit.ktx
+  testImplementation libs.junit
+  testImplementation libs.androidx.test.ext.junit
+  testImplementation libs.mockk
+  testImplementation libs.robolectric
 }
