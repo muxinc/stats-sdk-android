@@ -5,6 +5,7 @@ import com.mux.core_android.test.tools.testdoubles.FakeEventDispatcher
 import com.mux.stats.sdk.core.events.EventBus
 import com.mux.stats.sdk.core.events.IEvent
 import com.mux.stats.sdk.core.events.playback.*
+import com.mux.stats.sdk.core.model.CustomerVideoData
 import com.mux.stats.sdk.muxstats.MuxPlayerState
 import com.mux.stats.sdk.muxstats.MuxStateCollector
 import com.mux.stats.sdk.muxstats.MuxStats
@@ -161,6 +162,30 @@ class StateCollectorTests : AbsRobolectricTest() {
       stateCollector.muxPlayerState,
     )
     eventDispatcher.assertHasNoneOf(PlayingEvent(null))
+  }
+
+  @Test
+  fun testPlayingAfterVideoChangeDuringSeek() {
+    // A seek in progress on the outgoing view must not carry into the next one
+    stateCollector.play()
+    stateCollector.playing()
+    stateCollector.seeking()
+
+    stateCollector.videoChange(CustomerVideoData())
+    stateCollector.play()
+    stateCollector.playing()
+
+    assertEquals(
+      "seeking -> videoChange -> play -> playing => playing",
+      MuxPlayerState.PLAYING,
+      stateCollector.muxPlayerState,
+    )
+    eventDispatcher.assertHasExactlyThese(
+      listOf(
+        PlayEvent(null), PlayingEvent(null), PauseEvent(null), SeekingEvent(null),
+        PlayEvent(null), PlayingEvent(null),
+      )
+    )
   }
 
   @Test
