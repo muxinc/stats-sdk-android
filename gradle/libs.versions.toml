@@ -1,7 +1,7 @@
 [versions]
-agp = "8.13.2"
+agp = "9.4.1"
 kotlin = "2.2.10"
-muxAndroidDistribution = "1.3.0"
+muxAndroidDistribution = "1.4.0"
 
 # dynamic version so the player SDKs on top of this can update core independently
 muxCore = "8.+"
