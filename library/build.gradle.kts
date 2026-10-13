@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
 
   namespace = "com.mux.core_android"
 
