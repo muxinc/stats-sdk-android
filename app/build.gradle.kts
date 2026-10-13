@@ -5,11 +5,12 @@ plugins {
 
 android {
   namespace = "com.mux.app"
-  compileSdk = 36
+  compileSdk = 37
 
   defaultConfig {
     applicationId = "com.mux.app"
     minSdk = 24
+    //noinspection OldTargetApi
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"

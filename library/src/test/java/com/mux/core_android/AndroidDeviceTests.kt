@@ -8,17 +8,18 @@ import android.os.Build
 import com.mux.android.util.allEqual
 import com.mux.core_android.test.tools.AbsRobolectricTest
 import com.mux.core_android.test.tools.testdoubles.mockActivity
-import com.mux.core_android.test.tools.testdoubles.mockConnectivityManager16
 import com.mux.core_android.test.tools.testdoubles.mockConnectivityManager23
+import com.mux.core_android.test.tools.testdoubles.mockLegacyNetworkInfo
 import com.mux.core_android.test.tools.testdoubles.mockSharedPrefs
 import com.mux.stats.sdk.muxstats.MuxDataSdk
 import com.mux.stats.sdk.muxstats.NetworkChangeMonitor
+import com.mux.stats.sdk.muxstats.toMuxConnectionType
 import org.junit.Assert.*
 import org.junit.Test
 import org.robolectric.annotation.Config
 
 @Config(
-  sdk = [Build.VERSION_CODES.KITKAT, Build.VERSION_CODES.M]
+  sdk = [Build.VERSION_CODES.M]
 )
 class AndroidDeviceTests : AbsRobolectricTest() {
 
@@ -39,6 +40,7 @@ class AndroidDeviceTests : AbsRobolectricTest() {
     )
   }
 
+  @Suppress("DEPRECATION") // some deprecated symbols used to test legacy paths
   @Test
   fun testConnectivityCases() {
     // Cellular Networks
@@ -102,7 +104,6 @@ class AndroidDeviceTests : AbsRobolectricTest() {
     correctNetwork: String,
     incorrectNetworks: List<String>
   ) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       // Correct case
       connMgrReturns23.onEach { transport ->
         testConnectionType23(
@@ -112,53 +113,51 @@ class AndroidDeviceTests : AbsRobolectricTest() {
           onThisNetwork = true
         )
       }
-      // Incorrect cases
-      incorrectNetworks.onEach { incorrectNet ->
-        connMgrReturns23.onEach { connType ->
-          testConnectionType23(
-            assertMsg = "API 23: network type should be $correctNetwork",
-            mockTypeFromConnMgr = connType,
-            expectedType = incorrectNet,
-            onThisNetwork = false
-          )
-        }
-      }
-    } else {
-      // Correct case
-      connMgrReturns16.onEach { transport ->
-        testConnectionType16(
-          assertMsg = "API 16: network type should be $correctNetwork",
-          mockTypeFromConnMgr = transport,
-          expectedType = correctNetwork,
-          onThisNetwork = true
+    // Incorrect cases
+    incorrectNetworks.onEach { incorrectNet ->
+      connMgrReturns23.onEach { connType ->
+        testConnectionType23(
+          assertMsg = "API 23: network type should be $correctNetwork",
+          mockTypeFromConnMgr = connType,
+          expectedType = incorrectNet,
+          onThisNetwork = false
         )
       }
-      // Incorrect cases
-      incorrectNetworks.onEach { incorrectNet ->
-        connMgrReturns16.onEach { connType ->
-          testConnectionType16(
-            assertMsg = "API 16: network type should be $correctNetwork",
-            mockTypeFromConnMgr = connType,
-            expectedType = incorrectNet,
-            onThisNetwork = false
-          )
-        }
+    }
+    // Correct case
+    connMgrReturns16.onEach { transport ->
+      testConnectionType16(
+        assertMsg = "API 16: network type should be $correctNetwork",
+        mockTypeFromConnMgr = transport,
+        expectedType = correctNetwork,
+        onThisNetwork = true
+      )
+    }
+    // Incorrect cases
+    incorrectNetworks.onEach { incorrectNet ->
+      connMgrReturns16.onEach { connType ->
+        testConnectionType16(
+          assertMsg = "API 16: network type should be $correctNetwork",
+          mockTypeFromConnMgr = connType,
+          expectedType = incorrectNet,
+          onThisNetwork = false
+        )
       }
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
   private fun testConnectionType16(
     assertMsg: String,
     mockTypeFromConnMgr: Int,
     expectedType: String,
     onThisNetwork: Boolean,
   ) {
-    val ctx = mockActivity(connMgr = mockConnectivityManager16(mockTypeFromConnMgr))
+    // robolectric no longer supports APIs below M, so avoid shadowing while testing the legacy code
+    val muxNetworkType = mockLegacyNetworkInfo(mockTypeFromConnMgr).toMuxConnectionType()
     if (onThisNetwork) {
-      assertEquals(assertMsg, expectedType, device(ctx).networkConnectionType)
+      assertEquals(assertMsg, expectedType, muxNetworkType)
     } else {
-      assertNotEquals(assertMsg, expectedType, device(ctx).networkConnectionType)
+      assertNotEquals(assertMsg, expectedType, muxNetworkType)
     }
   }
 
