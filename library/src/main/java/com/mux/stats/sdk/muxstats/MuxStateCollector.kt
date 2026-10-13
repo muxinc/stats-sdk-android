@@ -565,6 +565,7 @@ open class MuxStateCollector(
     totalEventsSent = 0
     seekingEventsSent = 0
     seekedEventsSent = 0
+    seekingInProgress = false
     firstFrameReceived = false
     firstFrameRenderedAtMillis = FIRST_FRAME_NOT_RENDERED
     playbackPositionMills = TIME_UNKNOWN
