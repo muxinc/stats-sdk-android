@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Point
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.os.Build
 import android.view.View
 import com.mux.stats.sdk.muxstats.*
@@ -67,7 +68,7 @@ fun mockView() = mockk<View> {
 fun mockActivity(
   prefs: SharedPreferences = mockSharedPrefs(),
   pm: PackageManager = mockPackageManager(),
-  connMgr: ConnectivityManager = mockConnectivityManager16(NetworkCapabilities.TRANSPORT_CELLULAR)
+  connMgr: ConnectivityManager = mockConnectivityManager23(NetworkCapabilities.TRANSPORT_CELLULAR)
 ) = mockk<Activity>(relaxed = true) {
   every { windowManager } returns mockk {
     every { defaultDisplay } returns mockk {
@@ -136,15 +137,10 @@ fun mockConnectivityManager23(transportType: Int) = mockk<ConnectivityManager> {
   }
 }
 
-/**
- * Mocks [ConnectivityManager] with methods for getting the active network type using the older
- * [NetworkInfo]-based APIs
- */
+
 @Suppress("DEPRECATION") // some legacy methods are used for backward compat
-fun mockConnectivityManager16(netType: Int) = mockk<ConnectivityManager> {
-  every { activeNetworkInfo } returns mockk {
-    every { type } answers { netType }
-  }
+fun mockLegacyNetworkInfo(netType: Int) = mockk<NetworkInfo> {
+  every { type } answers { netType }
 }
 
 /**
