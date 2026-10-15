@@ -82,11 +82,15 @@ fun mockActivity(
   }
   every { getSharedPreferences(any(), any()) } returns prefs
   every { packageManager } returns pm
+  every { applicationContext } returns mockApplicationContext(connMgr)
+  every { packageName } returns "com.mux.core_android.unittests"
+}
+
+fun mockApplicationContext(connMgr: ConnectivityManager): Context = mockk<Context> {
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     every { getSystemService(ConnectivityManager::class.java) } returns connMgr
   }
   every { getSystemService(Context.CONNECTIVITY_SERVICE) } returns connMgr
-  every { packageName } returns "com.mux.core_android.unittests"
 }
 
 fun mockPackageManager() = mockk<PackageManager> {
