@@ -558,6 +558,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       if (Build.VERSION.SDK_INT > Build.VERSION_CODES.BAKLAVA) {
         return contextRef?.let { context ->
           // NOTE: api31 ConnectivityManager retains its context statically, so use appContext
+          //  (fixed in api34, but appContext is fine to use so just always do that)
           val connectivityManager =
             context.applicationContext.getSystemService(ConnectivityManager::class.java)
           val nc: NetworkCapabilities? =
@@ -576,6 +577,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
       // use let{} so we get both a null-check and a hard ref
       return contextRef?.let { context ->
         // NOTE: api31 ConnectivityManager retains its context statically, so get it from appContext
+        //  (fixed in api34, but appContext is fine to use so just always do that)
         val connectivityManager =
           context.applicationContext.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
