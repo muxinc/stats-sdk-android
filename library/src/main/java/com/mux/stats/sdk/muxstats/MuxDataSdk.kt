@@ -557,6 +557,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     override fun getIsNetworkInLowDataMode(): Boolean? {
       if (Build.VERSION.SDK_INT > Build.VERSION_CODES.BAKLAVA) {
         return contextRef?.let { context ->
+          // NOTE: api31 ConnectivityManager retains its context statically, so use appContext
           val connectivityManager =
             context.applicationContext.getSystemService(ConnectivityManager::class.java)
           val nc: NetworkCapabilities? =
@@ -574,8 +575,7 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     private fun connectionTypeApi23(): String? {
       // use let{} so we get both a null-check and a hard ref
       return contextRef?.let { context ->
-        // NOTE: API31 ConnectivityManager retains its context statically, so get it from appContext
-        //  (fixed in later android versions but still our problem)
+        // NOTE: api31 ConnectivityManager retains its context statically, so get it from appContext
         val connectivityManager =
           context.applicationContext.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
