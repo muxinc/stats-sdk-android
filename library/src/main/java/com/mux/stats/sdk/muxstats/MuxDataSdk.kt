@@ -557,7 +557,10 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     override fun getIsNetworkInLowDataMode(): Boolean? {
       if (Build.VERSION.SDK_INT > Build.VERSION_CODES.BAKLAVA) {
         return contextRef?.let { context ->
-          val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+          // NOTE: api31 ConnectivityManager retains its context statically, so use appContext
+          //  (fixed in api34, but appContext is fine to use so just always do that)
+          val connectivityManager =
+            context.applicationContext.getSystemService(ConnectivityManager::class.java)
           val nc: NetworkCapabilities? =
             connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
           return nc
@@ -573,7 +576,10 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     private fun connectionTypeApi23(): String? {
       // use let{} so we get both a null-check and a hard ref
       return contextRef?.let { context ->
-        val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+        // NOTE: api31 ConnectivityManager retains its context statically, so get it from appContext
+        //  (fixed in api34, but appContext is fine to use so just always do that)
+        val connectivityManager =
+          context.applicationContext.getSystemService(ConnectivityManager::class.java)
         val nc: NetworkCapabilities? =
           connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
@@ -585,8 +591,8 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     private fun connectionTypeApi16(): String? {
       // use let{} so we get both a null-check and a hard ref
       return contextRef?.let { context ->
-        val connectivityMgr = context
-          .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityMgr =
+          context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork: NetworkInfo? = connectivityMgr.activeNetworkInfo
         activeNetwork?.toMuxConnectionType()
       } // contextRef?.let {...
