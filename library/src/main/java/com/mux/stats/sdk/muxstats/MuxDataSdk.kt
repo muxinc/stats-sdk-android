@@ -281,6 +281,14 @@ abstract class MuxDataSdk<Player, PlayerView : View> @JvmOverloads protected con
     muxStats.presentationChange(presentation)
 
   /**
+   * Call to indicate whether the current view is being played remotely, for example via Chromecast.
+   * This is reported as `player_remote_played`, and is reset to `false` when a new view begins.
+   *
+   * @param remotePlayed true if the current view is being played remotely
+   */
+  open fun setRemotePlayed(remotePlayed: Boolean) = muxStats.setRemotePlayed(remotePlayed)
+
+  /**
    * Disables event collection for this MuxDataSdk. The current view will be ended, and any pending
    * events will be sent to the dashboard
    */
