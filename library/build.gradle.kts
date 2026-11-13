@@ -44,7 +44,7 @@ muxDistribution {
   dokkaConfig {
     moduleName = "Mux Data SDK for Media3, Base"
     footer = "(c) " + SimpleDateFormat("yyyy").format(Date()) + " Mux, Inc. Have questions or need help?" +
-            " Contact support@mux.com"
+            " Visit https://www.mux.com/support"
   }
 
   pom {
